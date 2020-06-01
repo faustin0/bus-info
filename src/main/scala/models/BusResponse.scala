@@ -1,9 +1,5 @@
 package models
 
-import cats.data.EitherT
-import cats.effect.IO
-import org.http4s.{DecodeFailure, EntityDecoder, MediaType, Message}
-
 import scala.xml.Elem
 
 
@@ -29,7 +25,6 @@ case class BusResponse(
 
 object HelloBusResponse {
 
-  //  private val responseRegex = """(\(x[\d\w:]+\) )*([\d\w]+) (\w+) (\d+:\d+)( .*)*""".r
   private val responseRegex = """([\d\w]+) (\w+) (\d+:\d+)( .*)*""".r
   private val punctuationCharacter = "\\p{P}".r
 

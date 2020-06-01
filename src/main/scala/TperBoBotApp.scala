@@ -17,7 +17,8 @@ class Routes(helloBusClient: HelloBusClient) {
   val helloWorldService = HttpRoutes.of[IO] {
     case GET -> Root / "hello" => {
       val resp = helloBusClient.hello(BusRequest("27", 303))
-      Ok(resp) //fix me decoder implicit
+      Ok(resp.toString()) //fixme decoder implicit
+//      Ok(resp) //fixme decoder implicit
     }
 
     case GET -> Root / "test" => Ok("test ok")

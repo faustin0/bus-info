@@ -34,6 +34,7 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
       .map(HelloBusResponse.fromXml)
   }
 
+  //TODO remove test method
   def sample(): IO[String] = {
     val target = uri"https://jsonplaceholder.typicode.com/todos/1"
     val request = GET(
