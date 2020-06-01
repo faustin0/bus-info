@@ -20,7 +20,7 @@ class Routes(helloBusClient: HelloBusClient) {
       Ok(resp) //fix me decoder implicit
     }
 
-    case GET -> Root / "test" => Ok("porco dio")
+    case GET -> Root / "test" => Ok("test ok")
   }.orNotFound
 }
 
