@@ -3,7 +3,6 @@ package models
 import scala.xml.Elem
 
 
-
 sealed trait HelloBusResponse
 
 case class NoBus(message: String) extends HelloBusResponse
@@ -25,8 +24,8 @@ case class BusResponse(
 
 object HelloBusResponse {
 
-  private val responseRegex = """([\d\w]+) (\w+) (\d+:\d+)( .*)*""".r
-  private val punctuationCharacter = "\\p{P}".r
+  private val responseRegex = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
+  private val previsionRegex = """\(x\d+:\d+\)""".r
 
   def fromXml(xml: Elem): Either[TransformError, HelloBusResponse] = {
     val textResponse = xml \\ "string"
@@ -48,6 +47,7 @@ object HelloBusResponse {
 
     val splitResponse = response
       .replace("TperHellobus:", "")
+      .replaceFirst(previsionRegex.regex, "")
       .split(",")
       .toList
       .map(_.trim)
