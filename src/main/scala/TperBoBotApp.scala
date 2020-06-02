@@ -10,7 +10,6 @@ import org.http4s.server.middleware.Logger
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
-import org.http4s.scalaxml._
 
 
 class Routes(helloBusClient: HelloBusClient) {
@@ -18,7 +17,7 @@ class Routes(helloBusClient: HelloBusClient) {
     case GET -> Root / "hello" => {
       val resp = helloBusClient.hello(BusRequest("27", 303))
       Ok(resp.toString()) //fixme decoder implicit
-//      Ok(resp) //fixme decoder implicit
+      //      Ok(resp) //fixme decoder implicit
     }
 
     case GET -> Root / "test" => Ok("test ok")
@@ -28,20 +27,10 @@ class Routes(helloBusClient: HelloBusClient) {
 
 object TperBoBotApp extends IOApp {
 
-  //  val helloWorldService = HttpRoutes.of[IO] {
-  //    case GET -> Root / "hello" / name => Ok()
-  //  }.orNotFound
-  //  BlazeClientBuilder[IO](global).resource.use { client: Client[IO] =>
-  //    val helloJames = client.expect[String]("http://localhost:8080/hello/James")
-  //    // use `client` here and return an `IO`.
-  //    // the client will be acquired and shut down
-  //    // automatically each time the `IO` is run.
-  //    IO.unit
-  //  }
-
   override def run(args: List[String]): IO[ExitCode] = {
     val routes: Resource[IO, Routes] = BlazeClientBuilder[IO](global)
       .withConnectTimeout(5 seconds)
+      .withRequestTimeout(5 seconds)
       .resource
       .map(client => HelloBusClient(client))
       .map(tperClient => new Routes(tperClient))
@@ -53,29 +42,5 @@ object TperBoBotApp extends IOApp {
       .compile
       .drain
     ).as(ExitCode.Success)
-
-    //    Logger(
-    //      logHeaders = false,
-    //      logBody = true,
-    //      routes.helloWorldService
-    //    )
-
-    //    val comps = for {
-    //      tperclient <- BlazeClientBuilder[IO](global).resource.use { client =>
-    //        // use `client` here and return an `IO`.
-    //        // the client will be acquired and shut down
-    //        // automatically each time the `IO` is run.
-    //        IO.pure(HelloBusClient(client))
-    //      }
-    //      routes <- IO.pure(new Routes(tperclient))
-    //      _ <- BlazeServerBuilder[IO](global)
-    //        .bindHttp(8080, "localhost")
-    //        .withHttpApp(routes.helloWorldService)
-    //        .serve
-    //        .compile
-    //        .drain
-    //    } yield ()
-
-    //    comps.as(ExitCode.Success)
   }
 }

@@ -1,50 +1,61 @@
-import cats.effect.{ContextShift, IO, Resource, Timer}
-import models.{BusRequest, Invalid, Successful}
-import org.http4s.client.blaze.BlazeClientBuilder
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import java.time.LocalTime
+import java.util.concurrent.Executors
 
+import cats.effect.{Blocker, ContextShift, IO, Timer}
+import models.{BusRequest, Invalid, NoBus, Successful}
+import org.http4s.client.{Client, JavaNetClientBuilder}
+import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
+
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.global
-import scala.xml.Elem
 
 
-class HelloBusClientTest extends FunSuite with BeforeAndAfter with Matchers {
+class HelloBusClientTest extends FunSuite with BeforeAndAfter with Matchers with Inside {
 
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
   implicit val timer: Timer[IO] = IO.timer(global)
 
-  var sut: Resource[IO, HelloBusClient] = _
+  var sut: HelloBusClient = _
 
   before {
-    sut = BlazeClientBuilder[IO](global)
-      .resource
-      .map(client => HelloBusClient(client))
+    val blockingEC = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(5))
+    val blocker = Blocker.liftExecutorService(blockingEC)
+    val httpClient: Client[IO] = JavaNetClientBuilder[IO](blocker).create
+    sut = HelloBusClient(httpClient)
   }
 
   test("should execute sample request ") {
-    val actual: String = sut.use(
-      client => client.sample()
-    ).unsafeRunSync()
-
+    val actual = sut.sample().unsafeRunSync()
     actual.shouldNot(have size 0)
   }
 
 
   test("should execute sample tper request ") {
-    val actual = sut.use(
-      client => client.hello(BusRequest("27", 303))
-    ).unsafeRunSync()
+    val actual = sut.hello(BusRequest("27", 303)).unsafeRunSync()
 
     println(actual)
-    actual should not be a[Invalid]
+    inside(actual) { case Right(response) =>
+      response should not be a[Invalid]
+      response shouldBe a[Successful]
+    }
+  }
+
+  test("should execute sample tper request barrato") {
+    val actual = sut.hello(BusRequest("85/", 303, LocalTime.of(20, 20))).unsafeRunSync()
+
+    println(actual)
+    inside(actual) { case Right(response) =>
+      response should not be a[Invalid]
+      response shouldBe a[NoBus]
+    }
   }
 
   test("should get Invalid when malformed bus") {
-    val actual = sut.use(
-      client => client.hello(BusRequest("x", 303))
-    ).unsafeRunSync()
+    val actual = sut.hello(BusRequest("x", 303)).unsafeRunSync()
 
     println(actual)
-    actual shouldBe a[Invalid]
+    inside(actual) { case Right(response) =>
+      response shouldBe a[Invalid]
+    }
   }
-
 }
