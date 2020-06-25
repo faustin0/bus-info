@@ -17,7 +17,7 @@ class Routes(helloBusClient: HelloBusClient) {
     case GET -> Root / "hello" => {
       val resp = helloBusClient.hello(BusRequest("27", 303))
       Ok(resp.toString()) //fixme decoder implicit
-      //      Ok(resp) //fixme decoder implicit
+      //      Ok(resp)
     }
 
     case GET -> Root / "test" => Ok("test ok")
@@ -35,12 +35,16 @@ object TperBoBotApp extends IOApp {
       .map(client => HelloBusClient(client))
       .map(tperClient => new Routes(tperClient))
 
-    routes.use(routes => BlazeServerBuilder[IO](global)
-      .bindHttp(8080, "localhost")
-      .withHttpApp(Logger.httpApp(logHeaders = false, logBody = true)(routes.helloWorldService))
-      .serve
-      .compile
-      .drain
-    ).as(ExitCode.Success)
+    routes.use(routes => {
+      val app = routes.helloWorldService
+      val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
+
+      BlazeServerBuilder[IO](global)
+        .bindHttp(8080, "localhost")
+        .withHttpApp(loggedApp)
+        .serve
+        .compile
+        .drain
+    }).as(ExitCode.Success)
   }
 }
