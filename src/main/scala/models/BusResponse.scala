@@ -2,25 +2,20 @@ package models
 
 import scala.xml.Elem
 
-
 sealed trait HelloBusResponse
 
-case class NoBus(message: String) extends HelloBusResponse
+final case class NoBus(message: String) extends HelloBusResponse
 
-case class Invalid(message: String) extends HelloBusResponse
+final case class Invalid(message: String) extends HelloBusResponse
 
-case class Successful(buses: List[BusResponse]) extends HelloBusResponse
+final case class Successful(buses: List[BusResponse]) extends HelloBusResponse
 
-case class TransformError(error: String) extends IllegalStateException
+final case class TransformError(error: String) extends IllegalStateException
 
-
-case class BusResponse(
-                        bus: String,
-                        satellite: Boolean,
-                        hour: String,
-                        busInfo: String
-                      )
-
+case class BusResponse(bus: String,
+                       satellite: Boolean,
+                       hour: String,
+                       busInfo: String)
 
 object HelloBusResponse {
 
@@ -37,13 +32,16 @@ object HelloBusResponse {
 
     content match {
       case msg if msg.contains("HellobusHelp") => Right(Invalid(msg))
-      case msg if msg.contains("NESSUNA") => Right(NoBus(msg))
-      case msg if msg.contains("TperHellobus") => extractBusResponse(msg).map(Successful)
+      case msg if msg.contains("NESSUNA")      => Right(NoBus(msg))
+      case msg if msg.contains("TperHellobus") =>
+        extractBusResponse(msg).map(Successful)
       case _ => Right(Invalid("Unsupported response"))
     }
   }
 
-  private def extractBusResponse(response: String): Either[TransformError, List[BusResponse]] = {
+  private def extractBusResponse(
+    response: String
+  ): Either[TransformError, List[BusResponse]] = {
 
     val splitResponse = response
       .replace("TperHellobus:", "")
@@ -54,11 +52,15 @@ object HelloBusResponse {
 
     splitResponse
       .partitionMap {
-        case responseRegex(bus, satellite, hour, info) => Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
-        case failedToMatch => Left(TransformError(s"Failed to match '$failedToMatch'"))
+        case responseRegex(bus, satellite, hour, info) =>
+          Right(
+            BusResponse(bus, satellite.contains("Satellite"), hour, info.trim)
+          )
+        case failedToMatch =>
+          Left(TransformError(s"Failed to match '$failedToMatch'"))
       } match {
       case (Nil, matchedResp) => Right(matchedResp)
-      case (errors, _) => Left(errors.head)
+      case (errors, _)        => Left(errors.head)
     }
   }
 
