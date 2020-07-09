@@ -1,5 +1,5 @@
 import cats.effect.{ExitCode, IO, IOApp, Resource}
-import models.BusRequest
+import models.{BusRequest, Invalid, NoBus, Successful}
 import org.http4s.HttpRoutes
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.dsl.impl.Root
@@ -11,19 +11,29 @@ import org.http4s.server.middleware.Logger
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 
-
 class Routes(helloBusClient: HelloBusClient) {
-  val helloWorldService = HttpRoutes.of[IO] {
-    case GET -> Root / "hello" => {
-      val resp = helloBusClient.hello(BusRequest("27", 303))
-      Ok(resp.toString()) //fixme decoder implicit
-      //      Ok(resp)
+  val helloWorldService = HttpRoutes
+    .of[IO] {
+      case GET -> Root / "hello" / IntVar(busStop) =>
+        for {
+          resp <- helloBusClient.hello(BusRequest("27", busStop))
+          restResp <- resp match {
+            case NoBus(message)      => NotFound(message)
+            case Invalid(message)    => BadRequest(message)
+            case Successful(message) => Ok(message.toString())
+          }
+        } yield restResp
+
+      case GET -> Root / "hello" / "" =>
+        BadRequest("missing busStop path")
+
+      case GET -> Root / "hello" / invalid =>
+        BadRequest(s"Invalid busStop: $invalid")
+
+      case GET -> Root / "test" => Ok("test ok") //todo remove test route
     }
-
-    case GET -> Root / "test" => Ok("test ok")
-  }.orNotFound
+    .orNotFound
 }
-
 
 object TperBoBotApp extends IOApp {
 
@@ -35,16 +45,18 @@ object TperBoBotApp extends IOApp {
       .map(client => HelloBusClient(client))
       .map(tperClient => new Routes(tperClient))
 
-    routes.use(routes => {
-      val app = routes.helloWorldService
-      val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
+    routes
+      .use(routes => {
+        val app = routes.helloWorldService
+        val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
 
-      BlazeServerBuilder[IO](global)
-        .bindHttp(8080, "localhost")
-        .withHttpApp(loggedApp)
-        .serve
-        .compile
-        .drain
-    }).as(ExitCode.Success)
+        BlazeServerBuilder[IO](global)
+          .bindHttp(8080, "localhost")
+          .withHttpApp(loggedApp)
+          .serve
+          .compile
+          .drain
+      })
+      .as(ExitCode.Success)
   }
 }
