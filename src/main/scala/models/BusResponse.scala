@@ -6,7 +6,7 @@ sealed trait HelloBusResponse
 
 final case class NoBus(message: String) extends HelloBusResponse
 
-final case class Invalid(message: String) extends HelloBusResponse
+final case class Invalid(error: String) extends HelloBusResponse
 
 final case class Successful(buses: List[BusResponse]) extends HelloBusResponse
 

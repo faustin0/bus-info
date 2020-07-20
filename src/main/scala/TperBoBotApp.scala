@@ -7,30 +7,30 @@ import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
+import org.http4s.circe.CirceEntityEncoder._
+import io.circe.generic.auto._
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 
 class Routes(helloBusClient: HelloBusClient) {
-  val helloWorldService = HttpRoutes
+  val helloBusService = HttpRoutes
     .of[IO] {
       case GET -> Root / "hello" / IntVar(busStop) =>
         for {
           resp <- helloBusClient.hello(BusRequest("27", busStop))
           restResp <- resp match {
-            case NoBus(message)      => NotFound(message)
-            case Invalid(message)    => BadRequest(message)
-            case Successful(message) => Ok(message.toString())
+            case r: NoBus      => NotFound(r)
+            case r: Invalid    => BadRequest(r)
+            case r: Successful => Ok(r.buses)
           }
         } yield restResp
 
       case GET -> Root / "hello" / "" =>
-        BadRequest("missing busStop path")
+        BadRequest(Invalid("missing busStop path"))
 
       case GET -> Root / "hello" / invalid =>
-        BadRequest(s"Invalid busStop: $invalid")
-
-      case GET -> Root / "test" => Ok("test ok") //todo remove test route
+        BadRequest(Invalid(s"Invalid busStop: $invalid"))
     }
     .orNotFound
 }
@@ -47,7 +47,7 @@ object TperBoBotApp extends IOApp {
 
     routes
       .use(routes => {
-        val app = routes.helloWorldService
+        val app = routes.helloBusService
         val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
 
         BlazeServerBuilder[IO](global)
