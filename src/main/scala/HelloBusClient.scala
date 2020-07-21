@@ -22,16 +22,20 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
     uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
 
   def hello(busRequest: BusRequest): IO[HelloBusResponse] = {
-
     val request = Request[IO](
       method = POST,
       uri = targetUri,
-      headers = Headers.of(Accept(MediaType.application.xml))
+      headers = Headers.of(
+        Accept(MediaType.application.xml),
+        `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
+      )
     ).withEntity(
       UrlForm(
         "fermata" -> busRequest.busStop.toString,
-        "linea" -> busRequest.busID,
-        "oraHHMM" -> busRequest.hour.format(dateTimePattern)
+        "linea" -> busRequest.busID.getOrElse(""),
+        "oraHHMM" -> busRequest.hour
+          .map(_.format(dateTimePattern))
+          .getOrElse("")
       )
     )
 

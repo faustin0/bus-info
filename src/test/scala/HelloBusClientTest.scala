@@ -23,7 +23,7 @@ class HelloBusClientTest extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   "should execute sample tper request " in {
 
     val sut = createFixture
-    val actual = sut.hello(BusRequest("27", 303))
+    val actual = sut.hello(BusRequest(303, "27"))
 
     actual.asserting {
       case _: HelloBusResponse => succeed
@@ -34,7 +34,7 @@ class HelloBusClientTest extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   "should execute sample tper request barrato" in {
     val sut = createFixture
     val actual =
-      sut.hello(BusRequest("85/", 303, LocalTime.of(20, 20)))
+      sut.hello(BusRequest(303, "85/", LocalTime.of(20, 20)))
 
     actual.asserting {
       case r: NoBus => succeed
@@ -44,7 +44,7 @@ class HelloBusClientTest extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
   "should get Invalid when malformed bus" in {
     val sut = createFixture
-    val actual = sut.hello(BusRequest("x", 303))
+    val actual = sut.hello(BusRequest(303, "x"))
 
     actual.asserting {
       case Invalid(_)   => succeed
