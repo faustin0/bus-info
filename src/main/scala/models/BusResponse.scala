@@ -12,10 +12,12 @@ final case class Successful(buses: List[BusResponse]) extends HelloBusResponse
 
 final case class TransformError(error: String) extends IllegalStateException
 
-case class BusResponse(bus: String,
-                       satellite: Boolean,
-                       hour: String,
-                       busInfo: String)
+case class BusResponse(
+  bus: String,
+  satellite: Boolean,
+  hour: String,
+  busInfo: String = ""
+)
 
 object HelloBusResponse {
 
@@ -33,9 +35,8 @@ object HelloBusResponse {
     content match {
       case msg if msg.contains("HellobusHelp") => Right(Invalid(msg))
       case msg if msg.contains("NESSUNA")      => Right(NoBus(msg))
-      case msg if msg.contains("TperHellobus") =>
-        extractBusResponse(msg).map(Successful)
-      case _ => Right(Invalid("Unsupported response"))
+      case msg if msg.contains("TperHellobus") => extractBusResponse(msg).map(Successful)
+      case _                                   => Right(Invalid("Unsupported response"))
     }
   }
 
@@ -52,10 +53,10 @@ object HelloBusResponse {
 
     splitResponse
       .partitionMap {
+        case responseRegex(bus, satellite, hour, null) => //info is omitted on estimated responses
+          Right(BusResponse(bus, satellite.contains("Satellite"), hour))
         case responseRegex(bus, satellite, hour, info) =>
-          Right(
-            BusResponse(bus, satellite.contains("Satellite"), hour, info.trim)
-          )
+          Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
         case failedToMatch =>
           Left(TransformError(s"Failed to match '$failedToMatch'"))
       } match {

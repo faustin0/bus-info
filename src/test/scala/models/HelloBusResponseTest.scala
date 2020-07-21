@@ -28,6 +28,11 @@ class HelloBusResponseTest extends AnyFunSuite with Inside with Matchers {
       TperHellobus: OGGI NESSUNA ALTRA CORSA DI 1 PER FERMATA 303
     </string>
 
+  val estimated: Elem =
+    <string xmlns="https://hellobuswsweb.tper.it/web-services/hellobus.asmx">
+      TperHellobus: (x14:51) 20 Previsto 14:51, 28 Previsto 14:57
+    </string>
+
   test("should parse xml from tper into successful response ") {
 
     val r1 = BusResponse("28", true, "09:07", "(Bus5517 CON PEDANA)")
@@ -74,6 +79,20 @@ class HelloBusResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected =
       NoBus("TperHellobus: OGGI NESSUNA ALTRA CORSA DI 1 PER FERMATA 303")
     val result = HelloBusResponse.fromXml(noBus)
+
+    inside(result) {
+      case Right(response) =>
+        response.shouldBe(expected)
+    }
+  }
+
+  test("should parse estimated response") {
+
+    val b1 = BusResponse("20", false, "14:51")
+    val b2 = BusResponse("28", false, "14:57")
+
+    val expected = Successful(List(b1, b2))
+    val result = HelloBusResponse.fromXml(estimated)
 
     inside(result) {
       case Right(response) =>
