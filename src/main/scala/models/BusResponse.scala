@@ -10,7 +10,7 @@ final case class Invalid(error: String) extends HelloBusResponse
 
 final case class Successful(buses: List[BusResponse]) extends HelloBusResponse
 
-final case class TransformError(error: String) extends IllegalStateException
+
 
 case class BusResponse(
   bus: String,
