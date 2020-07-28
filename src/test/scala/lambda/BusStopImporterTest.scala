@@ -49,9 +49,4 @@ class BusStopImporterTest extends AnyFunSuite with Inside with Matchers {
       case Right(bs) => bs should have size 9589
     }
   }
-
-  test("should fail") {
-    val xml = XML.loadString("<")
-  }
-
 }

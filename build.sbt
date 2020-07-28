@@ -31,13 +31,12 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-unchecked",
   "-language:postfixOps",
-  "-language:higherKinds"
+  "-language:higherKinds",
+  "-Xfatal-warnings"
 )
-
-//assemblyMergeStrategy in assembly := (_ => MergeStrategy.first)
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-  case x                             => MergeStrategy.first
+  case _                             => MergeStrategy.first
 }
 test in assembly := {} //no tests in assembly

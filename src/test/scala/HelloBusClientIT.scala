@@ -10,7 +10,7 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext
 
-class HelloBusClientTest extends AsyncFreeSpec with AsyncIOSpec with Matchers {
+class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
   def createFixture = {
     val blockingEC =
