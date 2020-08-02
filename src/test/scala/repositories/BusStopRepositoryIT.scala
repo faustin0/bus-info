@@ -39,7 +39,7 @@ class BusStopRepositoryIT
 
   "create and retrieve busStop" in {
     val repo = new BusStopRepository(container.client)
-    val starting = BusStop(1, "stop1", "Irnerio", "Bologna", 42, Position(1, 2, 2, 3))
+    val starting = BusStop(1, "stop1", "PIAZZA MEDAGLIE D`ORO (PENSILINA A)", "Bologna", 42, Position(1, 2, 2, 3))
 
     val actual = for {
       _ <- OptionT.liftF(repo.insert(starting))

@@ -32,7 +32,7 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
     ).withEntity(
       UrlForm(
         "fermata" -> busRequest.busStop.toString,
-        "linea" -> busRequest.busID.getOrElse(""),
+        "linea"   -> busRequest.busID.getOrElse(""),
         "oraHHMM" -> busRequest.hour
           .map(_.format(dateTimePattern))
           .getOrElse("")
@@ -41,13 +41,13 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
 
     for {
       xmlResponse <- httpClient.expect[Elem](request)
-      parsed <- IO.fromEither(HelloBusResponse.fromXml(xmlResponse))
+      parsed      <- IO.fromEither(HelloBusResponse.fromXml(xmlResponse))
     } yield parsed
   }
 
   //TODO remove test method
   def sample(): IO[String] = {
-    val target = uri"https://jsonplaceholder.typicode.com/todos/1"
+    val target  = uri"https://jsonplaceholder.typicode.com/todos/1"
     val request = GET(target)
     httpClient.expect[String](request)
   }

@@ -20,7 +20,7 @@ object BusInfoApp extends IOApp {
 
     routes
       .use(routes => {
-        val app = routes.helloBusService
+        val app       = routes.helloBusService
         val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
 
         BlazeServerBuilder[IO](global)

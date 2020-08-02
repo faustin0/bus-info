@@ -19,7 +19,7 @@ case class BusResponse(
 
 object HelloBusResponse {
 
-  private val responseRegex = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
+  private val responseRegex  = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
   private val previsionRegex = """\(x\d+:\d+\)""".r
 
   def fromXml(xml: Elem): Either[TransformError, HelloBusResponse] = {

@@ -10,7 +10,6 @@ import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.{HttpRoutes, ParseResult, QueryParamDecoder}
 
-
 class Routes(helloBusClient: HelloBusClient) {
   val helloBusService = HttpRoutes
     .of[IO] {
@@ -41,10 +40,10 @@ class Routes(helloBusClient: HelloBusClient) {
   }
 
   object BusNumber extends OptionalQueryParamDecoderMatcher[String]("bus")
-  object Hour extends OptionalValidatingQueryParamDecoderMatcher[LocalTime]("hour")
+  object Hour      extends OptionalValidatingQueryParamDecoderMatcher[LocalTime]("hour")
 
   implicit val timeQueryDecoder: QueryParamDecoder[LocalTime] =
-    QueryParamDecoder[String].emap(
-      h => ParseResult.fromTryCatchNonFatal(s"Invalid date format '$h'")(LocalTime.parse(h))
+    QueryParamDecoder[String].emap(h =>
+      ParseResult.fromTryCatchNonFatal(s"Invalid date format '$h'")(LocalTime.parse(h))
     )
 }

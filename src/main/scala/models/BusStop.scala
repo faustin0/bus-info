@@ -18,7 +18,7 @@ case class Position(
   x: Long,
   y: Long,
   lat: Double,
-  long: Double,
+  long: Double
 )
 
 object BusStop {
