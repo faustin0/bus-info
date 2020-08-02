@@ -1,18 +1,25 @@
 package repositories
 
+import cats.data.OptionT
+import cats.effect.testing.scalatest.AsyncIOSpec
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import com.dimafeng.testcontainers.{DynaliteContainer, ForAllTestContainer}
 import models.{BusStop, Position}
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.freespec.AsyncFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class BusStopRepositoryIT extends AnyFunSuite with ForAllTestContainer {
+class BusStopRepositoryIT
+    extends AsyncFreeSpec
+    with ForAllTestContainer
+    with Matchers
+    with AsyncIOSpec {
   override val container: DynaliteContainer = DynaliteContainer()
 
   override def afterStart(): Unit = {
     val mapper = new DynamoDBMapper(container.client)
-    val tableRequest = mapper.generateCreateTableRequest(new BusStopEntity().getClass)
+    val tableRequest = mapper.generateCreateTableRequest(classOf[BusStopEntity])
     tableRequest.setProvisionedThroughput(
       new ProvisionedThroughput()
         .withReadCapacityUnits(5)
@@ -26,12 +33,22 @@ class BusStopRepositoryIT extends AnyFunSuite with ForAllTestContainer {
     super.afterStart()
   }
 
-  test("spin container") {
+  "spin container" in {
     assert(!container.client.listTables().getTableNames.isEmpty)
   }
 
-  test("create busStop") {
+  "create and retrieve busStop" in {
     val repo = new BusStopRepository(container.client)
-    repo.insert(BusStop(1, "stop1", "", "", 0, Position(0, 0, 0, 0)))
+    val starting = BusStop(1, "stop1", "Irnerio", "Bologna", 42, Position(1, 2, 2, 3))
+
+    val actual = for {
+      _ <- OptionT.liftF(repo.insert(starting))
+      actual <- repo.findBusStopByCode(1)
+    } yield actual
+
+    actual.value.asserting {
+      case Some(value) => assert(value === starting)
+      case None        => fail()
+    }
   }
 }
