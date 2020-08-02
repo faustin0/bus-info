@@ -1,28 +1,19 @@
 import java.time.LocalTime
-import java.util.concurrent.Executors
 
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{Blocker, IO}
-import models.{BusRequest, HelloBusResponse, Invalid, NoBus}
+import models._
 import org.http4s.client.{Client, JavaNetClientBuilder}
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.concurrent.ExecutionContext
-
 class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
-  def createFixture = {
-    val blockingEC =
-      ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(5))
-    val blocker = Blocker.liftExecutorService(blockingEC)
-    val httpClient: Client[IO] = JavaNetClientBuilder[IO](blocker).create
-    HelloBusClient(httpClient)
-  }
+  val blocker = Blocker.liftExecutionContext(executionContext)
+  val httpClient: Client[IO] = JavaNetClientBuilder[IO](blocker).create
+  val sut = HelloBusClient(httpClient)
 
   "should execute sample tper request " in {
-
-    val sut = createFixture
     val actual = sut.hello(BusRequest(303, "27"))
 
     actual.asserting {
@@ -32,9 +23,7 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   }
 
   "should execute sample tper request barrato" in {
-    val sut = createFixture
-    val actual =
-      sut.hello(BusRequest(303, "85/", LocalTime.of(20, 20)))
+    val actual = sut.hello(BusRequest(303, "85/", LocalTime.of(20, 20)))
 
     actual.asserting {
       case r: NoBus => succeed
@@ -43,13 +32,22 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   }
 
   "should get Invalid when malformed bus" in {
-    val sut = createFixture
     val actual = sut.hello(BusRequest(303, "x"))
 
     actual.asserting {
       case Invalid(_)   => succeed
       case t: Throwable => fail(t)
       case _            => fail()
+    }
+  }
+
+  "should get next buses for stop" in {
+    val actual = sut.hello(BusRequest(1010))
+
+    actual.asserting {
+      case Successful(List(_, _*)) => succeed
+      case t: Throwable            => fail(t)
+      case _                       => fail()
     }
   }
 }

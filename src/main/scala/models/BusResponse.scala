@@ -2,15 +2,13 @@ package models
 
 import scala.xml.Elem
 
-sealed trait HelloBusResponse
+sealed trait HelloBusResponse extends Product with Serializable
 
 final case class NoBus(message: String) extends HelloBusResponse
 
 final case class Invalid(error: String) extends HelloBusResponse
 
 final case class Successful(buses: List[BusResponse]) extends HelloBusResponse
-
-
 
 case class BusResponse(
   bus: String,
