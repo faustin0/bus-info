@@ -3,43 +3,45 @@ package repositories
 import cats.data.OptionT
 import cats.effect.IO
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
-import models.{BusStop, Position}
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
+import com.amazonaws.services.dynamodbv2.datamodeling.{DynamoDBMapper, DynamoDBScanExpression}
+import com.amazonaws.services.dynamodbv2.model.Select
+import fs2._
+import models.BusStop
+
+import scala.jdk.CollectionConverters._
 
 class BusStopRepository(private val awsClient: AmazonDynamoDB) {
+  val MAX_BATCH_SIZE = 25
 
   private val mapper = new DynamoDBMapper(awsClient)
 
   def insert(busStop: BusStop): IO[Unit] = {
     IO {
-      mapper.save(
-        BusStopEntity(
-          code = busStop.code,
-          name = busStop.name,
-          location = busStop.location,
-          comune = busStop.comune,
-          areaCode = busStop.areaCode,
-          lat = busStop.position.lat,
-          lng = busStop.position.long,
-          x = busStop.position.x,
-          y = busStop.position.y
-        )
-      )
+      mapper.save(BusStopEntity.fromBusStop(busStop))
     }
+  }
+
+  def batchInsert(busStops: List[BusStop]): Stream[IO, FailedBatch] = {
+    Stream
+      .emits(busStops)
+      .covary[IO]
+      .map(BusStopEntity.fromBusStop)
+      .chunkN(MAX_BATCH_SIZE)
+      .map(c => c.toList.asJava)
+      .flatMap(l => Stream.emits(mapper.batchSave(l).asScala))
   }
 
   def findBusStopByCode(code: Long): OptionT[IO, BusStop] = {
     OptionT
       .fromOption[IO](Option(mapper.load(classOf[BusStopEntity], code)))
-      .map { e =>
-        BusStop(
-          code = e.code,
-          name = e.name,
-          location = e.location,
-          comune = e.comune,
-          areaCode = e.areaCode,
-          position = Position(e.x, e.y, e.lat, e.lng)
-        )
-      }
+      .map { _.as[BusStop] }
   }
+
+  def count(): IO[Long] =
+    IO {
+      val query = new DynamoDBScanExpression
+      query.setSelect(Select.COUNT)
+      mapper.count(classOf[BusStopEntity], query)
+    }
 }

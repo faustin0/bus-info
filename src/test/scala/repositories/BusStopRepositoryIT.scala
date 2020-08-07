@@ -18,7 +18,7 @@ class BusStopRepositoryIT
   override val container: DynaliteContainer = DynaliteContainer()
 
   override def afterStart(): Unit = {
-    val mapper = new DynamoDBMapper(container.client)
+    val mapper       = new DynamoDBMapper(container.client)
     val tableRequest = mapper.generateCreateTableRequest(classOf[BusStopEntity])
     tableRequest.setProvisionedThroughput(
       new ProvisionedThroughput()
@@ -39,10 +39,17 @@ class BusStopRepositoryIT
 
   "create and retrieve busStop" in {
     val repo = new BusStopRepository(container.client)
-    val starting = BusStop(1, "stop1", "PIAZZA MEDAGLIE D`ORO (PENSILINA A)", "Bologna", 42, Position(1, 2, 2, 3))
+    val starting = BusStop(
+      0,
+      "stop1",
+      "PIAZZA MEDAGLIE D`ORO (PENSILINA A)",
+      "Bologna",
+      42,
+      Position(1, 2, 2, 3)
+    )
 
     val actual = for {
-      _ <- OptionT.liftF(repo.insert(starting))
+      _      <- OptionT.liftF(repo.insert(starting))
       actual <- repo.findBusStopByCode(1)
     } yield actual
 
@@ -50,5 +57,35 @@ class BusStopRepositoryIT
       case Some(value) => assert(value === starting)
       case None        => fail()
     }
+  }
+
+  "should batch insert entries" in {
+    val repo = new BusStopRepository(container.client)
+    val entry = (code: Long) =>
+      BusStop(
+        code,
+        "stop1",
+        "PIAZZA MEDAGLIE D`ORO (PENSILINA A)",
+        "Bologna",
+        42,
+        Position(1, 2, 2, 3)
+      )
+
+    val entries = LazyList
+      .from(0)
+      .map(c => entry(c))
+      .take(1000)
+      .toList
+
+    val res = for {
+      failures <- repo.batchInsert(entries).compile.toList
+      count    <- repo.count()
+    } yield (failures, count)
+
+    res asserting {
+      case (Nil, 1000) => succeed
+      case errs        => fail(errs.toString())
+    }
+
   }
 }
