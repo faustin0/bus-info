@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.{
   DynamoDBHashKey,
   DynamoDBTable
 }
+import models.{BusStop, Position}
 
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
@@ -23,4 +24,33 @@ case class BusStopEntity(
   @(DynamoDBAttribute @field) @BeanProperty var y: Long
 ) {
   def this() = this(0, "", "", "", -1, 0, 0, 0, 0)
+
+  def as[A](implicit m: BusStopEntity => A): A = m(this)
+}
+
+object BusStopEntity {
+  def fromBusStop(b: BusStop): BusStopEntity =
+    new BusStopEntity(
+      code = b.code,
+      name = b.name,
+      location = b.location,
+      comune = b.comune,
+      areaCode = b.areaCode,
+      lat = b.position.lat,
+      lng = b.position.long,
+      x = b.position.x,
+      y = b.position.y
+    )
+
+  implicit val mapper: BusStopEntity => BusStop =
+    b =>
+      BusStop(
+        code = b.code,
+        name = b.name,
+        location = b.location,
+        comune = b.comune,
+        areaCode = b.areaCode,
+        position = Position(b.x, b.y, b.lat, b.lng)
+      )
+
 }
