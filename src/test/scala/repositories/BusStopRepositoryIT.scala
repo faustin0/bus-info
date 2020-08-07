@@ -50,7 +50,7 @@ class BusStopRepositoryIT
 
     val actual = for {
       _      <- OptionT.liftF(repo.insert(starting))
-      actual <- repo.findBusStopByCode(1)
+      actual <- repo.findBusStopByCode(0)
     } yield actual
 
     actual.value.asserting {
