@@ -22,7 +22,7 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
     }
   }
 
-  def batchInsert(busStops: List[BusStop]): Stream[IO, FailedBatch] = {
+  def batchInsert(busStops: Seq[BusStop]): Stream[IO, FailedBatch] = {
     Stream
       .emits(busStops)
       .covary[IO]

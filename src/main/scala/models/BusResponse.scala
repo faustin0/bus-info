@@ -51,7 +51,7 @@ object HelloBusResponse {
 
     splitResponse
       .partitionMap {
-        case responseRegex(bus, satellite, hour, null) => //info is omitted on estimated responses
+        case responseRegex(bus, satellite, hour, null) => //info may be omitted
           Right(BusResponse(bus, satellite.contains("Satellite"), hour))
         case responseRegex(bus, satellite, hour, info) =>
           Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
