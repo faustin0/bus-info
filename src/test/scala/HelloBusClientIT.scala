@@ -26,7 +26,7 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
     val actual = sut.hello(BusRequest(303, "85/", LocalTime.of(20, 20)))
 
     actual.asserting {
-      case r: NoBus => succeed
+      case _: NoBus => succeed
       case _        => fail()
     }
   }

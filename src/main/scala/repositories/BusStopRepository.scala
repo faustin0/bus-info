@@ -38,7 +38,7 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
       .map { _.as[BusStop] }
   }
 
-  def count(): IO[Long] =
+  def count(): IO[Int] =
     IO {
       val query = new DynamoDBScanExpression
       query.setSelect(Select.COUNT)

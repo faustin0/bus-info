@@ -73,7 +73,7 @@ class BusStopRepositoryIT
 
     val entries = LazyList
       .from(0)
-      .map(c => entry(c))
+      .map(c => entry(c.toLong))
       .take(1000)
       .toList
 

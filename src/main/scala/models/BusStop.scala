@@ -28,7 +28,7 @@ object BusStop {
 
     Try {
       BusStop(
-        code = (busStopXml \ "codice").text.toInt,
+        code = (busStopXml \ "codice").text.toLong,
         name = (busStopXml \ "denominazione").text,
         location = (busStopXml \ "ubicazione").text,
         comune = (busStopXml \ "comune").text,
