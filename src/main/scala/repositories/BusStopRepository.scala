@@ -12,7 +12,6 @@ import models.BusStop
 import scala.jdk.CollectionConverters._
 
 class BusStopRepository(private val awsClient: AmazonDynamoDB) {
-  val MAX_BATCH_SIZE = 25
 
   private val mapper = new DynamoDBMapper(awsClient)
 
@@ -22,14 +21,18 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
     }
   }
 
-  def batchInsert(busStops: Seq[BusStop]): Stream[IO, FailedBatch] = {
+  def batchInsert(busStops: List[BusStop]): Stream[IO, FailedBatch] = {
     Stream
       .emits(busStops)
       .covary[IO]
       .map(BusStopEntity.fromBusStop)
-      .chunkN(MAX_BATCH_SIZE)
-      .map(c => c.toList.asJava)
-      .flatMap(l => Stream.emits(mapper.batchSave(l).asScala))
+      .through(s => {
+        Stream.evalSeq(
+          s.compile.toList
+            .map(_.asJava)
+            .map(l => mapper.batchSave(l).asScala.toList)
+        )
+      })
   }
 
   def findBusStopByCode(code: Long): OptionT[IO, BusStop] = {
