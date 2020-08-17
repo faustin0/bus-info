@@ -11,11 +11,11 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.model.{GetObjectRequest, S3Object}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import fs2.Stream
-import models.{BusStop, TransformError}
+import models.BusStop
 import repositories.BusStopRepository
 
 import scala.jdk.CollectionConverters._
-import scala.xml.{Elem, NodeSeq, XML}
+import scala.xml.{Elem, XML}
 
 class BusStopImporter(
   s3Client: AmazonS3,
@@ -35,14 +35,11 @@ class BusStopImporter(
     val outcome = s3Event.getRecords.asScala
       .find(e => e.getEventName.contains("ObjectCreated:")) // todo there must be a better way ...
       .map { e =>
-        readBucketObjectFromEvent(e)
-          .use(obj => {
-            for {
-              elem     <- parseS3Object(obj)
-              busStops <- BusStopImporter.streamParseXmlDataset(elem).compile.toList
-              failed <- repo.batchInsert(busStops).find(_.getUnprocessedItems.size() > 0).compile.toList
-            } yield ImporterOutcome(obj.getKey, busStops.length, failed.headOption)
-          })
+        for {
+          dataset  <- readBucketObjectFromEvent(e).use(obj => parseS3Object(obj))
+          busStops <- BusStopImporter.extractBusStopsFromDataSet(dataset).compile.toList
+          failed   <- repo.batchInsert(busStops).find(_.getUnprocessedItems.size() > 0).compile.toList
+        } yield ImporterOutcome(dataset.name, busStops.length, failed.headOption)
       }
       .getOrElse(IO.pure(ImporterOutcome("No file to process", 0)))
       .unsafeRunSync()
@@ -58,31 +55,29 @@ class BusStopImporter(
     Resource.fromAutoCloseable(IO(s3Client.getObject(objReq)))
   }
 
-  private def parseS3Object(s3Object: S3Object): IO[Elem] = {
+  private def parseS3Object(s3Object: S3Object): IO[BusStopsDataset] = {
     for {
       content <- IO(s3Object.getObjectContent)
       xml     <- IO(XML.load(content))
-    } yield xml
+    } yield BusStopsDataset(s3Object.getKey, xml)
   }
 
 }
 
 object BusStopImporter {
-  def parseXmlDataset(xml: NodeSeq): Either[TransformError, Seq[BusStop]] = {
-    (xml \\ "NewDataSet" \\ "Table")
-      .map(t => BusStop.fromXml(t))
-      .partitionMap(identity) match {
-      case (Nil, busStops) => Right(busStops)
-      case (errors, _)     => Left(errors.head)
-    }
-  }
 
-  def streamParseXmlDataset(xml: NodeSeq): Stream[IO, BusStop] = {
+  def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] = {
     Stream
-      .fromIterator[IO]((xml \\ "NewDataSet" \\ "Table").iterator)
+      .fromIterator[IO]((data.content \\ "NewDataSet" \\ "Table").iterator)
       .evalMapChunk(t => IO.fromEither(BusStop.fromXml(t)))
   }
 }
+
+case class BusStopsDataset(
+  name: String,
+  content: Elem
+)
+
 case class ImporterOutcome(
   processedFile: String,
   processedItems: Int,
