@@ -28,9 +28,11 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
       .map(BusStopEntity.fromBusStop)
       .through(s => {
         Stream.evalSeq(
-          s.compile.toList
-            .map(_.asJava)
-            .map(l => mapper.batchSave(l).asScala.toList)
+          for {
+            stops <- s.compile.toList
+            stopsJava = stops.asJava
+            failures <- IO(mapper.batchSave(stopsJava))
+          } yield failures.asScala.toList
         )
       })
   }
