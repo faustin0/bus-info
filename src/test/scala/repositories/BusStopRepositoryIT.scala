@@ -95,22 +95,25 @@ class BusStopRepositoryIT
     }
   }
 
-  "should retrieve a busStop by name" in {
+  "should retrieve busStops by name" in {
     val repo = new BusStopRepository(container.client)
-    val expected = BusStop(
+    val stop = BusStop(
       0,
       "IRNERIO",
-      "VIA IRNERIO",
+      "MOCK",
       "Bologna",
       42,
       Position(1, 2, 2, 3)
     )
+    val s303 = stop.copy(code = 303, location = "VIA IRNERIO 1")
+    val s304 = stop.copy(code = 304, location = "VIA IRNERIO 2")
 
-    val actual = for {
-      _      <- OptionT.liftF(repo.insert(expected))
-      actual <- repo.findBusStopByName("irnerio")
+    val actualBusStops = for {
+      _      <- repo.insert(s303)
+      _      <- repo.insert(s304)
+      actual <- repo.findBusStopByName("IRNERIO").compile.toList
     } yield actual
 
-    actual.value asserting { value => assert(value.contains(expected)) }
+    actualBusStops asserting { stops => stops should contain only (s303, s304) }
   }
 }

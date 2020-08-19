@@ -4,7 +4,11 @@ import cats.data.OptionT
 import cats.effect.IO
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
-import com.amazonaws.services.dynamodbv2.datamodeling.{DynamoDBMapper, DynamoDBQueryExpression, DynamoDBScanExpression}
+import com.amazonaws.services.dynamodbv2.datamodeling.{
+  DynamoDBMapper,
+  DynamoDBQueryExpression,
+  DynamoDBScanExpression
+}
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, Select}
 import fs2._
 import models.BusStop
@@ -50,7 +54,7 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
       mapper.count(classOf[BusStopEntity], query)
     }
 
-  def findBusStopByName(name: String): OptionT[IO, BusStop] = {
+  def findBusStopByName(name: String): Stream[IO, BusStop] = {
     val values     = Map(":v1" -> new AttributeValue().withS(name.toUpperCase))
     val attributes = Map("#name" -> "name")
 
@@ -61,10 +65,8 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
       .withExpressionAttributeValues(values.asJava)
       .withKeyConditionExpression("#name = :v1")
 
-    OptionT
-      .liftF(IO(mapper.query(classOf[BusStopEntity], queryExpression)))
-      .map(_.asScala)
-      .subflatMap(_.headOption)
+    Stream
+      .evalSeq(IO(mapper.query(classOf[BusStopEntity], queryExpression).asScala.toList))
       .map(_.as[BusStop])
   }
 }
