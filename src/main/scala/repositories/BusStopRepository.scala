@@ -1,16 +1,10 @@
 package repositories
 
-import java.util.{HashMap => JavaMap}
-
 import cats.data.OptionT
 import cats.effect.IO
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
-import com.amazonaws.services.dynamodbv2.datamodeling.{
-  DynamoDBMapper,
-  DynamoDBQueryExpression,
-  DynamoDBScanExpression
-}
+import com.amazonaws.services.dynamodbv2.datamodeling.{DynamoDBMapper, DynamoDBQueryExpression, DynamoDBScanExpression}
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, Select}
 import fs2._
 import models.BusStop
@@ -57,17 +51,14 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
     }
 
   def findBusStopByName(name: String): OptionT[IO, BusStop] = {
-    val eav = new JavaMap[String, AttributeValue]()
-    eav.put(":v1", new AttributeValue().withS(name.toUpperCase))
-
-    val expressionAttributesNames = new JavaMap[String, String]()
-    expressionAttributesNames.put("#name", "name")
+    val values     = Map(":v1" -> new AttributeValue().withS(name.toUpperCase))
+    val attributes = Map("#name" -> "name")
 
     val queryExpression = new DynamoDBQueryExpression[BusStopEntity]()
       .withIndexName("name-index")
       .withConsistentRead(false)
-      .withExpressionAttributeNames(expressionAttributesNames)
-      .withExpressionAttributeValues(eav)
+      .withExpressionAttributeNames(attributes.asJava)
+      .withExpressionAttributeValues(values.asJava)
       .withKeyConditionExpression("#name = :v1")
 
     OptionT
