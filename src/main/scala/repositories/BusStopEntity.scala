@@ -3,6 +3,7 @@ package repositories
 import com.amazonaws.services.dynamodbv2.datamodeling.{
   DynamoDBAttribute,
   DynamoDBHashKey,
+  DynamoDBIndexHashKey,
   DynamoDBTable
 }
 import models.{BusStop, Position}
@@ -14,6 +15,7 @@ import scala.beans.BeanProperty
 case class BusStopEntity(
   @(DynamoDBHashKey @field)
   @(DynamoDBAttribute @field) @BeanProperty var code: Long,
+  @(DynamoDBIndexHashKey @field)(globalSecondaryIndexName = "name-index")
   @(DynamoDBAttribute @field) @BeanProperty var name: String,
   @(DynamoDBAttribute @field) @BeanProperty var location: String,
   @(DynamoDBAttribute @field) @BeanProperty var comune: String,

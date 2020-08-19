@@ -4,7 +4,7 @@ import cats.data.OptionT
 import cats.effect.testing.scalatest.AsyncIOSpec
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
-import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
+import com.amazonaws.services.dynamodbv2.model._
 import com.dimafeng.testcontainers.{DynaliteContainer, ForAllTestContainer}
 import models.{BusStop, Position}
 import org.scalatest.freespec.AsyncFreeSpec
@@ -20,21 +20,28 @@ class BusStopRepositoryIT
   override def afterStart(): Unit = {
     val mapper       = new DynamoDBMapper(container.client)
     val tableRequest = mapper.generateCreateTableRequest(classOf[BusStopEntity])
-    tableRequest.setProvisionedThroughput(
-      new ProvisionedThroughput()
-        .withReadCapacityUnits(5)
-        .withWriteCapacityUnits(2)
-    )
+    tableRequest
+      .withProvisionedThroughput(
+        new ProvisionedThroughput()
+          .withReadCapacityUnits(5)
+          .withWriteCapacityUnits(5)
+      )
+      .getGlobalSecondaryIndexes
+      .forEach(gsi =>
+        gsi
+          .withProvisionedThroughput(new ProvisionedThroughput(5, 5))
+          .setProjection(new Projection().withProjectionType(ProjectionType.ALL))
+      )
 
-    val dynamoDB = new DynamoDB(container.client)
-    val creating = dynamoDB.createTable(tableRequest)
-    creating.waitForActive()
+    new DynamoDB(container.client)
+      .createTable(tableRequest)
+      .waitForActive()
 
     super.afterStart()
   }
 
   "spin container" in {
-    assert(!container.client.listTables().getTableNames.isEmpty)
+    assume(container.client.listTables().getTableNames.size() > 0)
   }
 
   "create and retrieve busStop" in {
@@ -86,6 +93,24 @@ class BusStopRepositoryIT
       case (Nil, 1000) => succeed
       case errs        => fail(errs.toString())
     }
+  }
 
+  "should retrieve a busStop by name" in {
+    val repo = new BusStopRepository(container.client)
+    val expected = BusStop(
+      0,
+      "IRNERIO",
+      "VIA IRNERIO",
+      "Bologna",
+      42,
+      Position(1, 2, 2, 3)
+    )
+
+    val actual = for {
+      _      <- OptionT.liftF(repo.insert(expected))
+      actual <- repo.findBusStopByName("irnerio")
+    } yield actual
+
+    actual.value asserting { value => assert(value.contains(expected)) }
   }
 }
