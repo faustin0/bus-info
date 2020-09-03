@@ -2,7 +2,8 @@ package repositories
 
 import cats.data.OptionT
 import cats.effect.IO
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
 import com.amazonaws.services.dynamodbv2.datamodeling.{
   DynamoDBMapper,
@@ -10,10 +11,12 @@ import com.amazonaws.services.dynamodbv2.datamodeling.{
   DynamoDBScanExpression
 }
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, Select}
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
 import fs2._
 import models.BusStop
 
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
 class BusStopRepository(private val awsClient: AmazonDynamoDB) {
 
@@ -69,4 +72,24 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
       .evalSeq(IO(mapper.query(classOf[BusStopEntity], queryExpression).asScala.toList))
       .map(_.as[BusStop])
   }
+}
+
+object BusStopRepository {
+
+  def makeFromAws(): Try[BusStopRepository] = {
+    Try { AmazonDynamoDBClientBuilder.defaultClient() }.map(new BusStopRepository(_))
+  }
+
+  def makeFromEnv(): Try[BusStopRepository] = {
+    Try {
+      AmazonDynamoDBClientBuilder
+        .standard()
+        .withCredentials(new EnvironmentVariableCredentialsProvider())
+        .withEndpointConfiguration(
+          new EndpointConfiguration("http://localhost:4567", null) //TODO parametrize endpoint
+        )
+        .build()
+    }.map(new BusStopRepository(_))
+  }
+
 }
