@@ -40,9 +40,9 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
     )
 
     for {
-      xmlResponse <- httpClient.expect[Elem](request)
-      parsed      <- IO.fromEither(HelloBusResponse.fromXml(xmlResponse))
-    } yield parsed
+      xmlResponse    <- httpClient.expect[Elem](request)
+      parsedResponse <- IO.fromEither(HelloBusResponse.fromXml(xmlResponse))
+    } yield parsedResponse
   }
 
   //TODO remove test method

@@ -55,15 +55,15 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
     }
 
   def findBusStopByName(name: String): Stream[IO, BusStop] = {
-    val values     = Map(":v1" -> new AttributeValue().withS(name.toUpperCase))
-    val attributes = Map("#name" -> "name")
+    val values     = Map(":nameValue" -> new AttributeValue().withS(name.toUpperCase))
+    val attributes = Map("#nameKey" -> "name")
 
     val queryExpression = new DynamoDBQueryExpression[BusStopEntity]()
       .withIndexName("name-index")
       .withConsistentRead(false)
       .withExpressionAttributeNames(attributes.asJava)
       .withExpressionAttributeValues(values.asJava)
-      .withKeyConditionExpression("#name = :v1")
+      .withKeyConditionExpression("#nameKey = :nameValue")
 
     Stream
       .evalSeq(IO(mapper.query(classOf[BusStopEntity], queryExpression).asScala.toList))
