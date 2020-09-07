@@ -19,3 +19,11 @@ jobs:
         java-version: 11
     - name: Run tests
       run: sbt test
+    - name: Package artifact
+      run: sbt assembly
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+          name: bus-info-assembly-0.1.jar
+          path: target/scala-2.13/
+          if-no-files-found: error
