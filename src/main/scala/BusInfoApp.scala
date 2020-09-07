@@ -41,7 +41,7 @@ object BusInfoApp extends IOApp {
         val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
 
         BlazeServerBuilder[IO](global)
-          .bindHttp(8080, "localhost")
+          .bindHttp(80, "0.0.0.0")
           .withHttpApp(loggedApp)
           .serve
           .compile
