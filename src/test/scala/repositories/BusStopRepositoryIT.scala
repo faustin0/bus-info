@@ -114,6 +114,6 @@ class BusStopRepositoryIT
       actual <- repo.findBusStopByName("IRNERIO").compile.toList
     } yield actual
 
-    actualBusStops asserting { stops => stops should contain only (s303, s304) }
+    actualBusStops asserting { stops => stops should contain.only(s303, s304) }
   }
 }
