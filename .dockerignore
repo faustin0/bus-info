@@ -1,0 +1,12 @@
+.dockerignore
+.gitignore
+.github
+*.class
+*.log
+
+**/.idea
+**/target
+
+Dockerfile
+LICENSE
+README.md
