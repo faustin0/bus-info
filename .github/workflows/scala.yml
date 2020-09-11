@@ -46,5 +46,5 @@ jobs:
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
           registry: docker.pkg.github.com
-          repository: { { user.login } }/bus-info
+          repository: faustin0/bus-info
           tag_with_sha: true
