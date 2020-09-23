@@ -44,8 +44,8 @@ jobs:
         uses: docker/build-push-action@v1
         with:
           username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
-          registry: docker.pkg.github.com
+          password: ${{secrets.GHCR_TOKEN}}
+          registry: ghcr.io
           repository: faustin0/bus-info/app
           tag_with_sha: true
           tag_with_ref: true
