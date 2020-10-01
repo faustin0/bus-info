@@ -13,17 +13,17 @@ import repositories.BusStopRepository
 class Routes(private val helloBusClient: HelloBusClient) {
   val helloBusService = HttpRoutes
     .of[IO] {
-      case GET -> Root / "bus-stops" / IntVar(busStop) :? BusNumber(bus) +& Hour(hour) =>
+      case GET -> Root / IntVar(busStop) :? BusNumber(bus) +& Hour(hour) =>
         hour match {
           case Some(Validated.Valid(h))   => execRequest(BusRequest(busStop, bus, Some(h)))
           case Some(Validated.Invalid(e)) => BadRequest(e.map(_.sanitized))
           case None                       => execRequest(BusRequest(busStop, bus))
         }
 
-      case GET -> Root / "bus-stops" / "" =>
+      case GET -> Root / "" =>
         BadRequest(Invalid("missing busStop path"))
 
-      case GET -> Root / "bus-stops" / invalid =>
+      case GET -> Root / invalid =>
         BadRequest(Invalid(s"Invalid busStop: $invalid"))
     }
 
@@ -50,7 +50,7 @@ class Routes(private val helloBusClient: HelloBusClient) {
 class InfoRoutes(private val busStopRepository: BusStopRepository) {
   val busInfoService = HttpRoutes
     .of[IO] {
-      case GET -> Root / "bus-stops" / IntVar(busStopCode) / "info" =>
+      case GET -> Root / IntVar(busStopCode) / "info" =>
         busStopRepository
           .findBusStopByCode(busStopCode.toLong)
           .value
@@ -58,5 +58,12 @@ class InfoRoutes(private val busStopRepository: BusStopRepository) {
             case Some(busStop) => Ok(busStop)
             case None          => NotFound(s"no bus stop with code $busStopCode")
           }
+    }
+}
+
+object HealthRoutes {
+  val liveness = HttpRoutes
+    .of[IO] {
+      case GET -> Root / "health" => Ok("Up and running")
     }
 }
