@@ -5,8 +5,8 @@ scalaVersion := "2.13.3"
 organization := "dev.faustin0"
 
 val http4sVersion              = "0.21.7"
-val testcontainersScalaVersion = "0.38.1"
-val catsVersion                = "2.1.4"
+val testcontainersScalaVersion = "0.38.3"
+val catsVersion                = "2.2.0"
 
 val testDependencies = Seq(
   "org.scalatest"  %% "scalatest"                       % "3.2.2"                    % Test,
@@ -18,18 +18,18 @@ val testDependencies = Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.typelevel"          %% "cats-effect"            % catsVersion withSources () withJavadoc (),
-  "org.http4s"             %% "http4s-dsl"             % http4sVersion withSources () withJavadoc (),
-  "org.http4s"             %% "http4s-blaze-server"    % http4sVersion withSources () withJavadoc (),
-  "org.http4s"             %% "http4s-blaze-client"    % http4sVersion withSources () withJavadoc (),
-  "org.http4s"             %% "http4s-scala-xml"       % http4sVersion withSources () withJavadoc (),
-  "org.http4s"             %% "http4s-circe"           % http4sVersion withSources () withJavadoc (),
+  "org.typelevel"          %% "cats-effect"            % catsVersion,
+  "org.http4s"             %% "http4s-dsl"             % http4sVersion,
+  "org.http4s"             %% "http4s-blaze-server"    % http4sVersion,
+  "org.http4s"             %% "http4s-blaze-client"    % http4sVersion,
+  "org.http4s"             %% "http4s-scala-xml"       % http4sVersion,
+  "org.http4s"             %% "http4s-circe"           % http4sVersion,
   "io.circe"               %% "circe-generic"          % "0.13.0",
   "org.scala-lang.modules" %% "scala-xml"              % "1.3.0",
-  "com.amazonaws"           % "aws-lambda-java-core"   % "1.2.1" withSources () withJavadoc (),
-  "com.amazonaws"           % "aws-java-sdk-s3"        % "1.11.856" withSources () withJavadoc (),
-  "com.amazonaws"           % "aws-lambda-java-events" % "3.2.0" withSources () withJavadoc (),
-  "com.amazonaws"           % "aws-java-sdk-dynamodb"  % "1.11.856" withSources () withJavadoc (),
+  "com.amazonaws"           % "aws-lambda-java-core"   % "1.2.1",
+  "com.amazonaws"           % "aws-java-sdk-s3"        % "1.11.873",
+  "com.amazonaws"           % "aws-lambda-java-events" % "3.3.1",
+  "com.amazonaws"           % "aws-java-sdk-dynamodb"  % "1.11.873",
   "ch.qos.logback"          % "logback-classic"        % "1.2.3" % Runtime
 ) ++ testDependencies
 
