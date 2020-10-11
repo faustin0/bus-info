@@ -46,14 +46,7 @@ class BusStopRepositoryIT
 
   "create and retrieve busStop" in {
     val repo = new BusStopRepository(container.client)
-    val starting = BusStop(
-      0,
-      "stop1",
-      "PIAZZA MEDAGLIE D`ORO (PENSILINA A)",
-      "Bologna",
-      42,
-      Position(1, 2, 2, 3)
-    )
+    val starting = BusStop(0, "stop1", "PIAZZA MEDAGLIE D`ORO (PENSILINA A)", "Bologna", 42, Position(1, 2, 2, 3))
 
     val actual = for {
       _      <- OptionT.liftF(repo.insert(starting))
@@ -68,25 +61,18 @@ class BusStopRepositoryIT
 
   "should batch insert entries" in {
     val repo = new BusStopRepository(container.client)
-    val entry = (code: Long) =>
-      BusStop(
-        code,
-        "stop1",
-        "PIAZZA MEDAGLIE D`ORO (PENSILINA A)",
-        "Bologna",
-        42,
-        Position(1, 2, 2, 3)
-      )
+    val entry = (code: Int) =>
+      BusStop(code, "stop1", "PIAZZA MEDAGLIE D`ORO (PENSILINA A)", "Bologna", 42, Position(1, 2, 2, 3))
 
     val entries = LazyList
       .from(0)
-      .map(c => entry(c.toLong))
+      .map(c => entry(c))
       .take(1000)
       .toList
 
     val res = for {
       failures <- repo.batchInsert(entries).compile.toList
-      count    <- repo.count()
+      count <- repo.count()
     } yield (failures, count)
 
     res asserting {
@@ -97,14 +83,7 @@ class BusStopRepositoryIT
 
   "should retrieve busStops by name" in {
     val repo = new BusStopRepository(container.client)
-    val stop = BusStop(
-      0,
-      "IRNERIO",
-      "MOCK",
-      "Bologna",
-      42,
-      Position(1, 2, 2, 3)
-    )
+    val stop = BusStop(0, "IRNERIO", "MOCK", "Bologna", 42, Position(1, 2, 2, 3))
     val s303 = stop.copy(code = 303, location = "VIA IRNERIO 1")
     val s304 = stop.copy(code = 304, location = "VIA IRNERIO 2")
 

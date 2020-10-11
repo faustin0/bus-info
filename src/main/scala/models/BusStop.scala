@@ -6,13 +6,13 @@ import scala.util.Try
 import scala.xml.NodeSeq
 
 case class BusStop(
-  code: Long,
-  name: String,
-  location: String,
-  comune: String,
-  areaCode: Int,
-  position: Position
-)
+                    code: Int,
+                    name: String,
+                    location: String,
+                    comune: String,
+                    areaCode: Int,
+                    position: Position
+                  )
 
 case class Position(
   x: Long,
@@ -28,7 +28,7 @@ object BusStop {
 
     Try {
       BusStop(
-        code = (busStopXml \ "codice").text.toLong,
+        code = (busStopXml \ "codice").text.toInt,
         name = (busStopXml \ "denominazione").text,
         location = (busStopXml \ "ubicazione").text,
         comune = (busStopXml \ "comune").text,

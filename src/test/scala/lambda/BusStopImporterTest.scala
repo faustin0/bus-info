@@ -23,14 +23,7 @@ class BusStopImporterTest extends AnyFunSuite with Inside with Matchers {
     </Table>
 
   test("should parse a busStop xml entry") {
-    val expected = BusStop(
-      1,
-      "STAZIONE CENTRALE",
-      "PIAZZA MEDAGLIE D`ORO (PENSILINA C)",
-      "BOLOGNA",
-      500,
-      Position(686344, 930918, 44.505762, 11.343174)
-    )
+    val expected = BusStop(1, "STAZIONE CENTRALE", "PIAZZA MEDAGLIE D`ORO (PENSILINA C)", "BOLOGNA", 500, Position(686344, 930918, 44.505762, 11.343174))
     val parsed = BusStop.fromXml(busStop)
 
     inside(parsed) {

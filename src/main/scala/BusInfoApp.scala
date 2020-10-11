@@ -29,12 +29,11 @@ object BusInfoApp extends IOApp {
             .orElse(BusStopRepository.makeFromEnv())
         )
       )
-      helloBusRoutes = new Routes(tperClient)
-      busInfoRoutes  = new InfoRoutes(busStopRepo)
+      busInfoService = BusInfoService(tperClient, busStopRepo)
+      endpoints = new Endpoints(busInfoService)
     } yield Router(
-      "/api/bus-stops/" -> helloBusRoutes.helloBusService,
-      "/api/bus-stops/" -> busInfoRoutes.busInfoService,
-      "/"    -> HealthRoutes.liveness
+      "/api/bus-stops/" -> endpoints.busInfo,
+      "/" -> HealthRoutes.liveness
     ).orNotFound
 
     application

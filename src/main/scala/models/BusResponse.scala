@@ -2,27 +2,33 @@ package models
 
 import scala.xml.Elem
 
-sealed trait HelloBusResponse extends Product with Serializable
+sealed trait BusInfoResponse extends Product with Serializable
 
-final case class NoBus(message: String) extends HelloBusResponse
+final case class NoBus(message: String) extends BusInfoResponse
 
-final case class Invalid(error: String) extends HelloBusResponse
+final case class BusNotHandled(msg: String) extends BusInfoResponse
 
-final case class Successful(buses: List[BusResponse]) extends HelloBusResponse
+final case class BusStopNotHandled(msg: String) extends BusInfoResponse
+
+final case class Successful(buses: List[BusResponse]) extends BusInfoResponse
+
+final case class Failure(error: String) extends BusInfoResponse
 
 case class BusResponse(
-  bus: String,
-  satellite: Boolean,
-  hour: String,
-  busInfo: String = ""
-)
+                        bus: String,
+                        satellite: Boolean,
+                        hour: String,
+                        busInfo: String = ""
+                      )
 
-object HelloBusResponse {
+object BusInfoResponse {
 
-  private val responseRegex  = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
+  private val responseRegex = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
   private val previsionRegex = """\(x\d+:\d+\)""".r
+  private val notHandledBusRegex = """.*LINEA.*NON GESTITA.*""".r
+  private val notHandledStopRegex = """.*FERMATA.*NON GESTITA.*""".r
 
-  def fromXml(xml: Elem): Either[TransformError, HelloBusResponse] = {
+  def fromXml(xml: Elem): Either[TransformError, BusInfoResponse] = {
     val textResponse = xml \\ "string"
 
     val content = textResponse
@@ -31,10 +37,11 @@ object HelloBusResponse {
       .head
 
     content match {
-      case msg if msg.contains("HellobusHelp") => Right(Invalid(msg))
-      case msg if msg.contains("NESSUNA")      => Right(NoBus(msg))
+      case notHandledBusRegex(_*) => Right(BusNotHandled("bus not handled"))
+      case notHandledStopRegex(_*) => Right(BusStopNotHandled("bus-stop not handled"))
+      case msg if msg.contains("NESSUNA") => Right(NoBus(msg))
       case msg if msg.contains("TperHellobus") => extractBusResponse(msg).map(Successful)
-      case _                                   => Right(Invalid("Unsupported response"))
+      case _ => Right(Failure("Unsupported response"))
     }
   }
 

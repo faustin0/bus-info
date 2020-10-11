@@ -5,11 +5,7 @@ import cats.effect.IO
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
-import com.amazonaws.services.dynamodbv2.datamodeling.{
-  DynamoDBMapper,
-  DynamoDBQueryExpression,
-  DynamoDBScanExpression
-}
+import com.amazonaws.services.dynamodbv2.datamodeling.{DynamoDBMapper, DynamoDBQueryExpression, DynamoDBScanExpression}
 import com.amazonaws.services.dynamodbv2.model.{AttributeValue, Select}
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
 import fs2._
@@ -44,10 +40,12 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
       })
   }
 
-  def findBusStopByCode(code: Long): OptionT[IO, BusStop] = {
+  def findBusStopByCode(code: Int): OptionT[IO, BusStop] = {
     OptionT
       .fromOption[IO](Option(mapper.load(classOf[BusStopEntity], code)))
-      .map { _.as[BusStop] }
+      .map {
+        _.as[BusStop]
+      }
   }
 
   def count(): IO[Int] =

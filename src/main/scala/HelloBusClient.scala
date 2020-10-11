@@ -1,10 +1,9 @@
 import java.time.format.DateTimeFormatter
 
 import cats.effect.IO
-import models.{BusRequest, HelloBusResponse}
+import models.{BusInfoResponse, BusRequest}
 import org.http4s.Method._
 import org.http4s.client._
-import org.http4s.client.dsl.io._
 import org.http4s.headers._
 import org.http4s.implicits._
 import org.http4s.scalaxml._
@@ -12,17 +11,23 @@ import org.http4s.{Headers, MediaType, Request, UrlForm}
 
 import scala.xml.Elem
 
-//val URL_HELLO_BUS = "QueryHellobus"
-//val CONTENT_TYPE = "application/x-www-form-urlencoded"
-
 case class HelloBusClient(private val httpClient: Client[IO]) {
   private val dateTimePattern = DateTimeFormatter.ofPattern("HHmm")
 
   private val targetUri =
     uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
 
-  def hello(busRequest: BusRequest): IO[HelloBusResponse] = {
-    val request = Request[IO](
+  def hello(busRequest: BusRequest): IO[BusInfoResponse] = {
+    val request = createHttpRequest(busRequest)
+
+    for {
+      xmlResponse <- httpClient.expect[Elem](request)
+      parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse))
+    } yield parsedResponse
+  }
+
+  private def createHttpRequest(busRequest: BusRequest) = {
+    Request[IO](
       method = POST,
       uri = targetUri,
       headers = Headers.of(
@@ -32,24 +37,12 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
     ).withEntity(
       UrlForm(
         "fermata" -> busRequest.busStop.toString,
-        "linea"   -> busRequest.busID.getOrElse(""),
+        "linea" -> busRequest.busID.getOrElse(""),
         "oraHHMM" -> busRequest.hour
           .map(_.format(dateTimePattern))
           .getOrElse("")
       )
     )
-
-    for {
-      xmlResponse    <- httpClient.expect[Elem](request)
-      parsedResponse <- IO.fromEither(HelloBusResponse.fromXml(xmlResponse))
-    } yield parsedResponse
-  }
-
-  //TODO remove test method
-  def sample(): IO[String] = {
-    val target  = uri"https://jsonplaceholder.typicode.com/todos/1"
-    val request = GET(target)
-    httpClient.expect[String](request)
   }
 }
 
