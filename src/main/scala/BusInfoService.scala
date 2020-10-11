@@ -4,9 +4,9 @@ import models._
 import repositories.BusStopRepository
 
 case class BusInfoService(
-                           private val client: HelloBusClient,
-                           private val repo: BusStopRepository
-                         ) {
+  private val client: HelloBusClient,
+  private val repo: BusStopRepository
+) {
   def findBusStop(busStopCode: Int): OptionT[IO, BusStop] =
     repo.findBusStopByCode(busStopCode)
 

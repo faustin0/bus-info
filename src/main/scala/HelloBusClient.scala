@@ -21,7 +21,7 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
     val request = createHttpRequest(busRequest)
 
     for {
-      xmlResponse <- httpClient.expect[Elem](request)
+      xmlResponse    <- httpClient.expect[Elem](request)
       parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse))
     } yield parsedResponse
   }
@@ -37,7 +37,7 @@ case class HelloBusClient(private val httpClient: Client[IO]) {
     ).withEntity(
       UrlForm(
         "fermata" -> busRequest.busStop.toString,
-        "linea" -> busRequest.busID.getOrElse(""),
+        "linea"   -> busRequest.busID.getOrElse(""),
         "oraHHMM" -> busRequest.hour
           .map(_.format(dateTimePattern))
           .getOrElse("")

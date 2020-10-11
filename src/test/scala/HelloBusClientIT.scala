@@ -18,7 +18,7 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
     actual.asserting {
       case _: BusInfoResponse => succeed
-      case _ => fail()
+      case _                  => fail()
     }
   }
 
@@ -36,8 +36,8 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
     actual.asserting {
       case BusNotHandled(_) => succeed
-      case t: Throwable => fail(t)
-      case _            => fail()
+      case t: Throwable     => fail(t)
+      case _                => fail()
     }
   }
 

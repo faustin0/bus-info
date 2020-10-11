@@ -40,10 +40,10 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
 
   test("should parse xml from tper into successful response ") {
 
-    val r1 = BusResponse("28", true, "09:07", "(Bus5517 CON PEDANA)")
-    val r2 = BusResponse("28", true, "09:20", "(Bus5566 CON PEDANA)")
+    val r1       = BusResponse("28", true, "09:07", "(Bus5517 CON PEDANA)")
+    val r2       = BusResponse("28", true, "09:20", "(Bus5566 CON PEDANA)")
     val expected = Successful(List(r1, r2))
-    val result = BusInfoResponse.fromXml(successfulResponse)
+    val result   = BusInfoResponse.fromXml(successfulResponse)
 
     inside(result) {
       case Right(response) =>
@@ -84,7 +84,7 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val r1       = BusResponse("27A", false, "21:59", "(Bus6567 CON PEDANA)")
     val r2       = BusResponse("27B", false, "22:29", "(Bus6584 CON PEDANA)")
     val expected = Successful(List(r1, r2))
-    val result = BusInfoResponse.fromXml(successfulResponseWithHour)
+    val result   = BusInfoResponse.fromXml(successfulResponseWithHour)
 
     inside(result) {
       case Right(response) =>
@@ -110,7 +110,7 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val b2 = BusResponse("28", false, "14:57")
 
     val expected = Successful(List(b1, b2))
-    val result = BusInfoResponse.fromXml(estimated)
+    val result   = BusInfoResponse.fromXml(estimated)
 
     inside(result) {
       case Right(response) =>

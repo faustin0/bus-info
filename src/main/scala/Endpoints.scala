@@ -33,17 +33,17 @@ class Endpoints(private val busInfoService: BusInfoService) {
           .findBusStop(busStopCode)
           .foldF(NotFound(s"no bus stop with code $busStopCode"))(busStop => Ok(busStop))
 
-      case GET -> Root / "" => BadRequest("missing busStop path")
+      case GET -> Root / ""      => BadRequest("missing busStop path")
       case GET -> Root / invalid => BadRequest(s"Invalid busStop: $invalid")
     }
 
   private def translateToHttpResponse(busResponse: BusInfoResponse): IO[Response[IO]] = {
     busResponse match {
-      case r: NoBus => Ok(r)
-      case r: BusNotHandled => BadRequest(r)
+      case r: NoBus             => Ok(r)
+      case r: BusNotHandled     => BadRequest(r)
       case r: BusStopNotHandled => NotFound(r)
-      case r: Failure => BadRequest(r)
-      case r: Successful => Ok(r.buses)
+      case r: Failure           => BadRequest(r)
+      case r: Successful        => Ok(r.buses)
     }
   }
 

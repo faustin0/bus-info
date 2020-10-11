@@ -46,7 +46,14 @@ class BusStopRepositoryIT
 
   "create and retrieve busStop" in {
     val repo = new BusStopRepository(container.client)
-    val starting = BusStop(0, "stop1", "PIAZZA MEDAGLIE D`ORO (PENSILINA A)", "Bologna", 42, Position(1, 2, 2, 3))
+    val starting = BusStop(
+      0,
+      "stop1",
+      "PIAZZA MEDAGLIE D`ORO (PENSILINA A)",
+      "Bologna",
+      42,
+      Position(1, 2, 2, 3)
+    )
 
     val actual = for {
       _      <- OptionT.liftF(repo.insert(starting))
@@ -62,7 +69,14 @@ class BusStopRepositoryIT
   "should batch insert entries" in {
     val repo = new BusStopRepository(container.client)
     val entry = (code: Int) =>
-      BusStop(code, "stop1", "PIAZZA MEDAGLIE D`ORO (PENSILINA A)", "Bologna", 42, Position(1, 2, 2, 3))
+      BusStop(
+        code,
+        "stop1",
+        "PIAZZA MEDAGLIE D`ORO (PENSILINA A)",
+        "Bologna",
+        42,
+        Position(1, 2, 2, 3)
+      )
 
     val entries = LazyList
       .from(0)
@@ -72,7 +86,7 @@ class BusStopRepositoryIT
 
     val res = for {
       failures <- repo.batchInsert(entries).compile.toList
-      count <- repo.count()
+      count    <- repo.count()
     } yield (failures, count)
 
     res asserting {

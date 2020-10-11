@@ -15,17 +15,17 @@ final case class Successful(buses: List[BusResponse]) extends BusInfoResponse
 final case class Failure(error: String) extends BusInfoResponse
 
 case class BusResponse(
-                        bus: String,
-                        satellite: Boolean,
-                        hour: String,
-                        busInfo: String = ""
-                      )
+  bus: String,
+  satellite: Boolean,
+  hour: String,
+  busInfo: String = ""
+)
 
 object BusInfoResponse {
 
-  private val responseRegex = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
-  private val previsionRegex = """\(x\d+:\d+\)""".r
-  private val notHandledBusRegex = """.*LINEA.*NON GESTITA.*""".r
+  private val responseRegex       = """^(\S+) (\w+) (\d+:\d+)( .*)*$""".r
+  private val previsionRegex      = """\(x\d+:\d+\)""".r
+  private val notHandledBusRegex  = """.*LINEA.*NON GESTITA.*""".r
   private val notHandledStopRegex = """.*FERMATA.*NON GESTITA.*""".r
 
   def fromXml(xml: Elem): Either[TransformError, BusInfoResponse] = {
@@ -37,11 +37,11 @@ object BusInfoResponse {
       .head
 
     content match {
-      case notHandledBusRegex(_*) => Right(BusNotHandled("bus not handled"))
-      case notHandledStopRegex(_*) => Right(BusStopNotHandled("bus-stop not handled"))
-      case msg if msg.contains("NESSUNA") => Right(NoBus(msg))
+      case notHandledBusRegex(_*)              => Right(BusNotHandled("bus not handled"))
+      case notHandledStopRegex(_*)             => Right(BusStopNotHandled("bus-stop not handled"))
+      case msg if msg.contains("NESSUNA")      => Right(NoBus(msg))
       case msg if msg.contains("TperHellobus") => extractBusResponse(msg).map(Successful)
-      case _ => Right(Failure("Unsupported response"))
+      case _                                   => Right(Failure("Unsupported response"))
     }
   }
 

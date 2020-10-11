@@ -30,10 +30,10 @@ object BusInfoApp extends IOApp {
         )
       )
       busInfoService = BusInfoService(tperClient, busStopRepo)
-      endpoints = new Endpoints(busInfoService)
+      endpoints      = new Endpoints(busInfoService)
     } yield Router(
       "/api/bus-stops/" -> endpoints.busInfo,
-      "/" -> HealthRoutes.liveness
+      "/"               -> HealthRoutes.liveness
     ).orNotFound
 
     application
