@@ -30,9 +30,13 @@ case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {
   private val stops = Map(
     303 -> BusStop(303, "stopName", "location", "Bologna", 65, Position(0, 0, 0, 0))
   )
+
+  private val busStope = Map(
+    150 -> List(BusResponse("27A", true, "14:30"))
+  )
   override def findBusStop(busStopCode: Int): OptionT[F, BusStop] =
     OptionT.fromOption[F](stops.get(busStopCode))
 
   override def getNextBuses(busRequest: BusRequest): F[BusInfoResponse] =
-    Applicative[F].pure(Successful(List(BusResponse("27A", true, "14:30"))))
+    Applicative[F].pure(busStope.get(busRequest.busStop).fold[BusInfoResponse](BusStopNotHandled("coglionazzo"))(l => Successful(l)))
 }

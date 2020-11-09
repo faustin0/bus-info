@@ -5,6 +5,10 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
+import sttp.tapir.docs.openapi._
+import sttp.tapir.openapi.circe.yaml.RichOpenAPI
+import sttp.tapir.swagger.http4s.SwaggerHttp4s
+import cats.implicits._
 import repositories.BusStopRepository
 
 import scala.concurrent.ExecutionContext.global
@@ -30,10 +34,14 @@ object BusInfoApp extends IOApp {
         )
       )
       busInfoService = BusInfoService(tperClient, busStopRepo)
-      endpoints      = new Endpoints(busInfoService)
+      endpoints = new EndpointsTapir(busInfoService)
     } yield Router(
-      "/api/bus-stops/" -> endpoints.busInfo,
-      "/"               -> HealthRoutes.liveness
+      "/api/bus-stops/" -> (endpoints.nextBusRoutes <+> endpoints.busInfoRoutes),
+      "/api/" -> (endpoints.healthcheckRoutes <+> new SwaggerHttp4s(
+        List(endpoints.busInfo, endpoints.nextBus, endpoints.healthcheck)
+          .toOpenAPI("The bus-info API", "0.0.1")
+          .toYaml
+      ).routes[IO])
     ).orNotFound
 
     application

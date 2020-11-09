@@ -1,5 +1,10 @@
 package models
 
+import cats.implicits.toFunctorOps
+import io.circe.{Decoder, Encoder}
+import io.circe.syntax.EncoderOps
+import io.circe.generic.auto._
+
 import scala.xml.Elem
 
 sealed trait BusInfoResponse extends Product with Serializable
@@ -68,4 +73,23 @@ object BusInfoResponse {
     }
   }
 
+  object GenericDerivation {
+
+    implicit val encodeBusInfoResponse: Encoder[BusInfoResponse] = Encoder.instance {
+      case noBus @ NoBus(_) => noBus.asJson
+      case busNotHandled @ BusNotHandled(_) => busNotHandled.asJson
+      case busStopNotHandled: BusStopNotHandled => busStopNotHandled.asJson
+      case success: Successful => success.buses.asJson
+      case failure @ Failure(_) => failure.asJson
+    }
+
+    implicit val decodeBusInfoResponse: Decoder[BusInfoResponse] =
+      List[Decoder[BusInfoResponse]](
+        Decoder[NoBus].widen,
+        Decoder[BusNotHandled].widen,
+        Decoder[BusStopNotHandled].widen,
+        Decoder[Successful].widen,
+        Decoder[Failure].widen
+      ).reduceLeft(_ or _)
+  }
 }
