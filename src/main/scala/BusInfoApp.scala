@@ -18,7 +18,7 @@ object BusInfoApp extends IOApp {
       tperClient <- HelloBusClient.make(global)
       busStopRepo <- BusStopRepository.make
       busInfoService = BusInfoService(tperClient, busStopRepo)
-      endpoints = EndpointsTapir(busInfoService)
+      endpoints = Endpoints(busInfoService)
     } yield Router(
       "/api/bus-stops/" -> (endpoints.nextBusRoutes <+> endpoints.busInfoRoutes),
       "/api/" -> (endpoints.healthcheckRoutes <+> new SwaggerHttp4s(
