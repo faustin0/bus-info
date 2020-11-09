@@ -1,7 +1,7 @@
 package repositories
 
 import cats.data.OptionT
-import cats.effect.IO
+import cats.effect.{IO, Resource}
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
@@ -18,7 +18,7 @@ import models.BusStop
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
-class BusStopRepository(private val awsClient: AmazonDynamoDB) {
+class BusStopRepository private (private val awsClient: AmazonDynamoDB) {
 
   private val mapper = new DynamoDBMapper(awsClient)
 
@@ -78,11 +78,18 @@ class BusStopRepository(private val awsClient: AmazonDynamoDB) {
 
 object BusStopRepository {
 
-  def makeFromAws(): Try[BusStopRepository] = {
+  def apply(awsClient: AmazonDynamoDB): BusStopRepository = new BusStopRepository(awsClient)
+
+  def make: Resource[IO, BusStopRepository] =
+    Resource.liftF(
+      IO.fromTry(makeFromAws().orElse(makeFromEnv()))
+    )
+
+  private def makeFromAws(): Try[BusStopRepository] = {
     Try { AmazonDynamoDBClientBuilder.defaultClient() }.map(new BusStopRepository(_))
   }
 
-  def makeFromEnv(): Try[BusStopRepository] = {
+  private def makeFromEnv(): Try[BusStopRepository] = {
     Try {
       AmazonDynamoDBClientBuilder
         .standard()

@@ -29,7 +29,7 @@ class BusStopImporter(
 
   override def handleRequest(s3Event: S3Event, context: Context): Unit = {
     val logger = context.getLogger
-    val repo   = new BusStopRepository(dynamoClient)
+    val repo   = BusStopRepository(dynamoClient)
     s3Event.getRecords.forEach(it => logger.log(s"S3 event: ${it.getEventName}"))
 
     val outcome = s3Event.getRecords.asScala

@@ -11,7 +11,7 @@ trait BusInfoDSL[F[_]] {
   def getNextBuses(busRequest: BusRequest): F[BusInfoResponse]
 }
 
-case class BusInfoService(
+class BusInfoService private (
   private val client: HelloBusClient,
   private val repo: BusStopRepository
 ) extends BusInfoDSL[IO] {
@@ -24,6 +24,10 @@ case class BusInfoService(
       .findBusStopByCode(busRequest.busStop)
       .semiflatMap(_ => client.hello(busRequest))
       .getOrElse(BusStopNotHandled(s"${busRequest.busStop} not handled"))
+}
+
+object BusInfoService {
+  def apply(client: HelloBusClient, repo: BusStopRepository): BusInfoService = new BusInfoService(client, repo)
 }
 
 case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {
