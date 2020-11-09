@@ -45,9 +45,7 @@ object BusInfoResponse {
     }
   }
 
-  private def extractBusResponse(
-    response: String
-  ): Either[TransformError, List[BusResponse]] = {
+  private def extractBusResponse(response: String): Either[TransformError, List[BusResponse]] = {
 
     val splitResponse = response
       .replace("TperHellobus:", "")

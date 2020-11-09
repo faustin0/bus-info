@@ -10,7 +10,7 @@ import org.http4s.dsl.impl.Root
 import org.http4s.dsl.io._
 import org.http4s.{HttpRoutes, ParseResult, QueryParamDecoder, Response}
 
-class Endpoints(private val busInfoService: BusInfoService) {
+class Endpoints(private val busInfoService: BusInfoDSL[IO]) {
   val busInfo = HttpRoutes
     .of[IO] {
       case GET -> Root / IntVar(busStopCode) :? BusNumber(bus) +& Hour(hour) =>

@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   "org.http4s"             %% "http4s-circe"           % http4sVersion,
   "io.circe"               %% "circe-generic"          % "0.13.0",
   "org.scala-lang.modules" %% "scala-xml"              % "1.3.0",
+  "io.chrisdavenport"      %% "log4cats-slf4j"         % "1.1.1",
   "com.amazonaws"           % "aws-lambda-java-core"   % "1.2.1",
   "com.amazonaws"           % "aws-java-sdk-s3"        % "1.11.873",
   "com.amazonaws"           % "aws-lambda-java-events" % "3.3.1",
