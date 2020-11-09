@@ -1,7 +1,7 @@
 package models
 
 import cats.implicits.toFunctorOps
-import io.circe.{Decoder, Encoder}
+import io.circe.{ Decoder, Encoder }
 import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
 
@@ -59,15 +59,14 @@ object BusInfoResponse {
       .toList
       .map(_.trim)
 
-    splitResponse
-      .partitionMap {
-        case responseRegex(bus, satellite, hour, null) => //info may be omitted
-          Right(BusResponse(bus, satellite.contains("Satellite"), hour))
-        case responseRegex(bus, satellite, hour, info) =>
-          Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
-        case failedToMatch =>
-          Left(TransformError(s"Failed to match '$failedToMatch'"))
-      } match {
+    splitResponse.partitionMap {
+      case responseRegex(bus, satellite, hour, null) => //info may be omitted
+        Right(BusResponse(bus, satellite.contains("Satellite"), hour))
+      case responseRegex(bus, satellite, hour, info) =>
+        Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
+      case failedToMatch =>
+        Left(TransformError(s"Failed to match '$failedToMatch'"))
+    } match {
       case (Nil, matchedResp) => Right(matchedResp)
       case (errors, _)        => Left(errors.head)
     }
@@ -76,11 +75,11 @@ object BusInfoResponse {
   object GenericDerivation {
 
     implicit val encodeBusInfoResponse: Encoder[BusInfoResponse] = Encoder.instance {
-      case noBus @ NoBus(_) => noBus.asJson
-      case busNotHandled @ BusNotHandled(_) => busNotHandled.asJson
+      case noBus @ NoBus(_)                     => noBus.asJson
+      case busNotHandled @ BusNotHandled(_)     => busNotHandled.asJson
       case busStopNotHandled: BusStopNotHandled => busStopNotHandled.asJson
-      case success: Successful => success.buses.asJson
-      case failure @ Failure(_) => failure.asJson
+      case success: Successful                  => success.buses.asJson
+      case failure @ Failure(_)                 => failure.asJson
     }
 
     implicit val decodeBusInfoResponse: Decoder[BusInfoResponse] =

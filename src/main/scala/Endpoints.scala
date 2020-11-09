@@ -1,7 +1,7 @@
 import java.time.LocalTime
 
-import Endpoints.{busInfo, healthcheck, nextBus}
-import cats.effect.{ContextShift, IO, Timer}
+import Endpoints.{ busInfo, healthcheck, nextBus }
+import cats.effect.{ ContextShift, IO, Timer }
 import cats.implicits.catsSyntaxEitherId
 import io.circe.generic.auto._
 import models.BusInfoResponse.GenericDerivation._
@@ -12,7 +12,8 @@ import sttp.tapir._
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.http4s.RichHttp4sHttpEndpoint
 
-class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
+class Endpoints private (private val busInfoService: BusInfoDSL[IO])(
+  implicit
   cs: ContextShift[IO],
   timer: Timer[IO]
 ) {
@@ -37,6 +38,7 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
 }
 
 object Endpoints {
+
   def apply(
     busInfoService: BusInfoDSL[IO]
   )(implicit cs: ContextShift[IO], timer: Timer[IO]): Endpoints =

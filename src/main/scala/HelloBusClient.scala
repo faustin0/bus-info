@@ -1,15 +1,15 @@
 import java.time.format.DateTimeFormatter
 
-import cats.effect.{ConcurrentEffect, IO, Resource}
-import models.{BusInfoResponse, BusRequest}
+import cats.effect.{ ConcurrentEffect, IO, Resource }
+import models.{ BusInfoResponse, BusRequest }
 import org.http4s.Method._
 import org.http4s.client._
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.headers._
 import org.http4s.implicits._
 import org.http4s.scalaxml._
-import org.http4s.{Headers, MediaType, Request, UrlForm}
-import org.http4s.client.middleware.{Logger => ClientLogger}
+import org.http4s.{ Headers, MediaType, Request, UrlForm }
+import org.http4s.client.middleware.{ Logger => ClientLogger }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
@@ -26,7 +26,7 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
     } yield parsedResponse
   }
 
-  private def createHttpRequest(busRequest: BusRequest) = {
+  private def createHttpRequest(busRequest: BusRequest) =
     Request[IO](
       method = POST,
       uri = HelloBusClient.targetUri,
@@ -43,7 +43,6 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
           .getOrElse("")
       )
     )
-  }
 }
 
 object HelloBusClient {

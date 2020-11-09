@@ -1,7 +1,7 @@
 import java.time.LocalTime
 
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{Blocker, IO}
+import cats.effect.{ Blocker, IO }
 import models._
 import org.http4s.client.JavaNetClientBuilder
 import org.scalatest.freespec.AsyncFreeSpec

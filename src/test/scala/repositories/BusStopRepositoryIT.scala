@@ -5,16 +5,12 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.model._
-import com.dimafeng.testcontainers.{DynaliteContainer, ForAllTestContainer}
-import models.{BusStop, Position}
+import com.dimafeng.testcontainers.{ DynaliteContainer, ForAllTestContainer }
+import models.{ BusStop, Position }
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
-class BusStopRepositoryIT
-    extends AsyncFreeSpec
-    with ForAllTestContainer
-    with Matchers
-    with AsyncIOSpec {
+class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Matchers with AsyncIOSpec {
   override val container: DynaliteContainer = DynaliteContainer()
 
   override def afterStart(): Unit = {

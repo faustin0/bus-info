@@ -10,11 +10,9 @@ case class BusRequest(
 
 object BusRequest {
 
-  def apply(busStop: Int, busID: String): BusRequest = {
+  def apply(busStop: Int, busID: String): BusRequest =
     new BusRequest(busStop, Some(busID))
-  }
 
-  def apply(busStop: Int, busID: String, hour: LocalTime): BusRequest = {
+  def apply(busStop: Int, busID: String, hour: LocalTime): BusRequest =
     new BusRequest(busStop, Some(busID), Some(hour))
-  }
 }

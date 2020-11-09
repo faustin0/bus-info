@@ -1,4 +1,4 @@
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ ExitCode, IO, IOApp }
 import cats.implicits._
 import org.http4s.implicits._
 import org.http4s.server.Router
@@ -15,30 +15,28 @@ object BusInfoApp extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
     val application = for {
-      tperClient <- HelloBusClient.make(global)
-      busStopRepo <- BusStopRepository.make
+      tperClient     <- HelloBusClient.make(global)
+      busStopRepo    <- BusStopRepository.make
       busInfoService = BusInfoService(tperClient, busStopRepo)
-      endpoints = Endpoints(busInfoService)
+      endpoints      = Endpoints(busInfoService)
     } yield Router(
       "/api/bus-stops/" -> (endpoints.nextBusRoutes <+> endpoints.busInfoRoutes),
       "/api/" -> (endpoints.healthcheckRoutes <+> new SwaggerHttp4s(
-        List(endpoints.busInfo, endpoints.nextBus, endpoints.healthcheck)
+        List(Endpoints.busInfo, Endpoints.nextBus, Endpoints.healthcheck)
           .toOpenAPI("The bus-info API", "0.0.1")
           .toYaml
       ).routes[IO])
     ).orNotFound
 
-    application
-      .use(app => {
-        val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
+    application.use { app =>
+      val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
 
-        BlazeServerBuilder[IO](global)
-          .bindHttp(80, "0.0.0.0")
-          .withHttpApp(loggedApp)
-          .serve
-          .compile
-          .drain
-      })
-      .as(ExitCode.Success)
+      BlazeServerBuilder[IO](global)
+        .bindHttp(80, "0.0.0.0")
+        .withHttpApp(loggedApp)
+        .serve
+        .compile
+        .drain
+    }.as(ExitCode.Success)
   }
 }

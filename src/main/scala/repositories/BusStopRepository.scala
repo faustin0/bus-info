@@ -1,7 +1,7 @@
 package repositories
 
 import cats.data.OptionT
-import cats.effect.{IO, Resource}
+import cats.effect.{ IO, Resource }
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
@@ -10,8 +10,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.{
   DynamoDBQueryExpression,
   DynamoDBScanExpression
 }
-import com.amazonaws.services.dynamodbv2.model.{AttributeValue, Select}
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
+import com.amazonaws.services.dynamodbv2.model.{ AttributeValue, Select }
+import com.amazonaws.services.dynamodbv2.{ AmazonDynamoDB, AmazonDynamoDBClientBuilder }
 import fs2._
 import models.BusStop
 
@@ -22,35 +22,32 @@ class BusStopRepository private (private val awsClient: AmazonDynamoDB) {
 
   private val mapper = new DynamoDBMapper(awsClient)
 
-  def insert(busStop: BusStop): IO[Unit] = {
+  def insert(busStop: BusStop): IO[Unit] =
     IO {
       mapper.save(BusStopEntity.fromBusStop(busStop))
     }
-  }
 
-  def batchInsert(busStops: List[BusStop]): Stream[IO, FailedBatch] = {
+  def batchInsert(busStops: List[BusStop]): Stream[IO, FailedBatch] =
     Stream
       .emits(busStops)
       .covary[IO]
       .map(BusStopEntity.fromBusStop)
-      .through(s => {
+      .through { s =>
         Stream.evalSeq(
           for {
-            stops <- s.compile.toList
+            stops     <- s.compile.toList
             stopsJava = stops.asJava
-            failures <- IO(mapper.batchSave(stopsJava))
+            failures  <- IO(mapper.batchSave(stopsJava))
           } yield failures.asScala.toList
         )
-      })
-  }
+      }
 
-  def findBusStopByCode(code: Int): OptionT[IO, BusStop] = {
+  def findBusStopByCode(code: Int): OptionT[IO, BusStop] =
     OptionT
       .fromOption[IO](Option(mapper.load(classOf[BusStopEntity], code)))
       .map {
         _.as[BusStop]
       }
-  }
 
   def count(): IO[Int] =
     IO {
@@ -61,7 +58,7 @@ class BusStopRepository private (private val awsClient: AmazonDynamoDB) {
 
   def findBusStopByName(name: String): Stream[IO, BusStop] = {
     val values     = Map(":nameValue" -> new AttributeValue().withS(name.toUpperCase))
-    val attributes = Map("#nameKey" -> "name")
+    val attributes = Map("#nameKey"   -> "name")
 
     val queryExpression = new DynamoDBQueryExpression[BusStopEntity]()
       .withIndexName("name-index")
@@ -85,11 +82,10 @@ object BusStopRepository {
       IO.fromTry(makeFromAws().orElse(makeFromEnv()))
     )
 
-  private def makeFromAws(): Try[BusStopRepository] = {
-    Try { AmazonDynamoDBClientBuilder.defaultClient() }.map(new BusStopRepository(_))
-  }
+  private def makeFromAws(): Try[BusStopRepository] =
+    Try(AmazonDynamoDBClientBuilder.defaultClient()).map(new BusStopRepository(_))
 
-  private def makeFromEnv(): Try[BusStopRepository] = {
+  private def makeFromEnv(): Try[BusStopRepository] =
     Try {
       AmazonDynamoDBClientBuilder
         .standard()
@@ -99,6 +95,5 @@ object BusStopRepository {
         )
         .build()
     }.map(new BusStopRepository(_))
-  }
 
 }
