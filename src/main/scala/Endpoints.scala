@@ -1,69 +1,69 @@
 import java.time.LocalTime
 
-import Validators._
-import cats.data.Validated.{Invalid, Valid}
-import cats.effect.IO
+import Endpoints.{ busInfo, healthcheck, nextBus }
+import cats.effect.{ ContextShift, IO, Timer }
+import cats.implicits.catsSyntaxEitherId
 import io.circe.generic.auto._
+import models.BusInfoResponse.GenericDerivation._
 import models._
-import org.http4s.circe.CirceEntityEncoder._
-import org.http4s.dsl.impl.Root
-import org.http4s.dsl.io._
-import org.http4s.{HttpRoutes, ParseResult, QueryParamDecoder, Response}
+import org.http4s.HttpRoutes
+import sttp.model.StatusCode
+import sttp.tapir._
+import sttp.tapir.json.circe.jsonBody
+import sttp.tapir.server.http4s.RichHttp4sHttpEndpoint
 
-class Endpoints(private val busInfoService: BusInfoDSL[IO]) {
-  val busInfo = HttpRoutes
-    .of[IO] {
-      case GET -> Root / IntVar(busStopCode) :? BusNumber(bus) +& Hour(hour) =>
-        hour match {
-          case Some(Valid(h)) =>
-            busInfoService
-              .getNextBuses(BusRequest(busStopCode, bus, Some(h)))
-              .flatMap(translateToHttpResponse)
+class Endpoints private (private val busInfoService: BusInfoDSL[IO])(
+  implicit
+  cs: ContextShift[IO],
+  timer: Timer[IO]
+) {
 
-          case Some(Invalid(e)) => BadRequest(e.map(_.sanitized))
+  val busInfoRoutes: HttpRoutes[IO] = busInfo.toRoutes { busStopCode =>
+    busInfoService
+      .findBusStop(busStopCode)
+      .value
+      .map(_.fold(s"no bus stop with code $busStopCode".asLeft[BusStop])(_.asRight[String]))
+  }
 
-          case None =>
-            busInfoService
-              .getNextBuses(BusRequest(busStopCode, bus))
-              .flatMap(translateToHttpResponse)
-        }
-
-      case GET -> Root / IntVar(busStopCode) / "info" =>
-        busInfoService
-          .findBusStop(busStopCode)
-          .foldF(NotFound(s"no bus stop with code $busStopCode"))(busStop => Ok(busStop))
-
-      case GET -> Root / ""      => BadRequest("missing busStop path")
-      case GET -> Root / invalid => BadRequest(s"Invalid busStop: $invalid")
-    }
-
-  private def translateToHttpResponse(busResponse: BusInfoResponse): IO[Response[IO]] = {
-    busResponse match {
-      case r: NoBus             => Ok(r)
-      case r: BusNotHandled     => BadRequest(r)
-      case r: BusStopNotHandled => NotFound(r)
-      case r: Failure           => BadRequest(r)
-      case r: Successful        => Ok(r.buses)
+  val nextBusRoutes: HttpRoutes[IO] = nextBus.toRoutes { input =>
+    val (busStopCode, bus, hour) = input
+    busInfoService.getNextBuses(BusRequest(busStopCode, bus, hour)).map {
+      case x: NoBus      => x.asRight
+      case x: Successful => x.asRight
+      case x             => x.asLeft
     }
   }
 
+  val healthcheckRoutes = healthcheck.toRoutes(_ => IO("Up and running".asRight[Unit]))
 }
 
-object HealthRoutes {
-  val liveness = HttpRoutes
-    .of[IO] {
-      case GET -> Root / "health" => Ok("Up and running")
-    }
-}
+object Endpoints {
 
-object Validators {
+  def apply(
+    busInfoService: BusInfoDSL[IO]
+  )(implicit cs: ContextShift[IO], timer: Timer[IO]): Endpoints =
+    new Endpoints(busInfoService)(cs, timer)
 
-  object BusNumber extends OptionalQueryParamDecoderMatcher[String]("bus")
-
-  object Hour extends OptionalValidatingQueryParamDecoderMatcher[LocalTime]("hour")
-
-  private implicit val timeQueryDecoder: QueryParamDecoder[LocalTime] =
-    QueryParamDecoder[String].emap(h =>
-      ParseResult.fromTryCatchNonFatal(s"Invalid date format '$h'")(LocalTime.parse(h))
+  val nextBus = endpoint.get
+    .in(path[Int]("busStopCode"))
+    .in(query[Option[String]]("bus"))
+    .in(query[Option[LocalTime]]("hour"))
+    .out(jsonBody[BusInfoResponse])
+    .errorOut(
+      oneOf[BusInfoResponse](
+        statusMapping(StatusCode.BadRequest, jsonBody[BusNotHandled]),
+        statusMapping(StatusCode.BadRequest, jsonBody[Failure]),
+        statusMapping(StatusCode.NotFound, jsonBody[BusStopNotHandled])
+      )
     )
+
+  val busInfo = endpoint.get
+    .in(path[Int]("busStopCode"))
+    .in("info")
+    .out(jsonBody[BusStop])
+    .errorOut(oneOf[String](statusMapping(StatusCode.NotFound, jsonBody[String])))
+
+  val healthcheck = endpoint.get
+    .in("health")
+    .out(jsonBody[String])
 }

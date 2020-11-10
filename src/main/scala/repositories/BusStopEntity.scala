@@ -1,7 +1,12 @@
 package repositories
 
-import com.amazonaws.services.dynamodbv2.datamodeling.{DynamoDBAttribute, DynamoDBHashKey, DynamoDBIndexHashKey, DynamoDBTable}
-import models.{BusStop, Position}
+import com.amazonaws.services.dynamodbv2.datamodeling.{
+  DynamoDBAttribute,
+  DynamoDBHashKey,
+  DynamoDBIndexHashKey,
+  DynamoDBTable
+}
+import models.{ BusStop, Position }
 
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
@@ -26,6 +31,7 @@ case class BusStopEntity(
 }
 
 object BusStopEntity {
+
   def fromBusStop(b: BusStop): BusStopEntity =
     new BusStopEntity(
       code = b.code,

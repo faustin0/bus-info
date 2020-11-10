@@ -1,11 +1,11 @@
 package lambda
 
-import models.{BusStop, Position}
+import models.{ BusStop, Position }
 import org.scalatest.Inside
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
-import scala.xml.{Elem, XML}
+import scala.xml.{ Elem, XML }
 
 class BusStopImporterTest extends AnyFunSuite with Inside with Matchers {
 

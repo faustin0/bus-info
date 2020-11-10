@@ -1,21 +1,21 @@
 package lambda
 
-import java.io.{PrintWriter, StringWriter}
+import java.io.{ PrintWriter, StringWriter }
 
-import cats.effect.{IO, Resource}
+import cats.effect.{ IO, Resource }
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
+import com.amazonaws.services.dynamodbv2.{ AmazonDynamoDB, AmazonDynamoDBClientBuilder }
 import com.amazonaws.services.lambda.runtime.events.S3Event
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.S3EventNotificationRecord
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
-import com.amazonaws.services.s3.model.{GetObjectRequest, S3Object}
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
+import com.amazonaws.services.s3.model.{ GetObjectRequest, S3Object }
+import com.amazonaws.services.s3.{ AmazonS3, AmazonS3ClientBuilder }
 import fs2.Stream
 import models.BusStop
 import repositories.BusStopRepository
 
 import scala.jdk.CollectionConverters._
-import scala.xml.{Elem, XML}
+import scala.xml.{ Elem, XML }
 
 class BusStopImporter(
   s3Client: AmazonS3,
@@ -29,7 +29,7 @@ class BusStopImporter(
 
   override def handleRequest(s3Event: S3Event, context: Context): Unit = {
     val logger = context.getLogger
-    val repo   = new BusStopRepository(dynamoClient)
+    val repo   = BusStopRepository(dynamoClient)
     s3Event.getRecords.forEach(it => logger.log(s"S3 event: ${it.getEventName}"))
 
     val outcome = s3Event.getRecords.asScala
@@ -55,22 +55,20 @@ class BusStopImporter(
     Resource.fromAutoCloseable(IO(s3Client.getObject(objReq)))
   }
 
-  private def parseS3Object(s3Object: S3Object): IO[BusStopsDataset] = {
+  private def parseS3Object(s3Object: S3Object): IO[BusStopsDataset] =
     for {
       content <- IO(s3Object.getObjectContent)
       xml     <- IO(XML.load(content))
     } yield BusStopsDataset(s3Object.getKey, xml)
-  }
 
 }
 
 object BusStopImporter {
 
-  def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] = {
+  def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] =
     Stream
       .fromIterator[IO]((data.content \\ "NewDataSet" \\ "Table").iterator)
       .evalMapChunk(t => IO.fromEither(BusStop.fromXml(t)))
-  }
 }
 
 case class BusStopsDataset(

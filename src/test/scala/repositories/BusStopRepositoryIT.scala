@@ -5,16 +5,12 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.model._
-import com.dimafeng.testcontainers.{DynaliteContainer, ForAllTestContainer}
-import models.{BusStop, Position}
+import com.dimafeng.testcontainers.{ DynaliteContainer, ForAllTestContainer }
+import models.{ BusStop, Position }
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
-class BusStopRepositoryIT
-    extends AsyncFreeSpec
-    with ForAllTestContainer
-    with Matchers
-    with AsyncIOSpec {
+class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Matchers with AsyncIOSpec {
   override val container: DynaliteContainer = DynaliteContainer()
 
   override def afterStart(): Unit = {
@@ -45,7 +41,7 @@ class BusStopRepositoryIT
   }
 
   "create and retrieve busStop" in {
-    val repo = new BusStopRepository(container.client)
+    val repo = BusStopRepository(container.client)
     val starting = BusStop(
       0,
       "stop1",
@@ -67,7 +63,7 @@ class BusStopRepositoryIT
   }
 
   "should batch insert entries" in {
-    val repo = new BusStopRepository(container.client)
+    val repo = BusStopRepository(container.client)
     val entry = (code: Int) =>
       BusStop(
         code,
@@ -96,7 +92,7 @@ class BusStopRepositoryIT
   }
 
   "should retrieve busStops by name" in {
-    val repo = new BusStopRepository(container.client)
+    val repo = BusStopRepository(container.client)
     val stop = BusStop(0, "IRNERIO", "MOCK", "Bologna", 42, Position(1, 2, 2, 3))
     val s303 = stop.copy(code = 303, location = "VIA IRNERIO 1")
     val s304 = stop.copy(code = 304, location = "VIA IRNERIO 2")
