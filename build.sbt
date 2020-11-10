@@ -64,8 +64,9 @@ lazy val core = project
   .settings(fork in Test := true)
   .settings(assemblyMergeStrategy in assembly := {
     case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") => MergeStrategy.singleOrError
-    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-    case _                             => MergeStrategy.first
+    case x =>
+      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      oldStrategy(x)
   })
   .settings(test in assembly := {})
   .settings(assemblyJarName in assembly := "bus-info-app.jar")
