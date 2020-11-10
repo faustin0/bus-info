@@ -9,8 +9,11 @@ import models._
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
 import sttp.tapir._
+import sttp.tapir.docs.openapi._
 import sttp.tapir.json.circe.jsonBody
+import sttp.tapir.openapi.circe.yaml.RichOpenAPI
 import sttp.tapir.server.http4s.RichHttp4sHttpEndpoint
+import sttp.tapir.swagger.http4s.SwaggerHttp4s
 
 class Endpoints private (private val busInfoService: BusInfoDSL[IO])(
   implicit
@@ -34,7 +37,13 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(
     }
   }
 
-  val healthcheckRoutes = healthcheck.toRoutes(_ => IO("Up and running".asRight[Unit]))
+  val healthCheckRoutes = healthcheck.toRoutes(_ => IO("Up and running".asRight[Unit]))
+
+  val swaggerRoutes = new SwaggerHttp4s(
+    List(Endpoints.busInfo, Endpoints.nextBus)
+      .toOpenAPI("The bus-info API", "0.0.1")
+      .toYaml
+  ).routes[IO]
 }
 
 object Endpoints {
@@ -44,7 +53,9 @@ object Endpoints {
   )(implicit cs: ContextShift[IO], timer: Timer[IO]): Endpoints =
     new Endpoints(busInfoService)(cs, timer)
 
-  val nextBus = endpoint.get
+  private val baseEndpoint = endpoint.in("bus-stops")
+
+  val nextBus = baseEndpoint.get
     .in(path[Int]("busStopCode"))
     .in(query[Option[String]]("bus"))
     .in(query[Option[LocalTime]]("hour"))
@@ -57,7 +68,7 @@ object Endpoints {
       )
     )
 
-  val busInfo = endpoint.get
+  val busInfo = baseEndpoint.get
     .in(path[Int]("busStopCode"))
     .in("info")
     .out(jsonBody[BusStop])
