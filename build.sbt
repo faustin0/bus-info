@@ -72,7 +72,7 @@ lazy val core = project
   .settings(assemblyJarName in assembly := "bus-info-app.jar")
 
 val testDependencies = Seq(
-  "org.scalatest"  %% "scalatest"                       % "3.2.2"                    % Test,
+  "org.scalatest"  %% "scalatest"                       % "3.2.3"                    % Test,
   "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-localstack" % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
