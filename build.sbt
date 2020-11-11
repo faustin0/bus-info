@@ -76,7 +76,7 @@ val testDependencies = Seq(
   "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-localstack" % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
-  "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.4.1"                    % Test,
+  "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.4.2"                    % Test,
   "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
 )
 
