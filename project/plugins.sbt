@@ -4,4 +4,4 @@ addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.14")
 
 addSbtPlugin("com.timushev.sbt"          % "sbt-updates"  % "0.5.1")
 
-addSbtPlugin("org.scalameta"             % "sbt-scalafmt" % "2.3.1")
+addSbtPlugin("org.scalameta"             % "sbt-scalafmt" % "2.3.4")
