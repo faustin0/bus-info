@@ -1,0 +1,7 @@
+pull_request_rules:
+  - name: Automatic merge of scala-steward PRs 
+    conditions:
+      - "#approved-reviews-by>=1"
+    actions:
+      merge:
+        method: merge
