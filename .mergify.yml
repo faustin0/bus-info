@@ -2,7 +2,7 @@ pull_request_rules:
   - name: Automatic merge of scala-steward PRs 
     conditions:
       - head~=^update/
-      - check-success=Scala CI
+      - check-success=build-and-test
     actions:
       merge:
         method: merge
