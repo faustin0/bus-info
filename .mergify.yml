@@ -1,7 +1,8 @@
 pull_request_rules:
   - name: Automatic merge of scala-steward PRs 
     conditions:
-      - "#approved-reviews-by>=1"
+      - head~=^update/
+      - check-success=Scala CI
     actions:
       merge:
         method: merge
