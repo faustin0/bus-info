@@ -1,11 +1,11 @@
 import java.time.format.DateTimeFormatter
 
-import cats.effect.{ConcurrentEffect, IO, Resource}
-import models.{BusInfoResponse, BusRequest}
+import cats.effect.{ ConcurrentEffect, IO, Resource }
+import models.{ BusInfoResponse, BusRequest }
 import org.http4s.Method._
 import org.http4s.client._
 import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.client.middleware.{Logger => ClientLogger}
+import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.headers._
 import org.http4s.scalaxml._
 import org.http4s._
@@ -48,8 +48,8 @@ object HelloBusClient {
 
   private val dateTimePattern = DateTimeFormatter.ofPattern("HHmm")
 
-  private def targetUri(host: String): Uri =
-    Uri.unsafeFromString("https://" + host + "/web-services/hello-bus.asmx/QueryHellobus")
+  private def targetUri(baseUrl: String): Uri =
+    Uri.unsafeFromString(baseUrl + "/web-services/hello-bus.asmx/QueryHellobus")
 
   def apply(httpClient: Client[IO], uri: Uri): HelloBusClient = new HelloBusClient(httpClient, uri)
 
