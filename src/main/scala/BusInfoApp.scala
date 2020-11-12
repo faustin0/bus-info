@@ -1,9 +1,4 @@
-import cats.effect.{ExitCode, IO, IOApp}
-import cats.implicits._
-import org.http4s.implicits._
-import org.http4s.server.Router
-import org.http4s.server.blaze.BlazeServerBuilder
-import org.http4s.server.middleware.Logger
+import cats.effect.{ ExitCode, IO, IOApp, Resource }
 import repositories.BusStopRepository
 
 import java.util.concurrent.Executors
@@ -14,30 +9,12 @@ object BusInfoApp extends IOApp {
   private val cachedEc = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
   override def run(args: List[String]): IO[ExitCode] = {
-    val application = for {
-      tperClient    <- HelloBusClient.make(cachedEc)
+    val application: Resource[IO, Application] = for {
+      tperClient    <- HelloBusClient.make("hellobuswsweb.tper.it", cachedEc)
       busStopRepo   <- BusStopRepository.make
       busInfoService = BusInfoService(tperClient, busStopRepo)
-      endpoints      = Endpoints(busInfoService)
-    } yield Router(
-      "/" -> (
-        endpoints.nextBusRoutes <+>
-          endpoints.busStopInfoRoutes <+>
-          endpoints.busStopSearchRoutes <+>
-          endpoints.swaggerRoutes
-      ),
-      "/" -> endpoints.healthCheckRoutes
-    ).orNotFound
+    } yield Application(busInfoService)(global)
 
-    application.use { app =>
-      val loggedApp = Logger.httpApp(logHeaders = true, logBody = false)(app)
-
-      BlazeServerBuilder[IO](global)
-        .bindHttp(80, "0.0.0.0")
-        .withHttpApp(loggedApp)
-        .serve
-        .compile
-        .drain
-    }.as(ExitCode.Success)
+    application.use(_.run).as(ExitCode.Success)
   }
 }

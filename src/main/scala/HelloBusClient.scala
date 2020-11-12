@@ -1,21 +1,20 @@
 import java.time.format.DateTimeFormatter
 
-import cats.effect.{ ConcurrentEffect, IO, Resource }
-import models.{ BusInfoResponse, BusRequest }
+import cats.effect.{ConcurrentEffect, IO, Resource}
+import models.{BusInfoResponse, BusRequest}
 import org.http4s.Method._
 import org.http4s.client._
 import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.client.middleware.{Logger => ClientLogger}
 import org.http4s.headers._
-import org.http4s.implicits._
 import org.http4s.scalaxml._
-import org.http4s.{ Headers, MediaType, Request, UrlForm }
-import org.http4s.client.middleware.{ Logger => ClientLogger }
+import org.http4s._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 import scala.xml.Elem
 
-class HelloBusClient private (private val httpClient: Client[IO]) {
+class HelloBusClient private (private val httpClient: Client[IO], uri: Uri) {
 
   def hello(busRequest: BusRequest): IO[BusInfoResponse] = {
     val request = createHttpRequest(busRequest)
@@ -29,7 +28,7 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
   private def createHttpRequest(busRequest: BusRequest): Request[IO] =
     Request[IO](
       method = POST,
-      uri = HelloBusClient.targetUri,
+      uri = uri,
       headers = Headers.of(
         Accept(MediaType.application.xml),
         `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
@@ -49,12 +48,13 @@ object HelloBusClient {
 
   private val dateTimePattern = DateTimeFormatter.ofPattern("HHmm")
 
-  private val targetUri =
-    uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
+  private def targetUri(host: String): Uri =
+    Uri.unsafeFromString("https://" + host + "/web-services/hello-bus.asmx/QueryHellobus")
 
-  def apply(httpClient: Client[IO]): HelloBusClient = new HelloBusClient(httpClient)
+  def apply(httpClient: Client[IO], uri: Uri): HelloBusClient = new HelloBusClient(httpClient, uri)
 
   def make(
+    host: String,
     executionContext: ExecutionContext
   )(implicit ce: ConcurrentEffect[IO]): Resource[IO, HelloBusClient] =
     BlazeClientBuilder[IO](executionContext)
@@ -62,5 +62,5 @@ object HelloBusClient {
       .withRequestTimeout(7 seconds)
       .resource
       .map(client => ClientLogger(logHeaders = false, logBody = true)(client))
-      .map(client => new HelloBusClient(client))
+      .map(client => new HelloBusClient(client, targetUri(host)))
 }

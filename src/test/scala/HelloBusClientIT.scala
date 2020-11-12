@@ -1,9 +1,10 @@
 import java.time.LocalTime
 
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{ Blocker, IO }
+import cats.effect.{Blocker, IO}
 import models._
 import org.http4s.client.JavaNetClientBuilder
+import org.http4s.implicits.http4sLiteralsSyntax
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -11,7 +12,7 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
   val blocker    = Blocker.liftExecutionContext(executionContext)
   val httpClient = JavaNetClientBuilder[IO](blocker).create
-  val sut        = HelloBusClient(httpClient)
+  val sut        = HelloBusClient(httpClient, uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus")
 
   "should execute sample tper request " in {
     val actual = sut.hello(BusRequest(303, "27"))
