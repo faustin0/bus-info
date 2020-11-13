@@ -1,39 +1,26 @@
+import Resources._
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{ Blocker, IO }
+import cats.effect.{Blocker, IO}
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
-import com.amazonaws.services.dynamodbv2.model.{ Projection, ProjectionType, ProvisionedThroughput }
-import com.dimafeng.testcontainers.{ DynaliteContainer, ForAllTestContainer, MockServerContainer, MultipleContainers }
+import com.amazonaws.services.dynamodbv2.model.{Projection, ProjectionType, ProvisionedThroughput}
+import com.dimafeng.testcontainers.{ForAllTestContainer, MultipleContainers}
 import io.circe.Json
-import models.{ BusStop, Position }
-import org.http4s.{ MediaType, Uri }
+import models.{BusStop, Position}
+import org.http4s._
 import org.http4s.circe.jsonDecoder
-import org.http4s.client.JavaNetClientBuilder
-import org.http4s.client.dsl.io._
-import org.http4s.dsl.io.GET
 import org.http4s.headers._
-import org.mockserver.client.MockServerClient
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import org.scalatest.freespec.AsyncFreeSpec
-import org.slf4j.LoggerFactory
-import org.testcontainers.containers.output.Slf4jLogConsumer
-import org.testcontainers.containers.wait.strategy.Wait
-import repositories.{ BusStopEntity, BusStopRepository }
+import org.scalatest.matchers.should.Matchers
+import repositories.{BusStopEntity, BusStopRepository}
 
 import scala.concurrent.duration.DurationInt
 
-class ApplicationIT extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec {
+class ApplicationIT extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
 
-  private val dynamoDB: DynaliteContainer = DynaliteContainer()
-
-  private val mockServer: MockServerContainer = MockServerContainer("5.11.2").configure { c =>
-    c.withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("ApplicationIT")))
-      .waitingFor(Wait.forLogMessage(".*started on port:.*", 1))
-  }
-
-  val blocker    = Blocker.liftExecutionContext(executionContext)
-  val httpClient = JavaNetClientBuilder[IO](blocker).create
+  val blocker: Blocker = Blocker.liftExecutionContext(executionContext)
 
   override def afterStart(): Unit = {
     val mapper       = new DynamoDBMapper(dynamoDB.client)
@@ -60,59 +47,44 @@ class ApplicationIT extends AsyncFreeSpec with ForAllTestContainer with AsyncIOS
 
   override val container = MultipleContainers(dynamoDB, mockServer)
 
-  "spin container" in {
+  "check 200 status and json response" in {
 
-    val tperStub   = IO {
-      new MockServerClient(mockServer.host, mockServer.container.getServerPort)
-        .when(
-          request()
-//            .withPath("web-services/hello-bus.asmx/QueryHellobus")
-//            .withMethod("POST")
-//            .withQueryStringParameter("fermata", "303")
-//            .withQueryStringParameter("linea", "")
-//            .withQueryStringParameter("oraHHMM", "")
-        )
-        .respond(
-          response()
-            .withBody(
-              <string xmlns="https://hellobuswsweb.tper.it/web-services/hellobus.asmx">
-              TperHellobus: 28 DaSatellite 09:07 (Bus5517 CON PEDANA), 28 DaSatellite 09:20 (Bus5566 CON PEDANA)
-            </string>.mkString
-            )
-        )
-    }
-    val repository = BusStopRepository(dynamoDB.client)
-    val insert     = repository.insert(BusStop(303, "", "", "", 500, Position(0, 0, 0, 0)))
+    val actual = resources(executionContext, blocker).use { case (mockServerClient, apiServer) =>
 
-    val app: IO[Unit] = HelloBusClient
-      .make(mockServer.container.getEndpoint, executionContext)
-      .map(client =>
-        BusInfoService(
-          client,
-          repository
-        )
+      val req: Request[IO] = Request(
+        uri = Uri.unsafeFromString("http://localhost/bus-stops/303"),
+        headers = Headers.of(Accept(MediaType.application.json))
       )
-      .map(ser => Application(ser)(executionContext))
-      .use(_.run)
 
-    val getRequest = GET(
-      Uri.unsafeFromString("http://localhost/bus-stops/303"),
-      Accept(MediaType.application.json)
-    )
+      val registerExpectation = IO(
+        mockServerClient
+          .when(
+            request()
+            //            .withPath("web-services/hello-bus.asmx/QueryHellobus")
+            //            .withMethod("POST")
+            //            .withQueryStringParameter("fermata", "303")
+            //            .withQueryStringParameter("linea", "")
+            //            .withQueryStringParameter("oraHHMM", "")
+          )
+          .respond(
+            response().withBody(
+              <string xmlns="https://hellobuswsweb.tper.it/web-services/hellobus.asmx">
+                TperHellobus: 28 DaSatellite 09:07 (Bus5517 CON PEDANA), 28 DaSatellite 09:20 (Bus5566 CON PEDANA)
+              </string>.mkString
+            )
+          )
+      )
 
-    val r = httpClient.expect[Json](getRequest)
+      for {
+        _ <- registerExpectation
+        _ <- BusStopRepository(dynamoDB.client).insert(BusStop(303, "", "", "", 0, Position(0, 0, 0, 0)))
+        _ <- apiServer.run.start
+        _ <- IO.sleep(5 seconds)
+        response <- httpClient(blocker).run(req).use(r => IO(r))
+      } yield response
+    }
 
-    val actual = for {
-      _     <- tperStub
-      _     <- insert
-      fiber <- app.start
-      _     <- IO.sleep(5 seconds)
-      resp  <- r.timeout(60 seconds).guarantee {
-                 println("cioa")
-                 fiber.cancel
-               }
-    } yield resp
-
-    actual.asserting(json => assert(json.noSpaces.nonEmpty))
+    actual.asserting(response => assert(response.status == Status.Ok))
+    actual.asserting(response => response.attemptAs[Json].fold(_ => false,  _.noSpaces.nonEmpty).shouldBe(true))
   }
 }
