@@ -1,12 +1,12 @@
 import Resources._
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{Blocker, IO}
+import cats.effect.{ Blocker, IO }
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
-import com.amazonaws.services.dynamodbv2.model.{Projection, ProjectionType, ProvisionedThroughput}
-import com.dimafeng.testcontainers.{ForAllTestContainer, MultipleContainers}
+import com.amazonaws.services.dynamodbv2.model.{ Projection, ProjectionType, ProvisionedThroughput }
+import com.dimafeng.testcontainers.{ ForAllTestContainer, MultipleContainers }
 import io.circe.Json
-import models.{BusStop, Position}
+import models.{ BusStop, Position }
 import org.http4s._
 import org.http4s.circe.jsonDecoder
 import org.http4s.headers._
@@ -14,7 +14,7 @@ import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
-import repositories.{BusStopEntity, BusStopRepository}
+import repositories.{ BusStopEntity, BusStopRepository }
 
 import scala.concurrent.duration.DurationInt
 
@@ -50,7 +50,6 @@ class ApplicationIT extends AsyncFreeSpec with ForAllTestContainer with AsyncIOS
   "check 200 status and json response" in {
 
     val actual = resources(executionContext, blocker).use { case (mockServerClient, apiServer) =>
-
       val req: Request[IO] = Request(
         uri = Uri.unsafeFromString("http://localhost/bus-stops/303"),
         headers = Headers.of(Accept(MediaType.application.json))
@@ -76,15 +75,16 @@ class ApplicationIT extends AsyncFreeSpec with ForAllTestContainer with AsyncIOS
       )
 
       for {
-        _ <- registerExpectation
-        _ <- BusStopRepository(dynamoDB.client).insert(BusStop(303, "", "", "", 0, Position(0, 0, 0, 0)))
-        _ <- apiServer.run.start
-        _ <- IO.sleep(5 seconds)
-        response <- httpClient(blocker).run(req).use(r => IO(r))
+        _        <- registerExpectation
+        _        <- BusStopRepository(dynamoDB.client).insert(BusStop(303, "", "", "", 0, Position(0, 0, 0, 0)))
+        server   <- apiServer.run.start
+        _        <- IO.sleep(5 seconds)
+        response <-
+          httpClient(blocker).run(req).use(r => r.attemptAs[Json].value.map(j => (r, j))).guarantee(server.cancel)
       } yield response
     }
 
-    actual.asserting(response => assert(response.status == Status.Ok))
-    actual.asserting(response => response.attemptAs[Json].fold(_ => false,  _.noSpaces.nonEmpty).shouldBe(true))
+    actual.asserting(response => assert(response._1.status == Status.Ok))
+    actual.asserting(e => e._2.fold(failure => fail(failure), json => json.noSpaces.nonEmpty.shouldBe(true)))
   }
 }
