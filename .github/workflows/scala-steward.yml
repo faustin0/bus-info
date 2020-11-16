@@ -1,8 +1,9 @@
-# This workflow will launch at 00:00 every Sunday
+name: Scala Steward
+
 on:
   schedule:
-    - cron: '0 0 * * 0'
-  workflow_dispatch:
+    - cron: '0 0 * * 0' # 00:00 every Sunday
+  workflow_dispatch:    # enable manual trigger of workflow
 
 jobs:
   scala-steward:
