@@ -1,10 +1,10 @@
 val http4sVersion = "0.21.11"
 
-val testcontainersScalaVersion = "0.38.6"
+val testcontainersScalaVersion = "0.38.7"
 
 val catsVersion = "2.2.0"
 
-val kindProjectorV = "0.11.0"
+val kindProjectorV = "0.11.1"
 
 val betterMonadicForV = "0.3.1"
 
@@ -16,11 +16,11 @@ val log4catsVersion = "1.1.1"
 
 val awsLambdaVersion = "1.2.1"
 
-val s3sdkVersion = "1.11.903"
+val s3sdkVersion = "1.11.906"
 
 val awsLambdaJavaEventsVersion = "3.6.0"
 
-val dynamodbVersion = "1.11.903"
+val dynamodbVersion = "1.11.906"
 
 val tapirVersion = "0.17.0-M8"
 
