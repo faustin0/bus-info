@@ -8,3 +8,16 @@ pull_request_rules:
         force: true
       merge:
         method: merge
+        strict: smart
+        
+  - name: automatic merge of dependabot 🤖
+    conditions:
+      - author~=^dependabot(|-preview)\[bot\]$
+      - check-success=build-and-test
+      - base=master
+    actions:
+      delete_head_branch: 
+        force: true
+      merge:
+        method: merge
+        strict: smart
