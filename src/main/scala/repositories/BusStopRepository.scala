@@ -35,9 +35,9 @@ class BusStopRepository private (private val awsClient: AmazonDynamoDB) {
       .through { s =>
         Stream.evalSeq(
           for {
-            stops     <- s.compile.toList
+            stops    <- s.compile.toList
             stopsJava = stops.asJava
-            failures  <- IO(mapper.batchSave(stopsJava))
+            failures <- IO(mapper.batchSave(stopsJava))
           } yield failures.asScala.toList
         )
       }
@@ -49,16 +49,16 @@ class BusStopRepository private (private val awsClient: AmazonDynamoDB) {
         _.as[BusStop]
       }
 
-  def count(): IO[Int] =
-    IO {
-      val query = new DynamoDBScanExpression
-      query.setSelect(Select.COUNT)
-      mapper.count(classOf[BusStopEntity], query)
-    }
+  def count(): IO[Int] = {
+    val query = new DynamoDBScanExpression()
+      .withSelect(Select.COUNT)
+
+    IO(mapper.count(classOf[BusStopEntity], query))
+  }
 
   def findBusStopByName(name: String): Stream[IO, BusStop] = {
     val values     = Map(":nameValue" -> new AttributeValue().withS(name.toUpperCase))
-    val attributes = Map("#nameKey"   -> "name")
+    val attributes = Map("#nameKey" -> "name")
 
     val queryExpression = new DynamoDBQueryExpression[BusStopEntity]()
       .withIndexName("name-index")

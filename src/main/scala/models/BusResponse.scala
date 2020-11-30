@@ -64,7 +64,7 @@ object BusInfoResponse {
         Right(BusResponse(bus, satellite.contains("Satellite"), hour))
       case responseRegex(bus, satellite, hour, info) =>
         Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
-      case failedToMatch =>
+      case failedToMatch                             =>
         Left(TransformError(s"Failed to match '$failedToMatch'"))
     } match {
       case (Nil, matchedResp) => Right(matchedResp)
