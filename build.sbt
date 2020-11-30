@@ -2,7 +2,7 @@ val http4sVersion = "0.21.11"
 
 val testcontainersScalaVersion = "0.38.7"
 
-val catsVersion = "2.2.0"
+val catsVersion = "2.3.0"
 
 val kindProjectorV = "0.11.1"
 
