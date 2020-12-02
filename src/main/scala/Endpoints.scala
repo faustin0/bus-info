@@ -15,8 +15,7 @@ import sttp.tapir.openapi.circe.yaml.RichOpenAPI
 import sttp.tapir.server.http4s.RichHttp4sHttpEndpoint
 import sttp.tapir.swagger.http4s.SwaggerHttp4s
 
-class Endpoints private (private val busInfoService: BusInfoDSL[IO])(
-  implicit
+class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
   cs: ContextShift[IO],
   timer: Timer[IO]
 ) {

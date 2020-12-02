@@ -31,7 +31,7 @@ class BusStopImporterTest extends AnyFunSuite with Inside with Matchers {
       500,
       Position(686344, 930918, 44.505762, 11.343174)
     )
-    val parsed = BusStop.fromXml(busStop)
+    val parsed   = BusStop.fromXml(busStop)
 
     inside(parsed) {
       case Right(busStop) => busStop shouldBe expected
@@ -41,7 +41,7 @@ class BusStopImporterTest extends AnyFunSuite with Inside with Matchers {
 
   test("should map all xml entries into BusStops") {
 
-    val xml = XML.loadFile(getClass.getResource("/fermate_20200701.xml").getFile)
+    val xml   = XML.loadFile(getClass.getResource("/fermate_20200701.xml").getFile)
     val stops = BusStopImporter
       .extractBusStopsFromDataSet(BusStopsDataset("mock", xml))
       .compile

@@ -41,7 +41,7 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
   }
 
   "create and retrieve busStop" in {
-    val repo = BusStopRepository(container.client)
+    val repo     = BusStopRepository(container.client)
     val starting = BusStop(
       0,
       "stop1",
@@ -63,7 +63,7 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
   }
 
   "should batch insert entries" in {
-    val repo = BusStopRepository(container.client)
+    val repo  = BusStopRepository(container.client)
     val entry = (code: Int) =>
       BusStop(
         code,

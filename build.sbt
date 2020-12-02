@@ -2,7 +2,7 @@ val http4sVersion = "0.21.13"
 
 val testcontainersScalaVersion = "0.38.7"
 
-val catsVersion = "2.2.0"
+val catsVersion = "2.3.0"
 
 val kindProjectorV = "0.11.1"
 
@@ -16,11 +16,11 @@ val log4catsVersion = "1.1.1"
 
 val awsLambdaVersion = "1.2.1"
 
-val s3sdkVersion = "1.11.906"
+val s3sdkVersion = "1.11.908"
 
 val awsLambdaJavaEventsVersion = "3.6.0"
 
-val dynamodbVersion = "1.11.906"
+val dynamodbVersion = "1.11.908"
 
 val tapirVersion = "0.17.0-M8"
 
@@ -42,7 +42,6 @@ inThisBuild(
 // General Settings
 lazy val commonSettings = Seq(
   scalaVersion := "2.13.3",
-  scalafmtOnCompile := true,
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
   scalacOptions ++= Seq(

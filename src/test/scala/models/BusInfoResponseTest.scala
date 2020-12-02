@@ -45,9 +45,8 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = Successful(List(r1, r2))
     val result   = BusInfoResponse.fromXml(successfulResponse)
 
-    inside(result) {
-      case Right(response) =>
-        response.shouldBe(expected)
+    inside(result) { case Right(response) =>
+      response.shouldBe(expected)
     }
   }
 
@@ -56,11 +55,10 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = BusNotHandled(
       "bus not handled"
     )
-    val result = BusInfoResponse.fromXml(HellobusHelp_noBus)
+    val result   = BusInfoResponse.fromXml(HellobusHelp_noBus)
 
-    inside(result) {
-      case Right(response) =>
-        response.shouldBe(expected)
+    inside(result) { case Right(response) =>
+      response.shouldBe(expected)
     }
   }
 
@@ -69,11 +67,10 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = BusStopNotHandled(
       "bus-stop not handled"
     )
-    val result = BusInfoResponse.fromXml(HellobusHelp_NoStop)
+    val result   = BusInfoResponse.fromXml(HellobusHelp_NoStop)
 
-    inside(result) {
-      case Right(response) =>
-        response.shouldBe(expected)
+    inside(result) { case Right(response) =>
+      response.shouldBe(expected)
     }
   }
 
@@ -86,9 +83,8 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = Successful(List(r1, r2))
     val result   = BusInfoResponse.fromXml(successfulResponseWithHour)
 
-    inside(result) {
-      case Right(response) =>
-        response.shouldBe(expected)
+    inside(result) { case Right(response) =>
+      response.shouldBe(expected)
     }
   }
 
@@ -96,11 +92,10 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
 
     val expected =
       NoBus("TperHellobus: OGGI NESSUNA ALTRA CORSA DI 1 PER FERMATA 303")
-    val result = BusInfoResponse.fromXml(noBus)
+    val result   = BusInfoResponse.fromXml(noBus)
 
-    inside(result) {
-      case Right(response) =>
-        response.shouldBe(expected)
+    inside(result) { case Right(response) =>
+      response.shouldBe(expected)
     }
   }
 
@@ -112,9 +107,8 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = Successful(List(b1, b2))
     val result   = BusInfoResponse.fromXml(estimated)
 
-    inside(result) {
-      case Right(response) =>
-        response.shouldBe(expected)
+    inside(result) { case Right(response) =>
+      response.shouldBe(expected)
     }
   }
 

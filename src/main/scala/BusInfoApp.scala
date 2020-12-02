@@ -12,8 +12,8 @@ object BusInfoApp extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
     val application = for {
-      tperClient     <- HelloBusClient.make(global)
-      busStopRepo    <- BusStopRepository.make
+      tperClient    <- HelloBusClient.make(global)
+      busStopRepo   <- BusStopRepository.make
       busInfoService = BusInfoService(tperClient, busStopRepo)
       endpoints      = Endpoints(busInfoService)
     } yield Router(
