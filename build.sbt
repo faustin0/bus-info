@@ -16,11 +16,11 @@ val log4catsVersion = "1.1.1"
 
 val awsLambdaVersion = "1.2.1"
 
-val s3sdkVersion = "1.11.913"
+val s3sdkVersion = "1.11.918"
 
 val awsLambdaJavaEventsVersion = "3.6.0"
 
-val dynamodbVersion = "1.11.913"
+val dynamodbVersion = "1.11.918"
 
 val tapirVersion = "0.17.0-M8"
 
@@ -75,7 +75,7 @@ val testDependencies = Seq(
   "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-localstack" % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
-  "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.4.2"                    % Test,
+  "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.0"                    % Test,
   "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
 )
 
