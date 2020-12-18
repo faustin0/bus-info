@@ -1,4 +1,4 @@
-import cats.effect.{ ExitCode, IO, IOApp }
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
 import org.http4s.implicits._
 import org.http4s.server.Router
@@ -17,7 +17,12 @@ object BusInfoApp extends IOApp {
       busInfoService = BusInfoService(tperClient, busStopRepo)
       endpoints      = Endpoints(busInfoService)
     } yield Router(
-      "/" -> (endpoints.nextBusRoutes <+> endpoints.busInfoRoutes <+> endpoints.swaggerRoutes),
+      "/" -> (
+        endpoints.nextBusRoutes <+>
+          endpoints.busStopInfoRoutes <+>
+          endpoints.busStopSearchRoutes <+>
+          endpoints.swaggerRoutes
+      ),
       "/" -> endpoints.healthCheckRoutes
     ).orNotFound
 

@@ -68,7 +68,9 @@ class BusStopRepository private (private val awsClient: AmazonDynamoDB) {
       .withKeyConditionExpression("#nameKey = :nameValue")
 
     Stream
-      .evalSeq(IO(mapper.query(classOf[BusStopEntity], queryExpression).asScala.toList))
+      .evalSeq(
+        IO(mapper.query(classOf[BusStopEntity], queryExpression).asScala.toList)
+      ) //FIXME this fetch all the paginated item :(
       .map(_.as[BusStop])
   }
 }

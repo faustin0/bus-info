@@ -1,6 +1,4 @@
-import java.time.LocalTime
-
-import Endpoints.{ busInfo, healthcheck, nextBus }
+import Endpoints.{ busStopByCode, busStopSearch, healthcheck, nextBus }
 import cats.effect.{ ContextShift, IO, Timer }
 import cats.implicits.catsSyntaxEitherId
 import io.circe.generic.auto._
@@ -15,16 +13,24 @@ import sttp.tapir.openapi.circe.yaml.RichOpenAPI
 import sttp.tapir.server.http4s.RichHttp4sHttpEndpoint
 import sttp.tapir.swagger.http4s.SwaggerHttp4s
 
+import java.time.LocalTime
+
 class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
   cs: ContextShift[IO],
   timer: Timer[IO]
 ) {
 
-  val busInfoRoutes: HttpRoutes[IO] = busInfo.toRoutes { busStopCode =>
+  val busStopInfoRoutes: HttpRoutes[IO] = busStopByCode.toRoutes { busStopCode =>
     busInfoService
-      .findBusStop(busStopCode)
+      .getBusStop(busStopCode)
       .value
       .map(_.fold(s"no bus stop with code $busStopCode".asLeft[BusStop])(_.asRight[String]))
+  }
+
+  val busStopSearchRoutes: HttpRoutes[IO] = busStopSearch.toRoutes { busStopName =>
+    busInfoService
+      .searchBusStop(busStopName)
+      .map(_.asRight[Unit])
   }
 
   val nextBusRoutes: HttpRoutes[IO] = nextBus.toRoutes { input =>
@@ -39,7 +45,7 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
   val healthCheckRoutes = healthcheck.toRoutes(_ => IO("Up and running".asRight[Unit]))
 
   val swaggerRoutes = new SwaggerHttp4s(
-    List(Endpoints.busInfo, Endpoints.nextBus)
+    List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch)
       .toOpenAPI("The bus-info API", "0.0.1")
       .toYaml
   ).routes[IO]
@@ -67,11 +73,15 @@ object Endpoints {
       )
     )
 
-  val busInfo = baseEndpoint.get
+  val busStopByCode = baseEndpoint.get
     .in(path[Int]("busStopCode"))
     .in("info")
     .out(jsonBody[BusStop])
     .errorOut(oneOf[String](statusMapping(StatusCode.NotFound, jsonBody[String])))
+
+  val busStopSearch = baseEndpoint.get
+    .in(query[String]("name"))
+    .out(jsonBody[List[BusStop]])
 
   val healthcheck = endpoint.get
     .in("health")
