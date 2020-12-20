@@ -18,7 +18,7 @@ val awsLambdaVersion = "1.2.1"
 
 val s3sdkVersion = "1.11.918"
 
-val awsLambdaJavaEventsVersion = "3.6.0"
+val awsLambdaJavaEventsVersion = "3.7.0"
 
 val dynamodbVersion = "1.11.918"
 
