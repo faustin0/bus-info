@@ -1,6 +1,6 @@
 val http4sVersion = "0.21.14"
 
-val testcontainersScalaVersion = "0.38.7"
+val testcontainersScalaVersion = "0.38.8"
 
 val catsVersion = "2.3.0"
 
