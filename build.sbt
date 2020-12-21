@@ -16,11 +16,11 @@ val log4catsVersion = "1.1.1"
 
 val awsLambdaVersion = "1.2.1"
 
-val s3sdkVersion = "1.11.918"
+val s3sdkVersion = "1.11.923"
 
 val awsLambdaJavaEventsVersion = "3.6.0"
 
-val dynamodbVersion = "1.11.918"
+val dynamodbVersion = "1.11.923"
 
 val tapirVersion = "0.17.0-M8"
 
