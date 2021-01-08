@@ -6,13 +6,16 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
 import repositories.BusStopRepository
 
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.global
 
 object BusInfoApp extends IOApp {
+  private val cachedEc = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
   override def run(args: List[String]): IO[ExitCode] = {
     val application = for {
-      tperClient    <- HelloBusClient.make(global)
+      tperClient    <- HelloBusClient.make(cachedEc)
       busStopRepo   <- BusStopRepository.make
       busInfoService = BusInfoService(tperClient, busStopRepo)
       endpoints      = Endpoints(busInfoService)
