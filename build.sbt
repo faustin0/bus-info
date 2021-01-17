@@ -4,7 +4,7 @@ val testcontainersScalaVersion = "0.38.8"
 
 val catsVersion = "2.3.1"
 
-val kindProjectorV = "0.11.2"
+val kindProjectorV = "0.11.3"
 
 val betterMonadicForV = "0.3.1"
 
