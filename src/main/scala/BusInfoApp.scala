@@ -30,7 +30,7 @@ object BusInfoApp extends IOApp {
     ).orNotFound
 
     application.use { app =>
-      val loggedApp = Logger.httpApp(logHeaders = false, logBody = true)(app)
+      val loggedApp = Logger.httpApp(logHeaders = true, logBody = false)(app)
 
       BlazeServerBuilder[IO](global)
         .bindHttp(80, "0.0.0.0")
