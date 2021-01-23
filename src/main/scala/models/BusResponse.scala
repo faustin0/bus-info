@@ -20,6 +20,7 @@ final case class Successful(buses: List[BusResponse]) extends BusInfoResponse
 final case class Failure(error: String) extends BusInfoResponse
 
 case class BusResponse(
+  busStopCode: Int,
   bus: String,
   satellite: Boolean,
   hour: String,
@@ -33,7 +34,7 @@ object BusInfoResponse {
   private val notHandledBusRegex  = """.*LINEA.*NON GESTITA.*""".r
   private val notHandledStopRegex = """.*FERMATA.*NON GESTITA.*""".r
 
-  def fromXml(xml: Elem): Either[TransformError, BusInfoResponse] = {
+  def fromXml(xml: Elem, busStopCode: Int): Either[TransformError, BusInfoResponse] = {
     val textResponse = xml \\ "string"
 
     val content = textResponse
@@ -45,12 +46,12 @@ object BusInfoResponse {
       case notHandledBusRegex(_*)              => Right(BusNotHandled("bus not handled"))
       case notHandledStopRegex(_*)             => Right(BusStopNotHandled("bus-stop not handled"))
       case msg if msg.contains("NESSUNA")      => Right(NoBus(msg))
-      case msg if msg.contains("TperHellobus") => extractBusResponse(msg).map(Successful)
+      case msg if msg.contains("TperHellobus") => extractBusResponse(msg, busStopCode).map(Successful)
       case _                                   => Right(Failure("Unsupported response"))
     }
   }
 
-  private def extractBusResponse(response: String): Either[TransformError, List[BusResponse]] = {
+  private def extractBusResponse(response: String, busStopCode: Int): Either[TransformError, List[BusResponse]] = {
 
     val splitResponse = response
       .replace("TperHellobus:", "")
@@ -61,9 +62,9 @@ object BusInfoResponse {
 
     splitResponse.partitionMap {
       case responseRegex(bus, satellite, hour, null) => //info may be omitted
-        Right(BusResponse(bus, satellite.contains("Satellite"), hour))
+        Right(BusResponse(busStopCode, bus, satellite.contains("Satellite"), hour))
       case responseRegex(bus, satellite, hour, info) =>
-        Right(BusResponse(bus, satellite.contains("Satellite"), hour, info.trim))
+        Right(BusResponse(busStopCode, bus, satellite.contains("Satellite"), hour, info.trim))
       case failedToMatch                             =>
         Left(TransformError(s"Failed to match '$failedToMatch'"))
     } match {

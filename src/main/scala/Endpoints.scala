@@ -1,5 +1,5 @@
-import Endpoints.{ busStopByCode, busStopSearch, healthcheck, nextBus }
-import cats.effect.{ ContextShift, IO, Timer }
+import Endpoints.{busStopByCode, busStopSearch, healthcheck, nextBus}
+import cats.effect.{ContextShift, IO, Timer}
 import cats.implicits.catsSyntaxEitherId
 import io.circe.generic.auto._
 import models.BusInfoResponse.GenericDerivation._
@@ -8,9 +8,10 @@ import org.http4s.HttpRoutes
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.docs.openapi._
+import sttp.tapir.generic.auto.schemaForCaseClass
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.openapi.circe.yaml.RichOpenAPI
-import sttp.tapir.server.http4s.RichHttp4sHttpEndpoint
+import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.http4s.SwaggerHttp4s
 
 import java.time.LocalTime
@@ -20,20 +21,20 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
   timer: Timer[IO]
 ) {
 
-  val busStopInfoRoutes: HttpRoutes[IO] = busStopByCode.toRoutes { busStopCode =>
+  val busStopInfoRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(busStopByCode) { busStopCode =>
     busInfoService
       .getBusStop(busStopCode)
       .value
       .map(_.fold(s"no bus stop with code $busStopCode".asLeft[BusStop])(_.asRight[String]))
   }
 
-  val busStopSearchRoutes: HttpRoutes[IO] = busStopSearch.toRoutes { busStopName =>
+  val busStopSearchRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(busStopSearch) { busStopName =>
     busInfoService
       .searchBusStop(busStopName)
       .map(_.asRight[Unit])
   }
 
-  val nextBusRoutes: HttpRoutes[IO] = nextBus.toRoutes { input =>
+  val nextBusRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(nextBus) { input =>
     val (busStopCode, bus, hour) = input
     busInfoService.getNextBuses(BusRequest(busStopCode, bus, hour)).map {
       case x: NoBus      => x.asRight
@@ -42,11 +43,15 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
     }
   }
 
-  val healthCheckRoutes = healthcheck.toRoutes(_ => IO("Up and running".asRight[Unit]))
+  val healthCheckRoutes = Http4sServerInterpreter.toRoutes(healthcheck)(_ => IO("Up and running".asRight[Unit]))
 
   val swaggerRoutes = new SwaggerHttp4s(
-    List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch)
-      .toOpenAPI("The bus-info API", "0.0.1")
+    OpenAPIDocsInterpreter
+      .toOpenAPI(
+        List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch),
+        title = "The bus-info API",
+        version = "0.0.1"
+      )
       .toYaml
   ).routes[IO]
 }

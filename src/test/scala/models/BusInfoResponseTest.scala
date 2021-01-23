@@ -40,10 +40,11 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
 
   test("should parse xml from tper into successful response ") {
 
-    val r1       = BusResponse("28", true, "09:07", "(Bus5517 CON PEDANA)")
-    val r2       = BusResponse("28", true, "09:20", "(Bus5566 CON PEDANA)")
+    val busStopCode = 303
+    val r1       = BusResponse(busStopCode, "28", true, "09:07", "(Bus5517 CON PEDANA)")
+    val r2       = BusResponse(busStopCode, "28", true, "09:20", "(Bus5566 CON PEDANA)")
     val expected = Successful(List(r1, r2))
-    val result   = BusInfoResponse.fromXml(successfulResponse)
+    val result   = BusInfoResponse.fromXml(successfulResponse, busStopCode)
 
     inside(result) { case Right(response) =>
       response.shouldBe(expected)
@@ -55,7 +56,7 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = BusNotHandled(
       "bus not handled"
     )
-    val result   = BusInfoResponse.fromXml(HellobusHelp_noBus)
+    val result   = BusInfoResponse.fromXml(HellobusHelp_noBus, 303)
 
     inside(result) { case Right(response) =>
       response.shouldBe(expected)
@@ -67,21 +68,20 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
     val expected = BusStopNotHandled(
       "bus-stop not handled"
     )
-    val result   = BusInfoResponse.fromXml(HellobusHelp_NoStop)
+    val result   = BusInfoResponse.fromXml(HellobusHelp_NoStop, 303)
 
     inside(result) { case Right(response) =>
       response.shouldBe(expected)
     }
   }
 
-  test(
-    "should parse xml from tper into successful response when hour is present"
-  ) {
+  test("should parse xml from tper into successful response when hour is present") {
 
-    val r1       = BusResponse("27A", false, "21:59", "(Bus6567 CON PEDANA)")
-    val r2       = BusResponse("27B", false, "22:29", "(Bus6584 CON PEDANA)")
-    val expected = Successful(List(r1, r2))
-    val result   = BusInfoResponse.fromXml(successfulResponseWithHour)
+    val busStopCode = 2022
+    val r1          = BusResponse(busStopCode, "27A", false, "21:59", "(Bus6567 CON PEDANA)")
+    val r2          = BusResponse(busStopCode, "27B", false, "22:29", "(Bus6584 CON PEDANA)")
+    val expected    = Successful(List(r1, r2))
+    val result      = BusInfoResponse.fromXml(successfulResponseWithHour, busStopCode)
 
     inside(result) { case Right(response) =>
       response.shouldBe(expected)
@@ -92,7 +92,7 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
 
     val expected =
       NoBus("TperHellobus: OGGI NESSUNA ALTRA CORSA DI 1 PER FERMATA 303")
-    val result   = BusInfoResponse.fromXml(noBus)
+    val result   = BusInfoResponse.fromXml(noBus, 2022)
 
     inside(result) { case Right(response) =>
       response.shouldBe(expected)
@@ -101,11 +101,12 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
 
   test("should parse estimated response") {
 
-    val b1 = BusResponse("20", false, "14:51")
-    val b2 = BusResponse("28", false, "14:57")
+    val busStopCode = 1010
+    val b1          = BusResponse(busStopCode, "20", false, "14:51")
+    val b2          = BusResponse(busStopCode, "28", false, "14:57")
 
     val expected = Successful(List(b1, b2))
-    val result   = BusInfoResponse.fromXml(estimated)
+    val result   = BusInfoResponse.fromXml(estimated, busStopCode)
 
     inside(result) { case Right(response) =>
       response.shouldBe(expected)

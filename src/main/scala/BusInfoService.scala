@@ -45,7 +45,7 @@ case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {
   )
 
   private val busStops = Map(
-    150 -> List(BusResponse("27A", true, "14:30"))
+    150 -> List(BusResponse(303, "27A", true, "14:30"))
   )
 
   override def getBusStop(busStopCode: Int): OptionT[F, BusStop] =

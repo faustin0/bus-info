@@ -22,11 +22,11 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
 
     for {
       xmlResponse    <- httpClient.expect[Elem](request)
-      parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse))
+      parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse, busRequest.busStop))
     } yield parsedResponse
   }
 
-  private def createHttpRequest(busRequest: BusRequest) =
+  private def createHttpRequest(busRequest: BusRequest): Request[IO] =
     Request[IO](
       method = POST,
       uri = HelloBusClient.targetUri,
