@@ -22,7 +22,7 @@ val awsLambdaJavaEventsVersion = "3.7.0"
 
 val dynamodbVersion = "1.11.939"
 
-val tapirVersion = "0.17.4"
+val tapirVersion = "0.17.7"
 
 val logbackVersion = "1.2.3"
 
