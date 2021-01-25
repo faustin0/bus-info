@@ -73,8 +73,9 @@ lazy val core = project
 val testDependencies = Seq(
   "org.scalatest"  %% "scalatest"                       % "3.2.3"                    % Test,
   "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
-  "com.dimafeng"   %% "testcontainers-scala-localstack" % testcontainersScalaVersion % Test,
+  "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
   "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
+  "org.mock-server" % "mockserver-client-java"          % "5.11.2"                   % Test,
   "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.0"                    % Test,
   "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
 )

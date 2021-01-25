@@ -49,7 +49,7 @@ class ApplicationIT extends AsyncFreeSpec with ForAllTestContainer with AsyncIOS
 
   "check 200 status and json response" in {
 
-    val actual = resources(executionContext, blocker).use { case (mockServerClient, apiServer) =>
+    val actual = resources(executionContext).use { case (mockServerClient, apiServer) =>
       val req: Request[IO] = Request(
         uri = Uri.unsafeFromString("http://localhost/bus-stops/303"),
         headers = Headers.of(Accept(MediaType.application.json))
