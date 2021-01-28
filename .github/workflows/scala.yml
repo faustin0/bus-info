@@ -27,8 +27,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: bus-info-assembly-0.1.jar
-          path: target/scala-2.13/
+          name: bus-stops-importer.jar
+          path: modules/importer/target/scala-2.13/
           if-no-files-found: error
 
   Build-and-Push-Docker-Image:
@@ -49,8 +49,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }} # token is on "github secrets"
-          
-      - name: Create Tag 
+
+      - name: Create Tag
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
         with:

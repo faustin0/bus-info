@@ -17,35 +17,47 @@ object Dependencies {
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                       % "3.2.3"                    % Test,
-    "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
-    "com.dimafeng"   %% "testcontainers-scala-localstack" % testcontainersScalaVersion % Test,
-    "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.0"                    % Test,
-    "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
+    "org.scalatest"  %% "scalatest"                          % "3.2.3"                    % Test,
+    "com.dimafeng"   %% "testcontainers-scala-dynalite"      % testcontainersScalaVersion % Test,
+    "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
+    "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.0"                    % Test,
+    "org.typelevel"  %% "cats-effect-laws"                   % catsVersion                % Test
   )
 
   lazy val dependencies = Seq(
-    "org.typelevel"               %% "cats-effect"              % catsVersion,
+    "org.typelevel"          %% "cats-effect"           % catsVersion,
+    "io.circe"               %% "circe-generic"         % circeVersion,
+    "org.scala-lang.modules" %% "scala-xml"             % scalaXmlVersion,
+    "io.chrisdavenport"      %% "log4cats-slf4j"        % log4catsVersion,
+    "com.amazonaws"           % "aws-java-sdk-dynamodb" % dynamodbVersion,
+    "ch.qos.logback"          % "logback-classic"       % logbackVersion % Runtime
+  )
+
+  lazy val httpServerDeps = Seq(
     "org.http4s"                  %% "http4s-dsl"               % http4sVersion,
     "org.http4s"                  %% "http4s-blaze-server"      % http4sVersion,
     "org.http4s"                  %% "http4s-blaze-client"      % http4sVersion,
     "org.http4s"                  %% "http4s-scala-xml"         % http4sVersion,
     "org.http4s"                  %% "http4s-circe"             % http4sVersion,
-    "io.circe"                    %% "circe-generic"            % circeVersion,
-    "org.scala-lang.modules"      %% "scala-xml"                % scalaXmlVersion,
-    "io.chrisdavenport"           %% "log4cats-slf4j"           % log4catsVersion,
-    "com.amazonaws"                % "aws-lambda-java-core"     % awsLambdaVersion,
-    "com.amazonaws"                % "aws-java-sdk-s3"          % s3sdkVersion,
-    "com.amazonaws"                % "aws-lambda-java-events"   % awsLambdaJavaEventsVersion,
-    "com.amazonaws"                % "aws-java-sdk-dynamodb"    % dynamodbVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-core"               % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % tapirVersion,
-    "ch.qos.logback"               % "logback-classic"          % logbackVersion % Runtime
+    "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % tapirVersion
+  )
+
+//  lazy val lambdaDeps = Seq(
+//    "com.amazonaws" % "aws-lambda-java-core"   % awsLambdaVersion,
+//    "com.amazonaws" % "aws-java-sdk-s3"        % s3sdkVersion,
+//    "com.amazonaws" % "aws-lambda-java-events" % awsLambdaJavaEventsVersion
+//  )
+
+  lazy val awsDeps = Seq(
+    "software.amazon.awssdk" % "s3"                     % "2.15.69",
+    "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.1",
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.7.0"
   )
 
 }
