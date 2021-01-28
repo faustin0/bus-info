@@ -12,7 +12,8 @@ import software.amazon.awssdk.services.s3.model.{ CreateBucketRequest, PutObject
 
 import java.nio.file.Paths
 import scala.io.Source
-import scala.xml.XML
+import scala.xml.Utility.trim
+import scala.xml.{ Elem, XML }
 
 class S3BucketReaderTest extends AsyncFreeSpec with AsyncIOSpec with ForAllTestContainer with AssertingSyntax {
 
@@ -44,7 +45,7 @@ class S3BucketReaderTest extends AsyncFreeSpec with AsyncIOSpec with ForAllTestC
     new S3BucketLoader(s3)
       .load(DatasetFileLocation("bus-stops", "bus-stop-dataset.xml"))
       .asserting { dataset =>
-        assert(dataset.content === expected)
+        assert(xmlEqualsIgnoringWhiteSpaces(actual = dataset.content, expected))
       }
   }
 
@@ -57,4 +58,7 @@ class S3BucketReaderTest extends AsyncFreeSpec with AsyncIOSpec with ForAllTestC
       .region(container.region)
       .build()
   }
+
+  private def xmlEqualsIgnoringWhiteSpaces(actual: Elem, expected: Elem) =
+    trim(actual) === trim(expected)
 }
