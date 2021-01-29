@@ -1,5 +1,6 @@
 package dev.faustin0.importer.infrastructure
 
+import cats.effect.IO
 import cats.effect.testing.scalatest.{ AssertingSyntax, AsyncIOSpec }
 import com.dimafeng.testcontainers.{ Container, ForAllTestContainer, LocalStackV2Container }
 import dev.faustin0.importer.domain.DatasetFileLocation
@@ -22,19 +23,16 @@ class S3BucketReaderTest extends AsyncFreeSpec with AsyncIOSpec with ForAllTestC
   override val container: Container = localStack
 
   override def afterStart(): Unit = {
+    val bucketInit = for {
+      s3Client       <- IO(createS3Client(localStack))
+      fileSource     <- IO(getClass.getClassLoader.getResource("bus-stop-dataset.xml"))
+      createBucketReq = CreateBucketRequest.builder().bucket("bus-stops").build()
+      putObjReq       = PutObjectRequest.builder().bucket("bus-stops").key("bus-stop-dataset.xml").build()
+      _              <- IO(s3Client.createBucket(createBucketReq))
+      _              <- IO(s3Client.putObject(putObjReq, Paths.get(fileSource.toURI)))
+    } yield ()
 
-    val s3 = createS3Client(localStack)
-
-    val fileSource = getClass.getClassLoader.getResource("bus-stop-dataset.xml")
-
-    s3.createBucket((b: CreateBucketRequest.Builder) => b.bucket("bus-stops"))
-    s3.putObject(
-      (b: PutObjectRequest.Builder) => {
-        b.bucket("bus-stops").key("bus-stop-dataset.xml")
-        ()
-      },
-      Paths.get(fileSource.toURI)
-    )
+    bucketInit.unsafeRunSync()
   }
 
   "should load a file from a bucket" in {
