@@ -1,4 +1,4 @@
-import Dependencies.{ awsDeps, betterMonadicForV, dependencies, httpServerDeps, kindProjectorV, testDependencies }
+import Dependencies._
 
 inThisBuild(
   List(
@@ -52,7 +52,7 @@ lazy val core = project
   .settings(fork in Test := true)
   .settings(assemblySetting)
   .settings(test in assembly := {})
-  .settings(libraryDependencies ++= httpServerDeps) //todo this should have way less stuff(client only?)
+  .settings(libraryDependencies ++= httpClientDeps)
 //  .settings(assemblyJarName in assembly := "bus-info-app.jar")
 
 lazy val api = project

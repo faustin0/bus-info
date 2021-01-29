@@ -34,10 +34,14 @@ object Dependencies {
     "ch.qos.logback"          % "logback-classic"       % logbackVersion % Runtime
   )
 
+  lazy val httpClientDeps = Seq(
+    "org.http4s" %% "http4s-blaze-client" % http4sVersion,
+    "org.http4s" %% "http4s-scala-xml"    % http4sVersion
+  )
+
   lazy val httpServerDeps = Seq(
     "org.http4s"                  %% "http4s-dsl"               % http4sVersion,
     "org.http4s"                  %% "http4s-blaze-server"      % http4sVersion,
-    "org.http4s"                  %% "http4s-blaze-client"      % http4sVersion,
     "org.http4s"                  %% "http4s-scala-xml"         % http4sVersion,
     "org.http4s"                  %% "http4s-circe"             % http4sVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-core"               % tapirVersion,
