@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: bus-stops-importer.jar
-          path: modules/importer/target/scala-2.13/
+          path: modules/importer/target/scala-2.13/bus-stops-importer.jar
           if-no-files-found: error
 
   Build-and-Push-Docker-Image:
