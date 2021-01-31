@@ -10,9 +10,9 @@ object Dependencies {
   val scalaXmlVersion            = "1.3.0"
   val log4catsVersion            = "1.1.1"
   val awsLambdaVersion           = "1.2.1"
-  val s3sdkVersion               = "1.11.944"
+  val s3sdkVersion               = "1.11.946"
   val awsLambdaJavaEventsVersion = "3.7.0"
-  val dynamodbVersion            = "1.11.944"
+  val dynamodbVersion            = "1.11.946"
   val tapirVersion               = "0.17.4"
   val logbackVersion             = "1.2.3"
 
