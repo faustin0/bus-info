@@ -9,8 +9,6 @@ import scala.xml.Elem
 
 sealed trait BusInfoResponse extends Product with Serializable
 
-final case class NoBus(message: String) extends BusInfoResponse
-
 final case class BusNotHandled(msg: String) extends BusInfoResponse
 
 final case class BusStopNotHandled(msg: String) extends BusInfoResponse
@@ -45,7 +43,7 @@ object BusInfoResponse {
     content match {
       case notHandledBusRegex(_*)              => Right(BusNotHandled("bus not handled"))
       case notHandledStopRegex(_*)             => Right(BusStopNotHandled("bus-stop not handled"))
-      case msg if msg.contains("NESSUNA")      => Right(NoBus(msg))
+      case msg if msg.contains("NESSUNA")      => Right(Successful(Nil))
       case msg if msg.contains("TperHellobus") => extractBusResponse(msg, busStopCode).map(Successful)
       case _                                   => Right(Failure("Unsupported response"))
     }
@@ -76,7 +74,6 @@ object BusInfoResponse {
   object GenericDerivation {
 
     implicit val encodeBusInfoResponse: Encoder[BusInfoResponse] = Encoder.instance {
-      case noBus @ NoBus(_)                     => noBus.asJson
       case busNotHandled @ BusNotHandled(_)     => busNotHandled.asJson
       case busStopNotHandled: BusStopNotHandled => busStopNotHandled.asJson
       case success: Successful                  => success.buses.asJson
@@ -85,7 +82,6 @@ object BusInfoResponse {
 
     implicit val decodeBusInfoResponse: Decoder[BusInfoResponse] =
       List[Decoder[BusInfoResponse]](
-        Decoder[NoBus].widen,
         Decoder[BusNotHandled].widen,
         Decoder[BusStopNotHandled].widen,
         Decoder[Successful].widen,

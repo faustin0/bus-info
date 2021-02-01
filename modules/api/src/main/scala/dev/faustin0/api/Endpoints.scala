@@ -39,7 +39,6 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
   val nextBusRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(nextBus) { input =>
     val (busStopCode, bus, hour) = input
     busInfoService.getNextBuses(BusRequest(busStopCode, bus, hour)).map {
-      case x: NoBus      => x.asRight
       case x: Successful => x.asRight
       case x             => x.asLeft
     }

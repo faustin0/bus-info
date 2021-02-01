@@ -90,8 +90,7 @@ class BusInfoResponseTest extends AnyFunSuite with Inside with Matchers {
 
   test("should parse response when no more buses into NoBus response") {
 
-    val expected =
-      NoBus("TperHellobus: OGGI NESSUNA ALTRA CORSA DI 1 PER FERMATA 303")
+    val expected = Successful(Nil)
     val result   = BusInfoResponse.fromXml(noBus, 2022)
 
     inside(result) { case Right(response) =>
