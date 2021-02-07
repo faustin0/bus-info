@@ -2,7 +2,7 @@ name: Scala Steward
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # 00:00 every Sunday
+    - cron: '0 6 * * 0' # 00:00 every Sunday
   workflow_dispatch:    # enable manual trigger of workflow
 
 jobs:
