@@ -1,47 +1,129 @@
 package dev.faustin0.repositories
 
-import cats.data.OptionT
 import cats.effect.testing.scalatest.AsyncIOSpec
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
-import com.amazonaws.services.dynamodbv2.document.DynamoDB
-import com.amazonaws.services.dynamodbv2.model._
-import com.dimafeng.testcontainers.{ DynaliteContainer, ForAllTestContainer }
+import cats.effect.{ IO, Resource }
+import com.dimafeng.testcontainers.{ ForAllTestContainer, GenericContainer }
 import dev.faustin0.domain.{ BusStop, Position }
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
+import org.testcontainers.containers.wait.strategy.Wait
+import software.amazon.awssdk.auth.credentials.{ AwsBasicCredentials, StaticCredentialsProvider }
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest.{ Builder => TableBuilder }
+import software.amazon.awssdk.services.dynamodb.model._
+
+import java.net.URI
 
 class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Matchers with AsyncIOSpec {
-  override val container: DynaliteContainer = DynaliteContainer()
+  implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
+  private lazy val dynamoContainer = GenericContainer(
+    dockerImage = "amazon/dynamodb-local",
+    exposedPorts = Seq(8000),
+    command = Seq("-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"),
+    waitStrategy = Wait.forLogMessage(".*CorsParams:.*", 1)
+  ).configure { provider =>
+    provider.withLogConsumer(t => logger.debug(t.getUtf8String).unsafeRunSync())
+    ()
+  }
+
+  private def createDynamoClient(): Resource[IO, DynamoDbAsyncClient] = {
+    lazy val dynamoDbEndpoint =
+      s"http://${dynamoContainer.container.getHost}:${dynamoContainer.container.getFirstMappedPort}"
+
+    Resource.fromAutoCloseable {
+      IO(
+        DynamoDbAsyncClient
+          .builder()
+          .region(Region.EU_CENTRAL_1)
+          .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy", "dummy")))
+          .endpointOverride(URI.create(dynamoDbEndpoint))
+          .build()
+      )
+    }
+  }
+
+  override val container: GenericContainer = dynamoContainer
 
   override def afterStart(): Unit = {
-    val mapper       = new DynamoDBMapper(container.client)
-    val tableRequest = mapper.generateCreateTableRequest(classOf[BusStopEntity])
-    tableRequest
-      .withProvisionedThroughput(
-        new ProvisionedThroughput()
-          .withReadCapacityUnits(5)
-          .withWriteCapacityUnits(5)
+    createDynamoClient().use { client =>
+      IO(
+        client
+          .createTable((builder: TableBuilder) =>
+            builder
+              .tableName("bus_stops")
+              .attributeDefinitions(
+                AttributeDefinition
+                  .builder()
+                  .attributeName("code")
+                  .attributeType(ScalarAttributeType.N)
+                  .build(),
+                AttributeDefinition
+                  .builder()
+                  .attributeName("name")
+                  .attributeType(ScalarAttributeType.S)
+                  .build()
+              )
+              .keySchema(
+                KeySchemaElement
+                  .builder()
+                  .attributeName("code")
+                  .keyType(KeyType.HASH)
+                  .build()
+              )
+              .provisionedThroughput(
+                ProvisionedThroughput
+                  .builder()
+                  .readCapacityUnits(5)
+                  .writeCapacityUnits(14)
+                  .build()
+              )
+              .globalSecondaryIndexes(
+                GlobalSecondaryIndex
+                  .builder()
+                  .indexName("name-index")
+                  .projection(
+                    Projection
+                      .builder()
+                      .projectionType(ProjectionType.ALL)
+                      .build()
+                  )
+                  .keySchema(
+                    KeySchemaElement
+                      .builder()
+                      .attributeName("name")
+                      .keyType(KeyType.HASH)
+                      .build()
+                  )
+                  .provisionedThroughput(
+                    ProvisionedThroughput
+                      .builder()
+                      .readCapacityUnits(5)
+                      .writeCapacityUnits(7)
+                      .build()
+                  )
+                  .build()
+              )
+              .build()
+          )
+          .get()
       )
-      .getGlobalSecondaryIndexes
-      .forEach(gsi =>
-        gsi
-          .withProvisionedThroughput(new ProvisionedThroughput(5, 5))
-          .setProjection(new Projection().withProjectionType(ProjectionType.ALL))
-      )
-
-    new DynamoDB(container.client)
-      .createTable(tableRequest)
-      .waitForActive()
+    }.unsafeRunSync()
 
     super.afterStart()
   }
 
   "spin container" in {
-    assume(container.client.listTables().getTableNames.size() > 0)
+    createDynamoClient()
+      .use(client => IO(client.listTables().get().hasTableNames))
+      .asserting(assume(_))
   }
 
   "create and retrieve busStop" in {
-    val repo     = BusStopRepository(container.client)
+
     val starting = BusStop(
       0,
       "stop1",
@@ -51,19 +133,23 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
       Position(1, 2, 2, 3)
     )
 
-    val actual = for {
-      _      <- OptionT.liftF(repo.insert(starting))
-      actual <- repo.findBusStopByCode(0)
-    } yield actual
-
-    actual.value.asserting {
-      case Some(value) => assert(value === starting)
-      case None        => fail()
-    }
+    createDynamoClient()
+      .map(BusStopRepository(_))
+      .use { repo =>
+        for {
+          _      <- repo.insert(starting)
+          actual <- repo.findBusStopByCode(0)
+        } yield actual
+      }
+      .asserting {
+        case Some(value) => assert(value === starting)
+        case None        => fail()
+      }
   }
 
   "should batch insert entries" in {
-    val repo  = BusStopRepository(container.client)
+    val batchSize = 100
+
     val entry = (code: Int) =>
       BusStop(
         code,
@@ -74,35 +160,39 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
         Position(1, 2, 2, 3)
       )
 
-    val entries = LazyList
-      .from(0)
+    val entries = fs2.Stream
+      .iterate(0)(i => i + 1)
       .map(c => entry(c))
-      .take(1000)
-      .toList
+      .take(batchSize)
+      .covary[IO]
 
-    val res = for {
-      failures <- repo.batchInsert(entries).compile.toList
-      count    <- repo.count()
-    } yield (failures, count)
-
-    res asserting {
-      case (Nil, 1000) => succeed
-      case errs        => fail(errs.toString())
-    }
+    createDynamoClient()
+      .map(BusStopRepository(_))
+      .use { repo =>
+        for {
+          _     <- entries.through(repo.batchInsert).compile.toList
+          count <- repo.count
+        } yield count
+      }
+      .asserting { count =>
+        count shouldBe batchSize
+      }
   }
 
   "should retrieve busStops by name" in {
-    val repo = BusStopRepository(container.client)
     val stop = BusStop(0, "IRNERIO", "MOCK", "Bologna", 42, Position(1, 2, 2, 3))
     val s303 = stop.copy(code = 303, location = "VIA IRNERIO 1")
     val s304 = stop.copy(code = 304, location = "VIA IRNERIO 2")
 
-    val actualBusStops = for {
-      _      <- repo.insert(s303)
-      _      <- repo.insert(s304)
-      actual <- repo.findBusStopByName("IRNERIO").compile.toList
-    } yield actual
-
-    actualBusStops asserting { stops => stops should contain.only(s303, s304) }
+    createDynamoClient()
+      .map(BusStopRepository(_))
+      .use { repo =>
+        for {
+          _      <- repo.insert(s303)
+          _      <- repo.insert(s304)
+          actual <- repo.findBusStopByName("IRNERIO")
+        } yield actual
+      }
+      .asserting(stops => stops should contain.only(s303, s304))
   }
 }

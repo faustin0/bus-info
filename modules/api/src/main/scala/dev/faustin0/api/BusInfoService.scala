@@ -22,19 +22,16 @@ class BusInfoService private (
 ) extends BusInfoDSL[IO] {
 
   override def getBusStop(busStopCode: Int): OptionT[IO, BusStop] =
-    repo.findBusStopByCode(busStopCode)
+    OptionT(repo.findBusStopByCode(busStopCode))
 
   override def getNextBuses(busRequest: BusRequest): IO[BusInfoResponse] =
-    repo
-      .findBusStopByCode(busRequest.busStop)
+    OptionT(repo.findBusStopByCode(busRequest.busStop))
       .semiflatMap(_ => client.hello(busRequest))
       .getOrElse(BusStopNotHandled(s"${busRequest.busStop} not handled"))
 
   override def searchBusStop(busStopName: String): IO[List[BusStop]] =
-    repo
-      .findBusStopByName(busStopName)
-      .compile
-      .toList
+    repo.findBusStopByName(busStopName)
+
 }
 
 object BusInfoService {

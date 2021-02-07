@@ -1,6 +1,5 @@
 package dev.faustin0.importer.domain
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
 
 import java.io.{ PrintWriter, StringWriter }
 import scala.xml.Elem
@@ -31,8 +30,8 @@ final case class Success(
 
 final case class Failure(
   processedFile: String,
-  processedItems: Int,
-  failure: FailedBatch //todo remove aws deps
+  processedItems: Int
+//  failure: FailedBatch //todo remove aws deps
 ) extends ImportOutcome {
 
   private def getStackTrace(t: Throwable): String = {
@@ -48,7 +47,8 @@ final case class Failure(
     s"""
        |processed file: '$processedFile'
        |extracted items count: '$processedItems'
-       |failed inserts count: '${failure.getUnprocessedItems.size()}'
-       |${formatException(failure.getException)}
        |""".stripMargin
+// TODO
+//  failed inserts count: '${failure.getUnprocessedItems.size()}'
+//  ${formatException(failure.getException)}
 }

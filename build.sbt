@@ -15,7 +15,7 @@ inThisBuild(
 
 // General Settings
 lazy val commonSettings = Seq(
-  scalaVersion := "2.13.3",
+  scalaVersion := "2.13.5",
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
   scalacOptions ++= Seq(
@@ -52,7 +52,7 @@ lazy val core = project
   .settings(fork in Test := true)
   .settings(assemblySetting)
   .settings(test in assembly := {})
-  .settings(libraryDependencies ++= httpClientDeps)
+  .settings(libraryDependencies ++= httpClientDeps ++ dynamoDeps)
 //  .settings(assemblyJarName in assembly := "bus-info-app.jar")
 
 lazy val api = project

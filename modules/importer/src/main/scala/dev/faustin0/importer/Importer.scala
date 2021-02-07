@@ -1,25 +1,31 @@
 package dev.faustin0.importer
 
-import cats.effect.IO
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import cats.effect.{ ContextShift, IO }
 import dev.faustin0.domain.BusStop
 import dev.faustin0.importer.domain._
 import dev.faustin0.importer.infrastructure.S3BucketLoader
 import dev.faustin0.repositories.BusStopRepository
 import fs2.Stream
-import software.amazon.awssdk.services.s3.S3Client
+
+import scala.util.Try
 
 class Importer(busStopRepo: BusStopRepository, datasetLoader: DataSetLoader[IO]) {
 
   def importFrom(dataset: DatasetFileLocation): IO[ImportOutcome] =
-    for {
-      busStopsDataset <- datasetLoader.load(dataset)
-      busStops        <- extractBusStopsFromDataSet(busStopsDataset).compile.toList
-      failed          <- busStopRepo.batchInsert(busStops).find(_.getUnprocessedItems.size() > 0).compile.toList
-    } yield failed match {
-      case List(errors) => Failure(busStopsDataset.name, busStops.length, errors)
-      case Nil          => Success(busStopsDataset.name, busStops.length)
-    }
+    Stream
+      .eval(datasetLoader.load(dataset))
+      .flatMap(dataset => extractBusStopsFromDataSet(dataset))
+      .through(busStopRepo.batchInsert)
+      //      .filter(resp => resp.hasUnprocessedItems) todo
+      //      .map(resp => resp.unprocessedItems())
+      .map(_.unprocessedItems().size)
+      .reduce((r1, r2) => r1 + r2)
+      .compile
+      .toList
+      .map {
+        case List(errorsCount) => Failure(dataset.fileName, errorsCount)
+        case _                 => Success(dataset.fileName, 0)
+      }
 
   private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] =
     Stream
@@ -29,12 +35,10 @@ class Importer(busStopRepo: BusStopRepository, datasetLoader: DataSetLoader[IO])
 
 object Importer {
 
-  def makeFromAWS(): Importer = {
-    lazy val s3Client     = S3Client.builder().build()
-    lazy val dynamoClient = AmazonDynamoDBClientBuilder.defaultClient()
-    lazy val busStopRepo  = BusStopRepository(dynamoClient)
-    lazy val bucketReader = new S3BucketLoader(s3Client)
+  def makeFromAWS(implicit cs: ContextShift[IO]): Try[Importer] =
+    for {
+      busStopRepo  <- BusStopRepository.fromAWS()
+      bucketReader <- S3BucketLoader.makeFromAws()
+    } yield new Importer(busStopRepo, bucketReader)
 
-    new Importer(busStopRepo, bucketReader)
-  }
 }
