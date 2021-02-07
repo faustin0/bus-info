@@ -13,7 +13,7 @@ object Dependencies {
   val s3sdkVersion               = "1.11.946"
   val awsLambdaJavaEventsVersion = "3.7.0"
   val dynamodbVersion            = "1.11.946"
-  val tapirVersion               = "0.17.8"
+  val tapirVersion               = "0.17.9"
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
