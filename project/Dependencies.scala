@@ -1,8 +1,8 @@
 import sbt._
 
 object Dependencies {
-  val http4sVersion              = "0.21.16"
   val testcontainersScalaVersion = "0.38.9"
+  val http4sVersion              = "0.21.18"
   val catsVersion                = "2.3.1"
   val kindProjectorV             = "0.11.3"
   val betterMonadicForV          = "0.3.1"
@@ -13,7 +13,7 @@ object Dependencies {
   val s3sdkVersion               = "1.11.946"
   val awsLambdaJavaEventsVersion = "3.7.0"
   val dynamodbVersion            = "1.11.946"
-  val tapirVersion               = "0.17.8"
+  val tapirVersion               = "0.17.9"
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
@@ -21,7 +21,7 @@ object Dependencies {
     "com.dimafeng"   %% "testcontainers-scala-dynalite"      % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.0"                    % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.1"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                   % catsVersion                % Test
   )
 
@@ -59,7 +59,7 @@ object Dependencies {
 //  )
 
   lazy val awsDeps = Seq(
-    "software.amazon.awssdk" % "s3"                     % "2.15.73",
+    "software.amazon.awssdk" % "s3"                     % "2.15.77",
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.1",
     "com.amazonaws"          % "aws-lambda-java-events" % "3.7.0"
   )
