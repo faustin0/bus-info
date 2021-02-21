@@ -10,14 +10,14 @@ object Dependencies {
   val scalaXmlVersion            = "1.3.0"
   val log4catsVersion            = "1.1.1"
   val awsLambdaVersion           = "1.2.1"
-  val s3sdkVersion               = "1.11.954"
+  val s3sdkVersion               = "1.11.959"
   val awsLambdaJavaEventsVersion = "3.7.0"
   val tapirVersion               = "0.17.10"
-  val dynamodbVersion            = "1.11.954"
+  val dynamodbVersion            = "1.11.959"
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                          % "3.2.3"                    % Test,
+    "org.scalatest"  %% "scalatest"                          % "3.2.5"                    % Test,
     "com.dimafeng"   %% "testcontainers-scala-dynalite"      % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
