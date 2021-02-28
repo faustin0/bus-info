@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   val http4sVersion              = "0.21.19"
-  val testcontainersScalaVersion = "0.39.1"
+  val testcontainersScalaVersion = "0.39.3"
   val catsVersion                = "2.3.3"
   val kindProjectorV             = "0.11.3"
   val betterMonadicForV          = "0.3.1"
@@ -10,10 +10,10 @@ object Dependencies {
   val scalaXmlVersion            = "1.3.0"
   val log4catsVersion            = "1.1.1"
   val awsLambdaVersion           = "1.2.1"
-  val s3sdkVersion               = "1.11.959"
+  val s3sdkVersion               = "1.11.964"
   val awsLambdaJavaEventsVersion = "3.7.0"
   val tapirVersion               = "0.17.10"
-  val dynamodbVersion            = "1.11.959"
+  val dynamodbVersion            = "1.11.964"
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
@@ -59,7 +59,7 @@ object Dependencies {
 //  )
 
   lazy val awsDeps = Seq(
-    "software.amazon.awssdk" % "s3"                     % "2.15.82",
+    "software.amazon.awssdk" % "s3"                     % "2.16.8",
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.1",
     "com.amazonaws"          % "aws-lambda-java-events" % "3.7.0"
   )
