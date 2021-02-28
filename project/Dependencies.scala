@@ -21,7 +21,7 @@ object Dependencies {
     "com.dimafeng"   %% "testcontainers-scala-dynalite"      % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.1"                    % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.2"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                   % catsVersion                % Test
   )
 
