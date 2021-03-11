@@ -5,7 +5,7 @@ import cats.data.OptionT
 import cats.effect.IO
 import dev.faustin0.HelloBusClient
 import dev.faustin0.domain._
-import dev.faustin0.repositories.BusStopRepository
+import dev.faustin0.repositories.DynamoBusStopRepository
 
 trait BusInfoDSL[F[_]] {
 
@@ -18,7 +18,7 @@ trait BusInfoDSL[F[_]] {
 
 class BusInfoService private (
   private val client: HelloBusClient,
-  private val repo: BusStopRepository
+  private val repo: DynamoBusStopRepository
 ) extends BusInfoDSL[IO] {
 
   override def getBusStop(busStopCode: Int): OptionT[IO, BusStop] =
@@ -35,7 +35,7 @@ class BusInfoService private (
 }
 
 object BusInfoService {
-  def apply(client: HelloBusClient, repo: BusStopRepository): BusInfoService = new BusInfoService(client, repo)
+  def apply(client: HelloBusClient, repo: DynamoBusStopRepository): BusInfoService = new BusInfoService(client, repo)
 }
 
 case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {

@@ -1,24 +1,26 @@
 package dev.faustin0.repositories
 
-import cats.effect.{ ContextShift, IO, Resource }
+import cats.effect.{ Concurrent, ContextShift, IO, Resource }
 import cats.implicits._
-import dev.faustin0.domain.{ BusStop, Position }
-import dev.faustin0.repositories.BusStopRepository.{ JavaFutureOps, Table }
-import fs2._
+import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason, Position }
+import dev.faustin0.repositories.DynamoBusStopRepository.{ JavaFutureOps, Table }
+import fs2.{ Stream, _ }
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
-import java.util
 import java.util.concurrent.{ CancellationException, CompletableFuture }
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
-class BusStopRepository private (private val client: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]) {
+class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit
+  cs: ContextShift[IO],
+  c: Concurrent[IO]
+) extends BusStopRepository[IO] {
 
-  def insert(busStop: BusStop): IO[Unit] = {
+  override def insert(busStop: BusStop): IO[Unit] = {
     val request = PutItemRequest
       .builder()
       .tableName(Table.name)
@@ -37,11 +39,11 @@ class BusStopRepository private (private val client: DynamoDbAsyncClient)(implic
       )
       .build()
 
-//    log.info(s"Inserting bus-stop $busStop") *>
+    //    log.info(s"Inserting bus-stop $busStop") *>
     IO(client.putItem(request)).fromCompletable.void
   }
 
-  def batchInsert: Pipe[IO, BusStop, BatchWriteItemResponse] = { busStops =>
+  override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
     busStops.map { busStop =>
       Map(
         Table.indexHashKey      -> attribute(_.n(String.valueOf(busStop.code))),
@@ -57,7 +59,7 @@ class BusStopRepository private (private val client: DynamoDbAsyncClient)(implic
     }
       .map(item => PutRequest.builder().item(item).build())
       .map(putReq => WriteRequest.builder().putRequest(putReq).build())
-      .chunkN(25, allowFewer = true)
+      .chunkN(Table.MAX_BATCH_SIZE, allowFewer = true)
       .map(chunk => java.util.Map.of(Table.name, chunk.toList.asJava))
       .map(writeReq =>
         BatchWriteItemRequest
@@ -65,11 +67,17 @@ class BusStopRepository private (private val client: DynamoDbAsyncClient)(implic
           .requestItems(writeReq)
           .build()
       )
-      .evalMap(batchReq => IO(client.batchWriteItem(batchReq)).fromCompletable)
+      .flatMap { batchReq =>
+        Stream
+          .attemptEval(IO(client.batchWriteItem(batchReq)).fromCompletable)
+          .collect { case Left(error) =>
+            FailureReason(error)
+          }
+      }
+
   }
 
-
-  def findBusStopByCode(code: Int): IO[Option[BusStop]] = {
+  override def findBusStopByCode(code: Int): IO[Option[BusStop]] = {
     val values = Map("code" -> attribute(_.n(String.valueOf(code)))).asJava
 
     val request = GetItemRequest
@@ -81,18 +89,17 @@ class BusStopRepository private (private val client: DynamoDbAsyncClient)(implic
     for {
       //      _      <- log.debug(s"Getting busStop $id")
       result       <- IO(client.getItem(request)).fromCompletable
-      mappedBusStop = Option(result.item())
-                        .traverse(item => dynamoItemToBusStop(item))
+      mappedBusStop = Option(result.item()).traverse(item => dynamoItemToBusStop(item))
       busStop      <- IO.fromTry(mappedBusStop)
     } yield busStop
   }
 
-  def count: IO[Long] =
+  override def count: IO[Long] =
     IO(client.describeTable((b: DescribeTableRequest.Builder) => b.tableName(Table.name))).fromCompletable
       .map(resp => resp.table())
       .map(table => table.itemCount())
 
-  def findBusStopByName(name: String): IO[List[BusStop]] = {
+  override def findBusStopByName(name: String): IO[List[BusStop]] = {
     val attributes = Map("#nameKey" -> "name")
     val values     = Map(":nameValue" -> attribute(_.s(name.toUpperCase)))
 
@@ -116,7 +123,7 @@ class BusStopRepository private (private val client: DynamoDbAsyncClient)(implic
     } yield busStop
   }
 
-  private def dynamoItemToBusStop(item: util.Map[String, AttributeValue]) =
+  private def dynamoItemToBusStop(item: java.util.Map[String, AttributeValue]) =
     Try {
       BusStop(
         code = item.get(Table.indexHashKey).n().toInt,
@@ -141,9 +148,10 @@ class BusStopRepository private (private val client: DynamoDbAsyncClient)(implic
 
 }
 
-object BusStopRepository {
+object DynamoBusStopRepository {
 
   private case object Table {
+    val MAX_BATCH_SIZE  = 25
     val name            = "bus_stops"
     val indexHashKey    = "code"
     val searchIndexName = "name-index"
@@ -160,20 +168,21 @@ object BusStopRepository {
     }
   }
 
-  def apply(awsClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]): BusStopRepository = new BusStopRepository(
-    awsClient
-  )
+  def apply(awsClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]): DynamoBusStopRepository =
+    new DynamoBusStopRepository(
+      awsClient
+    )
 
-  def makeResource(implicit cs: ContextShift[IO]): Resource[IO, BusStopRepository] = {
+  def makeResource(implicit cs: ContextShift[IO]): Resource[IO, DynamoBusStopRepository] = {
     val client = IO.fromTry(awsDefaultClient.orElse(clientFromEnv))
 
     Resource
       .fromAutoCloseable(client)
-      .map(BusStopRepository(_))
+      .map(DynamoBusStopRepository(_))
   }
 
-  def fromAWS()(implicit cs: ContextShift[IO]): Try[BusStopRepository] =
-    awsDefaultClient.map(BusStopRepository(_))
+  def fromAWS()(implicit cs: ContextShift[IO]): Try[DynamoBusStopRepository] =
+    awsDefaultClient.map(DynamoBusStopRepository(_))
 
   private def awsDefaultClient: Try[DynamoDbAsyncClient] =
     Try {
