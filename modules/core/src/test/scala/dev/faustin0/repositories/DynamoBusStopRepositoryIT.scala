@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
 
-class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Matchers with AsyncIOSpec {
+class DynamoBusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Matchers with AsyncIOSpec {
   implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   private lazy val dynamoContainer = GenericContainer(
@@ -26,7 +26,7 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
     command = Seq("-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"),
     waitStrategy = Wait.forLogMessage(".*CorsParams:.*", 1)
   ).configure { provider =>
-    provider.withLogConsumer(t => logger.debug(t.getUtf8String).unsafeRunSync())
+    provider.withLogConsumer(t => logger.debug(t.getUtf8String).unsafeRunAsyncAndForget())
     ()
   }
 
@@ -134,7 +134,7 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
     )
 
     createDynamoClient()
-      .map(BusStopRepository(_))
+      .map(DynamoBusStopRepository(_))
       .use { repo =>
         for {
           _      <- repo.insert(starting)
@@ -148,7 +148,7 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
   }
 
   "should batch insert entries" in {
-    val batchSize = 100
+    val batchSize = 1000
 
     val entry = (code: Int) =>
       BusStop(
@@ -167,15 +167,16 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
       .covary[IO]
 
     createDynamoClient()
-      .map(BusStopRepository(_))
+      .map(DynamoBusStopRepository(_))
       .use { repo =>
         for {
-          _     <- entries.through(repo.batchInsert).compile.toList
-          count <- repo.count
-        } yield count
+          errors <- entries.through(repo.batchInsert).compile.toList
+          count  <- repo.count //todo make the counting "isolated" from other tests
+        } yield (count, errors)
       }
-      .asserting { count =>
+      .asserting { case (count, errs) =>
         count shouldBe batchSize
+        errs shouldBe empty
       }
   }
 
@@ -185,7 +186,7 @@ class BusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer with Ma
     val s304 = stop.copy(code = 304, location = "VIA IRNERIO 2")
 
     createDynamoClient()
-      .map(BusStopRepository(_))
+      .map(DynamoBusStopRepository(_))
       .use { repo =>
         for {
           _      <- repo.insert(s303)

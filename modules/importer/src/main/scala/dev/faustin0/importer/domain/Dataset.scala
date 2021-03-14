@@ -1,7 +1,7 @@
 package dev.faustin0.importer.domain
 
+import cats.Show
 
-import java.io.{ PrintWriter, StringWriter }
 import scala.xml.Elem
 
 case class DatasetFileLocation(
@@ -19,36 +19,35 @@ sealed trait ImportOutcome extends Product with Serializable
 final case class Success(
   processedFileName: String,
   processedItems: Int
-) extends ImportOutcome {
-
-  override def toString: String = //todo rename, do not use to string
-    s"""
-       |successfully processed file: '$processedFileName'
-       |extracted items count: '$processedItems'
-       |""".stripMargin
-}
+) extends ImportOutcome
 
 final case class Failure(
   processedFile: String,
-  processedItems: Int
-//  failure: FailedBatch //todo remove aws deps
+  processedItems: Int,
+  failures: Int
 ) extends ImportOutcome {
 
-  private def getStackTrace(t: Throwable): String = {
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    t.printStackTrace(pw)
-    sw.toString
+}
+
+object ImportOutcome {
+
+  implicit object showForImportOutcome extends Show[ImportOutcome] {
+
+    override def show(t: ImportOutcome): String =
+      t match {
+        case Success(processedFileName, processedItems)       =>
+          s"""
+             |successfully processed file: '$processedFileName'
+             |extracted items count: '$processedItems'
+             |""".stripMargin
+        case Failure(processedFile, processedItems, failures) =>
+          s"""
+             |Failed to process file: '$processedFile'
+             |extracted items count: '$processedItems'
+             |failed inserts count: '$failures'
+             |""".stripMargin
+      }
+
   }
 
-  private def formatException(t: Throwable): String = s"$t ${getStackTrace(t)}"
-
-  override def toString: String =
-    s"""
-       |processed file: '$processedFile'
-       |extracted items count: '$processedItems'
-       |""".stripMargin
-// TODO
-//  failed inserts count: '${failure.getUnprocessedItems.size()}'
-//  ${formatException(failure.getException)}
 }

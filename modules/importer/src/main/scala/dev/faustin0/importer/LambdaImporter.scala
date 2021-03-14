@@ -1,6 +1,7 @@
 package dev.faustin0.importer
 
 import cats.effect.{ ExitCode, IO }
+import cats.implicits._
 import com.amazonaws.services.lambda.runtime.events.S3Event
 import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
 import dev.faustin0.importer.domain.DatasetFileLocation
@@ -29,7 +30,7 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
         )
       )
       .evalMap(dataset => importer.importFrom(dataset))
-      .evalTap(outCome => IO(logger.log(outCome.toString)))
+      .evalTap(outcome => IO(logger.log(outcome.show)))
       .compile
       .drain
       .as(ExitCode.Success)

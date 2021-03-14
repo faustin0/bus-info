@@ -1,31 +1,40 @@
 package dev.faustin0.importer
 
+import cats.effect.concurrent.Ref
 import cats.effect.{ ContextShift, IO }
-import dev.faustin0.domain.BusStop
+import dev.faustin0.domain.{ BusStop, BusStopRepository }
 import dev.faustin0.importer.domain._
 import dev.faustin0.importer.infrastructure.S3BucketLoader
-import dev.faustin0.repositories.BusStopRepository
+import dev.faustin0.repositories.DynamoBusStopRepository
 import fs2.Stream
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 import scala.util.Try
 
-class Importer(busStopRepo: BusStopRepository, datasetLoader: DataSetLoader[IO]) {
+class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[IO]) {
+  implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
-  def importFrom(dataset: DatasetFileLocation): IO[ImportOutcome] =
-    Stream
-      .eval(datasetLoader.load(dataset))
-      .flatMap(dataset => extractBusStopsFromDataSet(dataset))
-      .through(busStopRepo.batchInsert)
-      //      .filter(resp => resp.hasUnprocessedItems) todo
-      //      .map(resp => resp.unprocessedItems())
-      .map(_.unprocessedItems().size)
-      .reduce((r1, r2) => r1 + r2)
-      .compile
-      .toList
-      .map {
-        case List(errorsCount) => Failure(dataset.fileName, errorsCount)
-        case _                 => Success(dataset.fileName, 0)
-      }
+  def importFrom(dataset: DatasetFileLocation): IO[ImportOutcome] = {
+
+    val value = for {
+      counter  <- Ref.of[IO, Int](0)
+      failures <- Stream
+                    .eval(datasetLoader.load(dataset))
+                    .flatMap(dataset => extractBusStopsFromDataSet(dataset))
+                    .evalTap(_ => counter.getAndUpdate(_ + 1))
+                    .through(busStopRepo.batchInsert)
+                    .evalTap(failure => logger.error(failure.reason)("import operation failed"))
+                    .compile
+                    .fold(0)((acc, _) => acc + 1)
+      count    <- counter.get
+    } yield (failures, count)
+
+    value.map {
+      case (0, processed)     => Success("TODO", processed)
+      case (fails, processed) => Failure("TODO", processed, fails)
+    }
+  }
 
   private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] =
     Stream
@@ -37,7 +46,7 @@ object Importer {
 
   def makeFromAWS(implicit cs: ContextShift[IO]): Try[Importer] =
     for {
-      busStopRepo  <- BusStopRepository.fromAWS()
+      busStopRepo  <- DynamoBusStopRepository.fromAWS()
       bucketReader <- S3BucketLoader.makeFromAws()
     } yield new Importer(busStopRepo, bucketReader)
 
