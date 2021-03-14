@@ -12,7 +12,7 @@ object Dependencies {
   val awsLambdaVersion           = "1.2.1"
   val s3sdkVersion               = "1.11.969"
   val awsLambdaJavaEventsVersion = "3.7.0"
-  val tapirVersion               = "0.17.13"
+  val tapirVersion               = "0.17.16"
   val dynamodbVersion            = "1.11.969"
   val logbackVersion             = "1.2.3"
 
@@ -59,7 +59,7 @@ object Dependencies {
 //  )
 
   lazy val awsDeps = Seq(
-    "software.amazon.awssdk" % "s3"                     % "2.16.13",
+    "software.amazon.awssdk" % "s3"                     % "2.16.18",
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.1",
     "com.amazonaws"          % "aws-lambda-java-events" % "3.7.0"
   )
