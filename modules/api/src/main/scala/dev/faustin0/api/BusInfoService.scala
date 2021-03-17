@@ -18,7 +18,7 @@ trait BusInfoDSL[F[_]] {
 
 class BusInfoService private (
   private val client: HelloBusClient,
-  private val repo: DynamoBusStopRepository
+  private val repo: BusStopRepository[IO]
 ) extends BusInfoDSL[IO] {
 
   override def getBusStop(busStopCode: Int): OptionT[IO, BusStop] =

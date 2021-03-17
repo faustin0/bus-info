@@ -13,4 +13,5 @@
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
+    <logger name="dev.faustin0" level="DEBUG"/>
 </configuration>

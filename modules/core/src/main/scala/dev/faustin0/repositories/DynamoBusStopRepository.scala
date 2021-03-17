@@ -1,6 +1,8 @@
 package dev.faustin0.repositories
 
-import cats.effect.{ Concurrent, ContextShift, IO, Resource }
+import _root_.io.chrisdavenport.log4cats._
+import _root_.io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import cats.effect.{ ContextShift, IO, Resource }
 import cats.implicits._
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason, Position }
 import dev.faustin0.repositories.DynamoBusStopRepository.{ JavaFutureOps, Table }
@@ -16,9 +18,10 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit
-  cs: ContextShift[IO],
-  c: Concurrent[IO]
+  cs: ContextShift[IO]
 ) extends BusStopRepository[IO] {
+
+  implicit private val log: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   override def insert(busStop: BusStop): IO[Unit] = {
     val request = PutItemRequest
@@ -39,8 +42,8 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       )
       .build()
 
-    //    log.info(s"Inserting bus-stop $busStop") *>
-    IO(client.putItem(request)).fromCompletable.void
+    log.debug(s"Inserting bus-stop $busStop") *>
+      IO(client.putItem(request)).fromCompletable.void
   }
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
@@ -87,7 +90,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .build()
 
     for {
-      //      _      <- log.debug(s"Getting busStop $id")
+      _            <- log.debug(s"Getting busStop $code")
       result       <- IO(client.getItem(request)).fromCompletable
       mappedBusStop = Option(result.item()).traverse(item => dynamoItemToBusStop(item))
       busStop      <- IO.fromTry(mappedBusStop)
@@ -114,7 +117,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .build()
 
     for {
-      //_      <- log.debug(s"Searching busStops $name")
+      _             <- log.debug(s"Searching busStops $name")
       result        <- IO(client.query(queryRequest)).fromCompletable
       mappedBusStops = Option(result.items()).toList
                          .flatMap(_.asScala)
@@ -140,7 +143,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       )
     }
 
-  private def attribute(b: AttributeValue.Builder => Unit): AttributeValue = {
+  private def attribute(b: AttributeValue.Builder => AttributeValue.Builder): AttributeValue = {
     val builder = AttributeValue.builder()
     b(builder)
     builder.build()
