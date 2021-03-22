@@ -4,8 +4,8 @@ import _root_.io.chrisdavenport.log4cats._
 import _root_.io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import cats.effect.{ ContextShift, IO, Resource }
 import cats.implicits._
-import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason, Position }
-import dev.faustin0.repositories.DynamoBusStopRepository.{ JavaFutureOps, Table }
+import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
+import dev.faustin0.repositories.DynamoBusStopRepository.JavaFutureOps
 import fs2.{ Stream, _ }
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -26,20 +26,8 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
   override def insert(busStop: BusStop): IO[Unit] = {
     val request = PutItemRequest
       .builder()
-      .tableName(Table.name)
-      .item(
-        Map(
-          Table.indexHashKey      -> attribute(_.n(String.valueOf(busStop.code))),
-          Table.Attrs.busStopName -> attribute(_.s(busStop.name)),
-          Table.Attrs.location    -> attribute(_.s(busStop.location)),
-          Table.Attrs.comune      -> attribute(_.s(busStop.comune)),
-          Table.Attrs.areaCode    -> attribute(_.n(String.valueOf(busStop.areaCode))),
-          Table.Attrs.lat         -> attribute(_.n(String.valueOf(busStop.position.lat))),
-          Table.Attrs.lng         -> attribute(_.n(String.valueOf(busStop.position.long))),
-          Table.Attrs.x           -> attribute(_.n(String.valueOf(busStop.position.x))),
-          Table.Attrs.y           -> attribute(_.n(String.valueOf(busStop.position.y)))
-        ).asJava
-      )
+      .tableName(BusStopTable.name)
+      .item(BusStopTable.busStopToDynamoMapping(busStop))
       .build()
 
     log.debug(s"Inserting bus-stop $busStop") *>
@@ -47,23 +35,12 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
   }
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
-    busStops.map { busStop =>
-      Map(
-        Table.indexHashKey      -> attribute(_.n(String.valueOf(busStop.code))),
-        Table.Attrs.busStopName -> attribute(_.s(busStop.name)),
-        Table.Attrs.location    -> attribute(_.s(busStop.location)),
-        Table.Attrs.comune      -> attribute(_.s(busStop.comune)),
-        Table.Attrs.areaCode    -> attribute(_.n(String.valueOf(busStop.areaCode))),
-        Table.Attrs.lat         -> attribute(_.n(String.valueOf(busStop.position.lat))),
-        Table.Attrs.lng         -> attribute(_.n(String.valueOf(busStop.position.long))),
-        Table.Attrs.x           -> attribute(_.n(String.valueOf(busStop.position.x))),
-        Table.Attrs.y           -> attribute(_.n(String.valueOf(busStop.position.y)))
-      ).asJava
-    }
+    busStops
+      .map(busStop => BusStopTable.busStopToDynamoMapping(busStop))
       .map(item => PutRequest.builder().item(item).build())
       .map(putReq => WriteRequest.builder().putRequest(putReq).build())
-      .chunkN(Table.MAX_BATCH_SIZE, allowFewer = true)
-      .map(chunk => java.util.Map.of(Table.name, chunk.toList.asJava))
+      .chunkN(BusStopTable.MAX_BATCH_SIZE, allowFewer = true)
+      .map(chunk => java.util.Map.of(BusStopTable.name, chunk.toList.asJava))
       .map(writeReq =>
         BatchWriteItemRequest
           .builder()
@@ -81,35 +58,35 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
   }
 
   override def findBusStopByCode(code: Int): IO[Option[BusStop]] = {
-    val values = Map("code" -> attribute(_.n(String.valueOf(code)))).asJava
+    val values = BusStopTable.hashKeySearchParameters(code)
 
     val request = GetItemRequest
       .builder()
-      .tableName(Table.name)
+      .tableName(BusStopTable.name)
       .key(values)
       .build()
 
     for {
       _            <- log.debug(s"Getting busStop $code")
       result       <- IO(client.getItem(request)).fromCompletable
-      mappedBusStop = Option(result.item()).traverse(item => dynamoItemToBusStop(item))
+      mappedBusStop = Option(result.item()).traverse(item => BusStopTable.dynamoItemToBusStop(item))
       busStop      <- IO.fromTry(mappedBusStop)
     } yield busStop
   }
 
   override def count: IO[Long] =
-    IO(client.describeTable((b: DescribeTableRequest.Builder) => b.tableName(Table.name))).fromCompletable
+    IO(client.describeTable((b: DescribeTableRequest.Builder) => b.tableName(BusStopTable.name))).fromCompletable
       .map(resp => resp.table())
       .map(table => table.itemCount())
 
   override def findBusStopByName(name: String): IO[List[BusStop]] = {
-    val attributes = Map("#nameKey" -> "name")
-    val values     = Map(":nameValue" -> attribute(_.s(name.toUpperCase)))
+    val attributes = Map("#nameKey" -> BusStopTable.Attrs.busStopName)
+    val values     = Map(":nameValue" -> AttributeValue.builder().s(name.toUpperCase).build())
 
     val queryRequest = QueryRequest
       .builder()
-      .tableName(Table.name)
-      .indexName(Table.searchIndexName)
+      .tableName(BusStopTable.name)
+      .indexName(BusStopTable.searchIndexName)
       .consistentRead(false)
       .expressionAttributeNames(attributes.asJava)
       .expressionAttributeValues(values.asJava)
@@ -121,55 +98,14 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       result        <- IO(client.query(queryRequest)).fromCompletable
       mappedBusStops = Option(result.items()).toList
                          .flatMap(_.asScala)
-                         .traverse(item => dynamoItemToBusStop(item))
+                         .traverse(item => BusStopTable.dynamoItemToBusStop(item))
       busStop       <- IO.fromTry(mappedBusStops)
     } yield busStop
-  }
-
-  private def dynamoItemToBusStop(item: java.util.Map[String, AttributeValue]) =
-    Try {
-      BusStop(
-        code = item.get(Table.indexHashKey).n().toInt,
-        name = item.get(Table.Attrs.busStopName).s(),
-        location = item.get(Table.Attrs.location).s(),
-        comune = item.get(Table.Attrs.comune).s(),
-        areaCode = item.get(Table.Attrs.areaCode).n().toInt,
-        position = Position(
-          x = item.get(Table.Attrs.x).n().toLong,
-          y = item.get(Table.Attrs.y).n().toLong,
-          lat = item.get(Table.Attrs.lat).n().toDouble,
-          long = item.get(Table.Attrs.lng).n().toDouble
-        )
-      )
-    }
-
-  private def attribute(b: AttributeValue.Builder => AttributeValue.Builder): AttributeValue = {
-    val builder = AttributeValue.builder()
-    b(builder)
-    builder.build()
   }
 
 }
 
 object DynamoBusStopRepository {
-
-  private case object Table {
-    val MAX_BATCH_SIZE  = 25
-    val name            = "bus_stops"
-    val indexHashKey    = "code"
-    val searchIndexName = "name-index"
-
-    case object Attrs {
-      val busStopName = "name"
-      val location    = "location"
-      val comune      = "comune"
-      val areaCode    = "areaCode"
-      val lat         = "lat"
-      val lng         = "lng"
-      val x           = "x"
-      val y           = "y"
-    }
-  }
 
   def apply(awsClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]): DynamoBusStopRepository =
     new DynamoBusStopRepository(
