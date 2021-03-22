@@ -6,6 +6,7 @@ import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{ GetObjectRequest, GetObjectResponse }
 
+import scala.util.Try
 import scala.xml.XML
 
 class S3BucketLoader(private val s3Client: S3Client) extends DataSetLoader[IO] {
@@ -28,4 +29,11 @@ class S3BucketLoader(private val s3Client: S3Client) extends DataSetLoader[IO] {
       .fromAutoCloseable(IO(s3Client.getObject(getObjectRequest)))
   }
 
+}
+
+object S3BucketLoader {
+
+  def makeFromAws(): Try[S3BucketLoader] =
+    Try(S3Client.builder().build())
+      .map(new S3BucketLoader(_))
 }

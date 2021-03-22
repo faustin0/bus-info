@@ -5,7 +5,7 @@ import cats.data.OptionT
 import cats.effect.IO
 import dev.faustin0.HelloBusClient
 import dev.faustin0.domain._
-import dev.faustin0.repositories.BusStopRepository
+import dev.faustin0.repositories.DynamoBusStopRepository
 
 trait BusInfoDSL[F[_]] {
 
@@ -18,27 +18,24 @@ trait BusInfoDSL[F[_]] {
 
 class BusInfoService private (
   private val client: HelloBusClient,
-  private val repo: BusStopRepository
+  private val repo: BusStopRepository[IO]
 ) extends BusInfoDSL[IO] {
 
   override def getBusStop(busStopCode: Int): OptionT[IO, BusStop] =
-    repo.findBusStopByCode(busStopCode)
+    OptionT(repo.findBusStopByCode(busStopCode))
 
   override def getNextBuses(busRequest: BusRequest): IO[BusInfoResponse] =
-    repo
-      .findBusStopByCode(busRequest.busStop)
+    OptionT(repo.findBusStopByCode(busRequest.busStop))
       .semiflatMap(_ => client.hello(busRequest))
       .getOrElse(BusStopNotHandled(s"${busRequest.busStop} not handled"))
 
   override def searchBusStop(busStopName: String): IO[List[BusStop]] =
-    repo
-      .findBusStopByName(busStopName)
-      .compile
-      .toList
+    repo.findBusStopByName(busStopName)
+
 }
 
 object BusInfoService {
-  def apply(client: HelloBusClient, repo: BusStopRepository): BusInfoService = new BusInfoService(client, repo)
+  def apply(client: HelloBusClient, repo: DynamoBusStopRepository): BusInfoService = new BusInfoService(client, repo)
 }
 
 case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {

@@ -10,28 +10,26 @@ object Dependencies {
   val scalaXmlVersion            = "1.3.0"
   val log4catsVersion            = "1.1.1"
   val awsLambdaVersion           = "1.2.1"
-  val s3sdkVersion               = "1.11.969"
   val awsLambdaJavaEventsVersion = "3.7.0"
+  val awsSdkVersion              = "2.16.5"
   val tapirVersion               = "0.17.19"
-  val dynamodbVersion            = "1.11.969"
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
     "org.scalatest"  %% "scalatest"                          % "3.2.6"                    % Test,
-    "com.dimafeng"   %% "testcontainers-scala-dynalite"      % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
+    "com.amazonaws"   % "aws-java-sdk"                       % "1.11.975"                 % Test, //needed by localstack
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
     "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.2"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                   % catsVersion                % Test
   )
 
   lazy val dependencies = Seq(
-    "org.typelevel"          %% "cats-effect"           % catsVersion,
-    "io.circe"               %% "circe-generic"         % circeVersion,
-    "org.scala-lang.modules" %% "scala-xml"             % scalaXmlVersion,
-    "io.chrisdavenport"      %% "log4cats-slf4j"        % log4catsVersion,
-    "com.amazonaws"           % "aws-java-sdk-dynamodb" % dynamodbVersion,
-    "ch.qos.logback"          % "logback-classic"       % logbackVersion % Runtime
+    "org.typelevel"          %% "cats-effect"     % catsVersion,
+    "io.circe"               %% "circe-generic"   % circeVersion,
+    "org.scala-lang.modules" %% "scala-xml"       % scalaXmlVersion,
+    "io.chrisdavenport"      %% "log4cats-slf4j"  % log4catsVersion,
+    "ch.qos.logback"          % "logback-classic" % logbackVersion % Runtime
   )
 
   lazy val httpClientDeps = Seq(
@@ -52,16 +50,15 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % tapirVersion
   )
 
-//  lazy val lambdaDeps = Seq(
-//    "com.amazonaws" % "aws-lambda-java-core"   % awsLambdaVersion,
-//    "com.amazonaws" % "aws-java-sdk-s3"        % s3sdkVersion,
-//    "com.amazonaws" % "aws-lambda-java-events" % awsLambdaJavaEventsVersion
-//  )
-
   lazy val awsDeps = Seq(
-    "software.amazon.awssdk" % "s3"                     % "2.16.23",
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.1",
-    "com.amazonaws"          % "aws-lambda-java-events" % "3.7.0"
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.7.0",
+    "software.amazon.awssdk" % "s3"                     % awsSdkVersion,
+    "software.amazon.awssdk" % "dynamodb"               % awsSdkVersion
+  )
+
+  lazy val dynamoDeps = Seq(
+    "software.amazon.awssdk" % "dynamodb" % awsSdkVersion
   )
 
 }
