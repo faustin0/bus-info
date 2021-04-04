@@ -16,7 +16,7 @@ object Dependencies {
   val logbackVersion             = "1.2.3"
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                          % "3.2.6"                    % Test,
+    "org.scalatest"  %% "scalatest"                          % "3.2.7"                    % Test,
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
     "com.amazonaws"   % "aws-java-sdk"                       % "1.11.986"                 % Test, //needed by localstack
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
