@@ -31,8 +31,8 @@ class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[
     } yield (failures, count)
 
     value.map {
-      case (0, processed)     => Success("TODO", processed)
-      case (fails, processed) => Failure("TODO", processed, fails)
+      case (0, processed)     => Success(dataset.fileName, processed)
+      case (fails, processed) => Failure(dataset.fileName, processed, fails)
     }
   }
 

@@ -48,11 +48,12 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
           .build()
       )
       .flatMap { batchReq =>
-        Stream
-          .attemptEval(IO(client.batchWriteItem(batchReq)).fromCompletable)
-          .collect { case Left(error) =>
-            FailureReason(error)
-          }
+        Stream.attemptEval {
+          log.debug(s"batch inserting bus-stop $batchReq") *>
+            IO(client.batchWriteItem(batchReq)).fromCompletable
+        }.collect { case Left(error) =>
+          FailureReason(error)
+        }
       }
 
   }
