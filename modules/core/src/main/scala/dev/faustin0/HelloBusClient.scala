@@ -1,30 +1,35 @@
 package dev.faustin0
 
-import cats.effect.{ConcurrentEffect, IO, Resource}
-import dev.faustin0.domain.{BusInfoResponse, BusRequest}
+import cats.effect.{ ContextShift, IO, Resource, Timer }
+import dev.faustin0.domain.{ BusInfoResponse, BusRequest, Failure }
 import org.http4s.Method._
 import org.http4s.client._
 import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.client.middleware.{Logger => ClientLogger}
+import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.headers._
 import org.http4s.implicits._
 import org.http4s.scalaxml._
-import org.http4s.{Headers, MediaType, Request, UrlForm}
+import org.http4s.{ Headers, MediaType, Request, UrlForm }
 
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 import scala.xml.Elem
 
-class HelloBusClient private (private val httpClient: Client[IO]) {
+class HelloBusClient private (private val httpClient: Client[IO])(implicit c: ContextShift[IO], t: Timer[IO]) {
 
   def hello(busRequest: BusRequest): IO[BusInfoResponse] = {
     val request = createHttpRequest(busRequest)
 
-    for {
-      xmlResponse    <- httpClient.expect[Elem](request)
-      parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse, busRequest.busStop))
-    } yield parsedResponse
+    httpClient
+      .run(request)
+      .use { resp =>
+        for {
+          xmlResponse    <- resp.as[Elem]
+          parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse, busRequest.busStop))
+        } yield parsedResponse
+      }
+      .timeoutTo(10 seconds, fallback = IO(Failure("Tper servers not responding")))
   }
 
   private def createHttpRequest(busRequest: BusRequest): Request[IO] =
@@ -53,11 +58,13 @@ object HelloBusClient {
   private val targetUri =
     uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
 
-  def apply(httpClient: Client[IO]): HelloBusClient = new HelloBusClient(httpClient)
+  def apply(httpClient: Client[IO])(implicit c: ContextShift[IO], t: Timer[IO]): HelloBusClient = new HelloBusClient(
+    httpClient
+  )
 
   def make(
     executionContext: ExecutionContext
-  )(implicit ce: ConcurrentEffect[IO]): Resource[IO, HelloBusClient] =
+  )(implicit c: ContextShift[IO], t: Timer[IO]): Resource[IO, HelloBusClient] =
     BlazeClientBuilder[IO](executionContext)
       .withConnectTimeout(5 seconds)
       .withRequestTimeout(7 seconds)

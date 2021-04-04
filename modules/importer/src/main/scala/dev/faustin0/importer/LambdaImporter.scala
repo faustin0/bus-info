@@ -1,39 +1,39 @@
 package dev.faustin0.importer
 
-import cats.effect.IO
-import cats.implicits.toFlatMapOps
+import cats.effect.{ ExitCode, IO }
+import cats.implicits._
 import com.amazonaws.services.lambda.runtime.events.S3Event
 import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
 import dev.faustin0.importer.domain.DatasetFileLocation
+import fs2.Stream
 
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-class LambdaImporter() extends RequestHandler[S3Event, Unit] {
+class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
+  implicit lazy val cs = IO.contextShift(ExecutionContext.fromExecutor(Executors.newCachedThreadPool()))
 
-  private lazy val importer = Importer.makeFromAWS()
+  private lazy val importer = Importer.makeFromAWS.get
 
-  override def handleRequest(s3Event: S3Event, context: Context): Unit = {
+  override def handleRequest(s3Event: S3Event, context: Context): ExitCode = {
     val logger = context.getLogger
 
-    s3Event.getRecords.forEach(it => logger.log(s"S3 event: ${it.getEventName}"))
-
-    getCreatedObject(s3Event).foreach { dataset =>
-      importer
-        .importFrom(dataset)
-        .flatTap(outCome => IO(logger.log(outCome.toString)))
-        .void
-        .unsafeRunSync()
-    }
-  }
-
-  private def getCreatedObject(s3Event: S3Event): Option[DatasetFileLocation] =
-    s3Event.getRecords.asScala
+    Stream
+      .fromIterator[IO](s3Event.getRecords.asScala.iterator)
+      .evalTap(s3Event => IO(logger.log(s"S3 event: ${s3Event.getEventName}")))
       .find(e => e.getEventName.contains("ObjectCreated:"))
-      .map { s3Record =>
+      .map(s3Record =>
         DatasetFileLocation(
           bucketName = s3Record.getS3.getBucket.getName,
           fileName = s3Record.getS3.getObject.getUrlDecodedKey
         )
-      }
-
+      )
+      .evalMap(dataset => importer.importFrom(dataset))
+      .evalTap(outcome => IO(logger.log(outcome.show)))
+      .compile
+      .drain
+      .as(ExitCode.Success)
+      .unsafeRunSync()
+  }
 }

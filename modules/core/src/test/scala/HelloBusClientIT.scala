@@ -45,7 +45,7 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
     actual.asserting {
       case Successful(List(_, _*)) => succeed
-      case t: Throwable            => fail(t)
+      case Failure(error)          => fail(error)
       case _                       => fail()
     }
   }
