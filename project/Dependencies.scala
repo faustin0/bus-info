@@ -11,7 +11,7 @@ object Dependencies {
   val log4catsVersion            = "1.1.1"
   val awsLambdaVersion           = "1.2.1"
   val awsLambdaJavaEventsVersion = "3.7.0"
-  val awsSdkVersion              = "2.16.29"
+  val awsSdkVersion              = "2.16.34"
   val tapirVersion               = "0.17.19"
   val logbackVersion             = "1.2.3"
 
