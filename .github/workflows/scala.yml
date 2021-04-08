@@ -52,7 +52,7 @@ jobs:
 
       - name: Create Tag
         id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
+        uses: crazy-max/ghaction-docker-meta@v2.3.0
         with:
           images: ghcr.io/faustin0/bus-info/app # base name for tag
           tag-sha: true # using git short SHA
