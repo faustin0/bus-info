@@ -2,7 +2,7 @@ package dev.faustin0.repositories
 
 import _root_.io.chrisdavenport.log4cats._
 import _root_.io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import cats.effect.{ ContextShift, IO, Resource }
+import cats.effect.{ IO, Resource }
 import cats.implicits._
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import dev.faustin0.repositories.DynamoBusStopRepository.JavaFutureOps
@@ -16,6 +16,7 @@ import java.net.URI
 import java.util.concurrent.{ CancellationException, CompletableFuture }
 import scala.jdk.CollectionConverters._
 import scala.util.Try
+import cats.effect.Spawn
 
 class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit
   cs: ContextShift[IO]
@@ -108,12 +109,12 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
 
 object DynamoBusStopRepository {
 
-  def apply(awsClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]): DynamoBusStopRepository =
+  def apply(awsClient: DynamoDbAsyncClient): DynamoBusStopRepository =
     new DynamoBusStopRepository(
       awsClient
     )
 
-  def makeResource(implicit cs: ContextShift[IO]): Resource[IO, DynamoBusStopRepository] = {
+  def makeResource: Resource[IO, DynamoBusStopRepository] = {
     val client = IO.fromTry(awsDefaultClient.orElse(clientFromEnv))
 
     Resource
@@ -121,7 +122,7 @@ object DynamoBusStopRepository {
       .map(DynamoBusStopRepository(_))
   }
 
-  def fromAWS()(implicit cs: ContextShift[IO]): Try[DynamoBusStopRepository] =
+  def fromAWS(): Try[DynamoBusStopRepository] =
     awsDefaultClient.map(DynamoBusStopRepository(_))
 
   private def awsDefaultClient: Try[DynamoDbAsyncClient] =
@@ -145,7 +146,7 @@ object DynamoBusStopRepository {
 
   implicit class JavaFutureOps[T](val unevaluatedCF: IO[CompletableFuture[T]]) extends AnyVal {
 
-    def fromCompletable(implicit cs: ContextShift[IO]): IO[T] = {
+    def fromCompletable: IO[T] = {
       val computation: IO[T] = unevaluatedCF.flatMap { cf =>
         IO.cancelable { callback =>
           cf.handle((res: T, err: Throwable) =>
@@ -158,7 +159,7 @@ object DynamoBusStopRepository {
           IO.delay(cf.cancel(true))
         }
       }
-      computation.guarantee(cs.shift)
+      computation.guarantee(Spawn[IO].cede)
     }
   }
 }
