@@ -2,18 +2,17 @@ package dev.faustin0.repositories
 
 import _root_.io.chrisdavenport.log4cats._
 import _root_.io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import cats.effect.{ ContextShift, IO, Resource }
+import cats.effect.{ContextShift, IO, Resource}
 import cats.implicits._
-import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
-import dev.faustin0.repositories.DynamoBusStopRepository.JavaFutureOps
-import fs2.{ Stream, _ }
+import dev.faustin0.Utils.JavaFutureOps
+import dev.faustin0.domain.{BusStop, BusStopRepository, FailureReason}
+import fs2.{Stream, _}
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
-import java.util.concurrent.{ CancellationException, CompletableFuture }
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
@@ -75,10 +74,16 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
     } yield busStop
   }
 
-  override def count: IO[Long] =
-    IO(client.describeTable((b: DescribeTableRequest.Builder) => b.tableName(BusStopTable.name))).fromCompletable
+  override def count: IO[Long] = {
+    val tableDesc = DescribeTableRequest
+      .builder()
+      .tableName(BusStopTable.name)
+      .build()
+
+    IO(client.describeTable(tableDesc)).fromCompletable
       .map(resp => resp.table())
       .map(table => table.itemCount())
+  }
 
   override def findBusStopByName(name: String): IO[List[BusStop]] = {
     val attributes = Map("#nameKey" -> BusStopTable.Attrs.busStopName)
@@ -142,23 +147,4 @@ object DynamoBusStopRepository {
         )
         .build()
     }
-
-  implicit class JavaFutureOps[T](val unevaluatedCF: IO[CompletableFuture[T]]) extends AnyVal {
-
-    def fromCompletable(implicit cs: ContextShift[IO]): IO[T] = {
-      val computation: IO[T] = unevaluatedCF.flatMap { cf =>
-        IO.cancelable { callback =>
-          cf.handle((res: T, err: Throwable) =>
-            err match {
-              case null                     => callback(Right(res))
-              case _: CancellationException => ()
-              case ex                       => callback(Left(ex))
-            }
-          )
-          IO.delay(cf.cancel(true))
-        }
-      }
-      computation.guarantee(cs.shift)
-    }
-  }
 }

@@ -1,4 +1,5 @@
 import Dependencies._
+import sbt.Keys.parallelExecution
 
 inThisBuild(
   List(
@@ -29,7 +30,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= dependencies ++ testDependencies
 )
 
-lazy val assemblySetting = assemblyMergeStrategy in assembly := {
+lazy val assemblySetting = assembly / assemblyMergeStrategy := {
   case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") => MergeStrategy.singleOrError
   case PathList("META-INF", "io.netty.versions.properties")                         => MergeStrategy.last
   case "module-info.class"                                                          => MergeStrategy.concat
@@ -48,10 +49,10 @@ lazy val core = project
   .in(file("modules/core"))
   .settings(commonSettings)
   .settings(name := "core")
-  .settings(parallelExecution in Test := false)
-  .settings(fork in Test := true)
+  .settings(Test / parallelExecution := false)
+  .settings(Test / fork := true)
   .settings(assemblySetting)
-  .settings(test in assembly := {})
+  .settings(assembly / test := {})
   .settings(libraryDependencies ++= httpClientDeps ++ dynamoDeps)
 //  .settings(assemblyJarName in assembly := "bus-info-app.jar")
 
@@ -60,21 +61,21 @@ lazy val api = project
   .dependsOn(core)
   .settings(commonSettings)
   .settings(name := "api")
-  .settings(parallelExecution in Test := false)
-  .settings(fork in Test := true)
+  .settings(Test / parallelExecution := false)
+  .settings(Test / fork := true)
   .settings(assemblySetting)
-  .settings(test in assembly := {})
+  .settings(assembly / test := {})
   .settings(libraryDependencies ++= httpServerDeps)
-  .settings(assemblyJarName in assembly := "bus-info-app.jar")
+  .settings(assembly / assemblyJarName := "bus-info-app.jar")
 
 lazy val importer = project
   .in(file("modules/importer"))
   .dependsOn(core)
   .settings(commonSettings)
   .settings(name := "importer")
-  .settings(parallelExecution in Test := false)
-  .settings(fork in Test := true)
+  .settings(Test / parallelExecution := false)
+  .settings(Test / fork := true)
   .settings(assemblySetting)
-  .settings(test in assembly := {})
+  .settings(assembly / test := {})
   .settings(libraryDependencies ++= awsDeps)
-  .settings(assemblyJarName in assembly := "bus-stops-importer.jar")
+  .settings(assembly / assemblyJarName := "bus-stops-importer.jar")

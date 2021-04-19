@@ -3,6 +3,7 @@ package dev.faustin0.repositories
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ IO, Resource }
 import com.dimafeng.testcontainers.{ ForAllTestContainer, GenericContainer }
+import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, Position }
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -12,7 +13,6 @@ import org.testcontainers.containers.wait.strategy.Wait
 import software.amazon.awssdk.auth.credentials.{ AwsBasicCredentials, StaticCredentialsProvider }
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
-import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest.{ Builder => TableBuilder }
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
@@ -49,71 +49,66 @@ class DynamoBusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer w
   override val container: GenericContainer = dynamoContainer
 
   override def afterStart(): Unit = {
-    createDynamoClient().use { client =>
-      IO(
-        client
-          .createTable((builder: TableBuilder) =>
-            builder
-              .tableName("bus_stops")
-              .attributeDefinitions(
-                AttributeDefinition
-                  .builder()
-                  .attributeName("code")
-                  .attributeType(ScalarAttributeType.N)
-                  .build(),
-                AttributeDefinition
-                  .builder()
-                  .attributeName("name")
-                  .attributeType(ScalarAttributeType.S)
-                  .build()
-              )
-              .keySchema(
-                KeySchemaElement
-                  .builder()
-                  .attributeName("code")
-                  .keyType(KeyType.HASH)
-                  .build()
-              )
-              .provisionedThroughput(
-                ProvisionedThroughput
-                  .builder()
-                  .readCapacityUnits(5)
-                  .writeCapacityUnits(14)
-                  .build()
-              )
-              .globalSecondaryIndexes(
-                GlobalSecondaryIndex
-                  .builder()
-                  .indexName("name-index")
-                  .projection(
-                    Projection
-                      .builder()
-                      .projectionType(ProjectionType.ALL)
-                      .build()
-                  )
-                  .keySchema(
-                    KeySchemaElement
-                      .builder()
-                      .attributeName("name")
-                      .keyType(KeyType.HASH)
-                      .build()
-                  )
-                  .provisionedThroughput(
-                    ProvisionedThroughput
-                      .builder()
-                      .readCapacityUnits(5)
-                      .writeCapacityUnits(7)
-                      .build()
-                  )
-                  .build()
-              )
+    val createTableRequest = CreateTableRequest
+      .builder()
+      .tableName("bus_stops")
+      .attributeDefinitions(
+        AttributeDefinition
+          .builder()
+          .attributeName("code")
+          .attributeType(ScalarAttributeType.N)
+          .build(),
+        AttributeDefinition
+          .builder()
+          .attributeName("name")
+          .attributeType(ScalarAttributeType.S)
+          .build()
+      )
+      .keySchema(
+        KeySchemaElement
+          .builder()
+          .attributeName("code")
+          .keyType(KeyType.HASH)
+          .build()
+      )
+      .provisionedThroughput(
+        ProvisionedThroughput
+          .builder()
+          .readCapacityUnits(5)
+          .writeCapacityUnits(14)
+          .build()
+      )
+      .globalSecondaryIndexes(
+        GlobalSecondaryIndex
+          .builder()
+          .indexName("name-index")
+          .projection(
+            Projection
+              .builder()
+              .projectionType(ProjectionType.ALL)
               .build()
           )
-          .get()
+          .keySchema(
+            KeySchemaElement
+              .builder()
+              .attributeName("name")
+              .keyType(KeyType.HASH)
+              .build()
+          )
+          .provisionedThroughput(
+            ProvisionedThroughput
+              .builder()
+              .readCapacityUnits(5)
+              .writeCapacityUnits(7)
+              .build()
+          )
+          .build()
       )
-    }.unsafeRunSync()
+      .build()
 
-    super.afterStart()
+    createDynamoClient().use { client =>
+      IO(client.createTable(createTableRequest)).fromCompletable.void
+    }.unsafeRunSync()
   }
 
   "spin container" in {
@@ -148,7 +143,7 @@ class DynamoBusStopRepositoryIT extends AsyncFreeSpec with ForAllTestContainer w
   }
 
   "should batch insert entries" in {
-    val batchSize = 1000
+    val batchSize = 1000L
 
     val entry = (code: Int) =>
       BusStop(
