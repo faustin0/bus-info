@@ -10,7 +10,8 @@ inThisBuild(
     ),
     homepage := Some(url("https://github.com/faustin0/bus-info")),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-    pomIncludeRepository := { _ => false }
+    pomIncludeRepository := { _ => false },
+    version := "0.1.0"
   )
 )
 
@@ -58,6 +59,7 @@ lazy val core = project
 
 lazy val api = project
   .in(file("modules/api"))
+  .enablePlugins(BuildInfoPlugin)
   .dependsOn(core)
   .settings(commonSettings)
   .settings(name := "api")
@@ -67,6 +69,10 @@ lazy val api = project
   .settings(assembly / test := {})
   .settings(libraryDependencies ++= httpServerDeps)
   .settings(assembly / assemblyJarName := "bus-info-app.jar")
+  .settings(
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "busInfo"
+  )
 
 lazy val importer = project
   .in(file("modules/importer"))

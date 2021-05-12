@@ -1,8 +1,9 @@
 package dev.faustin0.api
 
-import cats.effect.{ContextShift, IO, Timer}
+import busInfo.BuildInfo
+import cats.effect.{ ContextShift, IO, Timer }
 import cats.implicits.catsSyntaxEitherId
-import dev.faustin0.api.Endpoints.{busStopByCode, busStopSearch, healthcheck, nextBus}
+import dev.faustin0.api.Endpoints.{ busStopByCode, busStopSearch, healthcheck, nextBus }
 import dev.faustin0.domain.BusInfoResponse.GenericDerivation._
 import dev.faustin0.domain._
 import io.circe.generic.auto._
@@ -51,7 +52,7 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
       .toOpenAPI(
         List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch),
         title = "The bus-info API",
-        version = "0.0.1"
+        version = BuildInfo.version
       )
       .toYaml
   ).routes[IO]
