@@ -1,6 +1,6 @@
 import java.time.LocalTime
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{ Blocker, IO }
+import cats.effect.IO
 import dev.faustin0.HelloBusClient
 import dev.faustin0.domain._
 import org.http4s.client.JavaNetClientBuilder
