@@ -7,7 +7,7 @@ object Dependencies {
   val kindProjectorV             = "0.11.3"
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.13.0"
-  val scalaXmlVersion            = "1.3.0"
+  val scalaXmlVersion            = "2.0.0"
   val log4catsVersion            = "1.1.1"
   val awsSdkVersion              = "2.16.59"
   val tapirVersion               = "0.17.19"
