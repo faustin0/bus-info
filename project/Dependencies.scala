@@ -15,7 +15,7 @@ object Dependencies {
   val fs2Version                 = "2.5.5"
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                          % "3.2.8"                    % Test,
+    "org.scalatest"  %% "scalatest"                          % "3.2.9"                    % Test,
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
     "com.amazonaws"   % "aws-java-sdk"                       % "1.11.1015"                % Test, //needed by localstack
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
