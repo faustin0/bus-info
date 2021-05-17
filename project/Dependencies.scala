@@ -12,7 +12,7 @@ object Dependencies {
   val awsSdkVersion              = "2.16.63"
   val tapirVersion               = "0.17.19"
   val logbackVersion             = "1.2.3"
-  val fs2Version                 = "2.5.5"
+  val fs2Version                 = "2.5.6"
 
   lazy val testDependencies = Seq(
     "org.scalatest"  %% "scalatest"                          % "3.2.8"                    % Test,
