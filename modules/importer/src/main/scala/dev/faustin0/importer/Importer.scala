@@ -1,7 +1,6 @@
 package dev.faustin0.importer
 
-import cats.effect.concurrent.Ref
-import cats.effect.{ ContextShift, IO }
+import cats.effect.IO
 import dev.faustin0.domain.{ BusStop, BusStopRepository }
 import dev.faustin0.importer.domain._
 import dev.faustin0.importer.infrastructure.S3BucketLoader
@@ -11,6 +10,7 @@ import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 import scala.util.Try
+import cats.effect.Ref
 
 class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[IO]) {
   implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
@@ -44,7 +44,7 @@ class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[
 
 object Importer {
 
-  def makeFromAWS(implicit cs: ContextShift[IO]): Try[Importer] =
+  def makeFromAWS: Try[Importer] =
     for {
       busStopRepo  <- DynamoBusStopRepository.fromAWS()
       bucketReader <- S3BucketLoader.makeFromAws()
