@@ -2,11 +2,11 @@ package dev.faustin0.repositories
 
 import _root_.io.chrisdavenport.log4cats._
 import _root_.io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import cats.effect.{ContextShift, IO, Resource}
+import cats.effect.{ ContextShift, IO, Resource }
 import cats.implicits._
 import dev.faustin0.Utils.JavaFutureOps
-import dev.faustin0.domain.{BusStop, BusStopRepository, FailureReason}
-import fs2.{Stream, _}
+import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
+import fs2.{ Stream, _ }
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
 import scala.jdk.CollectionConverters._
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit
   cs: ContextShift[IO]
@@ -69,8 +69,15 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
     for {
       _            <- log.debug(s"Getting busStop $code")
       result       <- IO(client.getItem(request)).fromCompletable
-      mappedBusStop = Option(result.item()).traverse(item => BusStopTable.dynamoItemToBusStop(item))
-      busStop      <- IO.fromTry(mappedBusStop)
+      mappedBusStop = Option(result.item())
+                        .filterNot(_.isEmpty)
+                        .traverse(item => BusStopTable.dynamoItemToBusStop(item))
+      busStop      <- mappedBusStop match {
+                        case Failure(ex)    =>
+                          IO.raiseError(new IllegalStateException(s"Failure getting busStop with code $code", ex))
+                        case Success(value) =>
+                          IO.pure(value)
+                      }
     } yield busStop
   }
 
