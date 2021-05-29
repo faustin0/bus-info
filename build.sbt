@@ -17,7 +17,7 @@ inThisBuild(
 
 // General Settings
 lazy val commonSettings = Seq(
-  scalaVersion := "2.13.5",
+  scalaVersion := "2.13.6",
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
   scalacOptions ++= Seq(
@@ -89,8 +89,12 @@ lazy val importer = project
 lazy val tests = project
   .in(file("modules/tests"))
   .dependsOn(core, importer, api)
+  .configs(IntegrationTest)
   .settings(commonSettings)
+  .settings(Defaults.itSettings)
   .settings(name := "tests")
   .settings(Test / parallelExecution := false)
   .settings(Test / fork := true)
+  .settings(IntegrationTest / fork := true)
   .settings(libraryDependencies ++= awsDeps)
+  .disablePlugins(sbtassembly.AssemblyPlugin)

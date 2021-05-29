@@ -1,26 +1,26 @@
 import sbt._
 
 object Dependencies {
-  val testcontainersScalaVersion = "0.39.4"
-  val http4sVersion              = "0.21.23"
-  val catsVersion                = "2.5.1"
-  val kindProjectorV             = "0.13.0"
-  val betterMonadicForV          = "0.3.1"
-  val circeVersion               = "0.13.0"
-  val scalaXmlVersion            = "1.3.0"
-  val log4catsVersion            = "1.1.1"
-  val awsSdkVersion              = "2.16.68"
-  val tapirVersion               = "0.17.19"
-  val logbackVersion             = "1.2.3"
-  val fs2Version                 = "2.5.6"
+  val testcontainersScalaV = "0.39.4"
+  val http4sVersion        = "0.21.23"
+  val catsVersion          = "2.5.1"
+  val kindProjectorV       = "0.13.0"
+  val betterMonadicForV    = "0.3.1"
+  val circeVersion         = "0.13.0"
+  val scalaXmlVersion      = "1.3.0"
+  val log4catsVersion      = "1.1.1"
+  val awsSdkVersion        = "2.16.68"
+  val tapirVersion         = "0.18.0-M11"
+  val logbackVersion       = "1.2.3"
+  val fs2Version           = "2.5.6"
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                          % "3.2.9"                    % Test,
-    "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaVersion % Test,
-    "com.amazonaws"   % "aws-java-sdk"                       % "1.11.1024"                % Test, //needed by localstack
-    "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaVersion % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.3"                    % Test,
-    "org.typelevel"  %% "cats-effect-laws"                   % catsVersion                % Test
+    "org.scalatest"  %% "scalatest"                          % "3.2.9"              % Test,
+    "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
+    "com.amazonaws"   % "aws-java-sdk"                       % "1.11.1024"          % Test, //needed by localstack
+    "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.3"              % Test,
+    "org.typelevel"  %% "cats-effect-laws"                   % catsVersion          % Test
   )
 
   lazy val dependencies = Seq(
