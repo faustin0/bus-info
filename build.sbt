@@ -40,7 +40,7 @@ lazy val assemblySetting = assembly / assemblyMergeStrategy := {
 }
 
 lazy val root = (project in file("."))
-  .aggregate(core, api, importer)
+  .aggregate(core, api, importer, tests)
   .settings(name := "bus-info")
   .settings(
     update / aggregate := false
@@ -85,3 +85,12 @@ lazy val importer = project
   .settings(assembly / test := {})
   .settings(libraryDependencies ++= awsDeps)
   .settings(assembly / assemblyJarName := "bus-stops-importer.jar")
+
+lazy val tests = project
+  .in(file("modules/tests"))
+  .dependsOn(core, importer, api)
+  .settings(commonSettings)
+  .settings(name := "tests")
+  .settings(Test / parallelExecution := false)
+  .settings(Test / fork := true)
+  .settings(libraryDependencies ++= awsDeps)
