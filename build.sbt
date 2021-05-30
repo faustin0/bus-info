@@ -17,7 +17,7 @@ inThisBuild(
 
 // General Settings
 lazy val commonSettings = Seq(
-  scalaVersion := "2.13.5",
+  scalaVersion := "2.13.6",
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
   scalacOptions ++= Seq(
@@ -40,7 +40,7 @@ lazy val assemblySetting = assembly / assemblyMergeStrategy := {
 }
 
 lazy val root = (project in file("."))
-  .aggregate(core, api, importer)
+  .aggregate(core, api, importer, tests)
   .settings(name := "bus-info")
   .settings(
     update / aggregate := false
@@ -85,3 +85,16 @@ lazy val importer = project
   .settings(assembly / test := {})
   .settings(libraryDependencies ++= awsDeps)
   .settings(assembly / assemblyJarName := "bus-stops-importer.jar")
+
+lazy val tests = project
+  .in(file("modules/tests"))
+  .dependsOn(core, importer, api)
+  .configs(IntegrationTest)
+  .settings(commonSettings)
+  .settings(Defaults.itSettings)
+  .settings(name := "tests")
+  .settings(Test / parallelExecution := false)
+  .settings(Test / fork := true)
+  .settings(IntegrationTest / fork := true)
+  .settings(libraryDependencies ++= awsDeps)
+  .disablePlugins(sbtassembly.AssemblyPlugin)

@@ -1,5 +1,6 @@
 package dev.faustin0.importer
 
+import cats.data.OptionT
 import cats.effect.concurrent.Ref
 import cats.effect.{ ContextShift, IO }
 import dev.faustin0.domain.{ BusStop, BusStopRepository }
@@ -12,8 +13,9 @@ import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 import scala.util.Try
 
-class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[IO]) {
-  implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[IO])(implicit CS: ContextShift[IO]) {
+  implicit private val log: Logger[IO] = Slf4jLogger.getLogger[IO]
+  private val concurrentOps            = 4
 
   def importFrom(dataset: DatasetFileLocation): IO[ImportOutcome] = {
 
@@ -22,9 +24,16 @@ class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[
       failures <- Stream
                     .eval(datasetLoader.load(dataset))
                     .flatMap(dataset => extractBusStopsFromDataSet(dataset))
-                    .evalTap(_ => counter.getAndUpdate(_ + 1))
+                    .parEvalMap(concurrentOps) { busStop =>
+                      OptionT(busStopRepo.findBusStopByCode(busStop.code))
+                        .filter(existingBusStop => existingBusStop == busStop)
+                        .value
+                        .map(existingBusStop => busStop -> existingBusStop)
+                    }
+                    .collect { case (busStop, None) => busStop }
+                    .evalTap(x => log.info(s"found busStop to update $x") *> counter.getAndUpdate(_ + 1))
                     .through(busStopRepo.batchInsert)
-                    .evalTap(failure => logger.error(failure.reason)("import operation failed"))
+                    .evalTap(failure => log.error(failure.reason)("import operation failed"))
                     .compile
                     .fold(0)((acc, _) => acc + 1)
       count    <- counter.get
