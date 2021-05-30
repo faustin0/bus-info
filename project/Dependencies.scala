@@ -19,7 +19,7 @@ object Dependencies {
     "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
     "com.amazonaws"   % "aws-java-sdk"                       % "1.11.1030"          % Test, //needed by localstack
     "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.3"              % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.4"              % Test,
     "org.typelevel"  %% "cats-effect-laws"                   % catsVersion          % Test
   )
 
