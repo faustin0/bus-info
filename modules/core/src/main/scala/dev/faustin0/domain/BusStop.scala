@@ -29,9 +29,9 @@ object BusStop {
     Try {
       BusStop(
         code = (busStopXml \ "codice").text.toInt,
-        name = (busStopXml \ "denominazione").text,
-        location = (busStopXml \ "ubicazione").text,
-        comune = (busStopXml \ "comune").text,
+        name = (busStopXml \ "denominazione").text.replace('`', ' ').trim,
+        location = (busStopXml \ "ubicazione").text.replace('`', ' ').trim,
+        comune = (busStopXml \ "comune").text.trim,
         areaCode = (busStopXml \ "codice_zona").text.toInt,
         position = Position(
           x = (busStopXml \ "coordinata_x").text.toLong,
