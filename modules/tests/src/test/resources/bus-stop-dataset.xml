@@ -155,7 +155,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>16</codice>
+    <codice>15</codice>
     <denominazione>STAZIONE CENTRALE</denominazione>
     <ubicazione>VIALE PIETRAMELLARA 59 (FERMATA J)</ubicazione>
     <comune>BOLOGNA</comune>
@@ -166,7 +166,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>17</codice>
+    <codice>16</codice>
     <denominazione>PORTA MASCARELLA</denominazione>
     <ubicazione>VIALE BERTI PICHAT 2/B</ubicazione>
     <comune>BOLOGNA</comune>
@@ -177,7 +177,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>18</codice>
+    <codice>17</codice>
     <denominazione>PORTA SAN DONATO</denominazione>
     <ubicazione>VIALE FILOPANTI 1</ubicazione>
     <comune>BOLOGNA</comune>
@@ -188,7 +188,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>19</codice>
+    <codice>18</codice>
     <denominazione>PORTA SAN DONATO</denominazione>
     <ubicazione>VIALE BERTI PICHAT 30</ubicazione>
     <comune>BOLOGNA</comune>
@@ -199,7 +199,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>20</codice>
+    <codice>19</codice>
     <denominazione>PORTA SAN VITALE</denominazione>
     <ubicazione>VIALE FILOPANTI 11</ubicazione>
     <comune>BOLOGNA</comune>
@@ -210,7 +210,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>21</codice>
+    <codice>20</codice>
     <denominazione>FILOPANTI</denominazione>
     <ubicazione>VIALE FILOPANTI PALO LUCE 398</ubicazione>
     <comune>BOLOGNA</comune>
@@ -221,7 +221,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>22</codice>
+    <codice>21</codice>
     <denominazione>PORTA MAGGIORE</denominazione>
     <ubicazione>VIALE ERCOLANI FR 4/2</ubicazione>
     <comune>BOLOGNA</comune>
@@ -232,7 +232,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>25</codice>
+    <codice>22</codice>
     <denominazione>PORTA SAN VITALE</denominazione>
     <ubicazione>VIALE ERCOLANI FR 3</ubicazione>
     <comune>BOLOGNA</comune>
@@ -243,7 +243,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>26</codice>
+    <codice>23</codice>
     <denominazione>CARDUCCI</denominazione>
     <ubicazione>VIALE CARDUCCI 9</ubicazione>
     <comune>BOLOGNA</comune>
@@ -254,7 +254,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>27</codice>
+    <codice>24</codice>
     <denominazione>PORTA MAGGIORE</denominazione>
     <ubicazione>VIALE ERCOLANI 6</ubicazione>
     <comune>BOLOGNA</comune>
@@ -265,7 +265,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>28</codice>
+    <codice>25</codice>
     <denominazione>PORTA SANTO STEFANO</denominazione>
     <ubicazione>VIALE GOZZADINI 1</ubicazione>
     <comune>BOLOGNA</comune>
@@ -276,7 +276,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>29</codice>
+    <codice>26</codice>
     <denominazione>CARDUCCI</denominazione>
     <ubicazione>VIALE CARDUCCI 30</ubicazione>
     <comune>BOLOGNA</comune>
@@ -287,7 +287,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>30</codice>
+    <codice>27</codice>
     <denominazione>GIARDINI MARGHERITA</denominazione>
     <ubicazione>VIALE GOZZADINI 5</ubicazione>
     <comune>BOLOGNA</comune>
@@ -298,7 +298,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>33</codice>
+    <codice>28</codice>
     <denominazione>PORTA SANTO STEFANO</denominazione>
     <ubicazione>VIALE CARDUCCI 52</ubicazione>
     <comune>BOLOGNA</comune>
@@ -309,7 +309,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>34</codice>
+    <codice>29</codice>
     <denominazione>PORTA CASTIGLIONE</denominazione>
     <ubicazione>VIALE GOZZADINI 21</ubicazione>
     <comune>BOLOGNA</comune>
@@ -320,7 +320,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>35</codice>
+    <codice>30</codice>
     <denominazione>GIARDINI MARGHERITA</denominazione>
     <ubicazione>VIALE GOZZADINI FR 5</ubicazione>
     <comune>BOLOGNA</comune>
@@ -331,7 +331,7 @@
     <codice_zona>500</codice_zona>
   </Table>
   <Table>
-    <codice>36</codice>
+    <codice>31</codice>
     <denominazione>PARCHEGGIO STAVECO</denominazione>
     <ubicazione>VIALE PANZACCHI 9</ubicazione>
     <comune>BOLOGNA</comune>
