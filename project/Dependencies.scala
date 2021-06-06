@@ -10,7 +10,7 @@ object Dependencies {
   val scalaXmlVersion      = "1.3.0"
   val log4catsVersion      = "1.1.1"
   val awsSdkVersion        = "2.16.74"
-  val tapirVersion         = "0.18.0-M11"
+  val tapirVersion         = "0.18.0-M15"
   val logbackVersion       = "1.2.3"
   val fs2Version           = "2.5.6"
 
