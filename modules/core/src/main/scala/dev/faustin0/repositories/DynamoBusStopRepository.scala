@@ -120,12 +120,12 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
 
 object DynamoBusStopRepository {
 
-  def apply(awsClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]): DynamoBusStopRepository =
+  def apply(awsClient: DynamoDbAsyncClient): DynamoBusStopRepository =
     new DynamoBusStopRepository(
       awsClient
     )
 
-  def makeResource(implicit cs: ContextShift[IO]): Resource[IO, DynamoBusStopRepository] = {
+  def makeResource: Resource[IO, DynamoBusStopRepository] = {
     val client = IO.fromTry(awsDefaultClient.orElse(clientFromEnv))
 
     Resource
@@ -133,7 +133,7 @@ object DynamoBusStopRepository {
       .map(DynamoBusStopRepository(_))
   }
 
-  def fromAWS()(implicit cs: ContextShift[IO]): Try[DynamoBusStopRepository] =
+  def fromAWS(): Try[DynamoBusStopRepository] =
     awsDefaultClient.map(DynamoBusStopRepository(_))
 
   private def awsDefaultClient: Try[DynamoDbAsyncClient] =

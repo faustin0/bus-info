@@ -1,7 +1,7 @@
 package dev.faustin0.api
 
 import busInfo.BuildInfo
-import cats.effect.{ ContextShift, IO, Timer }
+import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import dev.faustin0.api.Endpoints.{ busStopByCode, busStopSearch, healthcheck, nextBus }
 import dev.faustin0.domain.BusInfoResponse.GenericDerivation._
@@ -18,10 +18,11 @@ import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.http4s.SwaggerHttp4s
 
 import java.time.LocalTime
+import cats.effect.Temporal
 
 class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
   cs: ContextShift[IO],
-  timer: Timer[IO]
+  timer: Temporal[IO]
 ) {
 
   val busStopInfoRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(busStopByCode) { busStopCode =>
@@ -62,7 +63,7 @@ object Endpoints {
 
   def apply(
     busInfoService: BusInfoDSL[IO]
-  )(implicit cs: ContextShift[IO], timer: Timer[IO]): Endpoints =
+  )(implicit timer: Temporal[IO]): Endpoints =
     new Endpoints(busInfoService)(cs, timer)
 
   private val baseEndpoint = endpoint.in("bus-stops")
