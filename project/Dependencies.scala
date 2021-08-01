@@ -11,7 +11,7 @@ object Dependencies {
   val log4catsVersion      = "1.1.1"
   val awsSdkVersion        = "2.17.4"
   val tapirVersion         = "0.18.0-M15"
-  val logbackVersion       = "1.2.4"
+  val logbackVersion       = "1.2.5"
   val fs2Version           = "2.5.9"
 
   lazy val testDependencies = Seq(
