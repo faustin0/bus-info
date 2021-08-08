@@ -4,7 +4,7 @@ import cats.effect.{ ContextShift, IO, Resource, Timer }
 import dev.faustin0.domain.{ BusInfoResponse, BusRequest, Failure }
 import org.http4s.Method._
 import org.http4s.client._
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.headers._
 import org.http4s.implicits._
