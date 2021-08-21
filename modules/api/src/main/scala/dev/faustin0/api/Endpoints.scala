@@ -5,6 +5,7 @@ import cats.implicits.catsSyntaxEitherId
 import dev.faustin0.api.Endpoints.{ busStopByCode, busStopSearch, healthcheck, nextBus }
 import dev.faustin0.domain.BusInfoResponse.GenericDerivation._
 import dev.faustin0.domain._
+import dev.faustin0.info.BuildInfo
 import io.circe.generic.auto._
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
@@ -53,7 +54,7 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO]) {
       .toOpenAPI(
         List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch),
         title = "The bus-info API",
-        version = "0.2.0"
+        version = BuildInfo.version
       )
 
     val swaggerRoutes = SwaggerUI[IO](openApiDocs.toYaml)
