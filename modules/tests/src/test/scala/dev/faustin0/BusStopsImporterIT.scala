@@ -3,6 +3,7 @@ package dev.faustin0
 import cats.effect.IO
 import cats.effect.testing.scalatest.{ AssertingSyntax, AsyncIOSpec }
 import com.dimafeng.testcontainers.{ ForEachTestContainer, GenericContainer }
+import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, Position }
 import dev.faustin0.importer.Importer
 import dev.faustin0.importer.domain.{ BusStopsDataset, DatasetFileLocation, Failure, Success }
@@ -19,15 +20,13 @@ class BusStopsImporterIT
 
   override val container: GenericContainer = dynamoContainer
   //TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
-  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit override def executionContext   = scala.concurrent.ExecutionContext.Implicits.global
 
   override def afterStart(): Unit =
     Containers
       .createDynamoClient(dynamoContainer)
       .use { ddb =>
-        IO.fromCompletableFuture {
-          IO(ddb.createTable(DynamoSetUp.BusStopTable.createTableRequest))
-        }
+        IO(ddb.createTable(DynamoSetUp.BusStopTable.createTableRequest)).fromCompletable
       }
       .void
       .unsafeRunSync()

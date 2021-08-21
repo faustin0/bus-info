@@ -2,6 +2,7 @@ package dev.faustin0.repositories
 
 import cats.effect.{ IO, Resource }
 import cats.implicits._
+import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
 import org.typelevel.log4cats.Logger
@@ -25,7 +26,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .build()
 
     L.debug(s"Inserting bus-stop $busStop") *>
-      IO.fromCompletableFuture(IO(client.putItem(request))).void
+      IO(client.putItem(request)).fromCompletable.void
   }
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
@@ -44,7 +45,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .flatMap { batchReq =>
         Stream.attemptEval {
           L.debug(s"batch inserting bus-stop $batchReq") *>
-            IO.fromCompletableFuture(IO(client.batchWriteItem(batchReq)))
+            IO(client.batchWriteItem(batchReq)).fromCompletable
         }.collect { case Left(error) =>
           FailureReason(error)
         }
@@ -63,7 +64,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
 
     for {
       _            <- L.debug(s"Getting busStop $code")
-      result       <- IO.fromCompletableFuture(IO(client.getItem(request)))
+      result       <- IO(client.getItem(request)).fromCompletable
       mappedBusStop = Option(result.item())
                         .filterNot(_.isEmpty)
                         .traverse(item => BusStopTable.dynamoItemToBusStop(item))
@@ -82,7 +83,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .tableName(BusStopTable.name)
       .build()
 
-    IO.fromCompletableFuture(IO(client.describeTable(tableDesc)))
+    IO(client.describeTable(tableDesc)).fromCompletable
       .map(resp => resp.table())
       .map(table => table.itemCount())
   }
@@ -103,7 +104,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
 
     for {
       _             <- L.debug(s"Searching busStops $name")
-      result        <- IO.fromCompletableFuture(IO(client.query(queryRequest)))
+      result        <- IO(client.query(queryRequest)).fromCompletable
       mappedBusStops = Option(result.items()).toList
                          .flatMap(_.asScala)
                          .traverse(item => BusStopTable.dynamoItemToBusStop(item))
