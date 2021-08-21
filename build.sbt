@@ -11,7 +11,7 @@ inThisBuild(
     homepage := Some(url("https://github.com/faustin0/bus-info")),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     pomIncludeRepository := { _ => false },
-    version := "0.1.0"
+    version := "0.2.0"
   )
 )
 

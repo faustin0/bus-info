@@ -1,12 +1,10 @@
 package dev.faustin0.repositories
 
-import _root_.io.chrisdavenport.log4cats._
-import _root_.io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import cats.effect.{ ContextShift, IO, Resource }
+import cats.effect.{ IO, Resource }
 import cats.implicits._
-import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
+import org.typelevel.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
@@ -16,11 +14,8 @@ import java.net.URI
 import scala.jdk.CollectionConverters._
 import scala.util.{ Failure, Success, Try }
 
-class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit
-  cs: ContextShift[IO]
-) extends BusStopRepository[IO] {
-
-  implicit private val log: Logger[IO] = Slf4jLogger.getLogger[IO]
+class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit L: Logger[IO])
+    extends BusStopRepository[IO] {
 
   override def insert(busStop: BusStop): IO[Unit] = {
     val request = PutItemRequest
@@ -29,8 +24,8 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .item(BusStopTable.busStopToDynamoMapping(busStop))
       .build()
 
-    log.debug(s"Inserting bus-stop $busStop") *>
-      IO(client.putItem(request)).fromCompletable.void
+    L.debug(s"Inserting bus-stop $busStop") *>
+      IO.fromCompletableFuture(IO(client.putItem(request))).void
   }
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
@@ -48,8 +43,8 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       )
       .flatMap { batchReq =>
         Stream.attemptEval {
-          log.debug(s"batch inserting bus-stop $batchReq") *>
-            IO(client.batchWriteItem(batchReq)).fromCompletable
+          L.debug(s"batch inserting bus-stop $batchReq") *>
+            IO.fromCompletableFuture(IO(client.batchWriteItem(batchReq)))
         }.collect { case Left(error) =>
           FailureReason(error)
         }
@@ -67,8 +62,8 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .build()
 
     for {
-      _            <- log.debug(s"Getting busStop $code")
-      result       <- IO(client.getItem(request)).fromCompletable
+      _            <- L.debug(s"Getting busStop $code")
+      result       <- IO.fromCompletableFuture(IO(client.getItem(request)))
       mappedBusStop = Option(result.item())
                         .filterNot(_.isEmpty)
                         .traverse(item => BusStopTable.dynamoItemToBusStop(item))
@@ -87,7 +82,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .tableName(BusStopTable.name)
       .build()
 
-    IO(client.describeTable(tableDesc)).fromCompletable
+    IO.fromCompletableFuture(IO(client.describeTable(tableDesc)))
       .map(resp => resp.table())
       .map(table => table.itemCount())
   }
@@ -107,8 +102,8 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
       .build()
 
     for {
-      _             <- log.debug(s"Searching busStops $name")
-      result        <- IO(client.query(queryRequest)).fromCompletable
+      _             <- L.debug(s"Searching busStops $name")
+      result        <- IO.fromCompletableFuture(IO(client.query(queryRequest)))
       mappedBusStops = Option(result.items()).toList
                          .flatMap(_.asScala)
                          .traverse(item => BusStopTable.dynamoItemToBusStop(item))
@@ -120,12 +115,12 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
 
 object DynamoBusStopRepository {
 
-  def apply(awsClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO]): DynamoBusStopRepository =
+  def apply(awsClient: DynamoDbAsyncClient)(implicit l: Logger[IO]): DynamoBusStopRepository =
     new DynamoBusStopRepository(
       awsClient
     )
 
-  def makeResource(implicit cs: ContextShift[IO]): Resource[IO, DynamoBusStopRepository] = {
+  def makeResource(implicit l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
     val client = IO.fromTry(awsDefaultClient.orElse(clientFromEnv))
 
     Resource
@@ -133,7 +128,7 @@ object DynamoBusStopRepository {
       .map(DynamoBusStopRepository(_))
   }
 
-  def fromAWS()(implicit cs: ContextShift[IO]): Try[DynamoBusStopRepository] =
+  def fromAWS()(implicit l: Logger[IO]): Try[DynamoBusStopRepository] =
     awsDefaultClient.map(DynamoBusStopRepository(_))
 
   private def awsDefaultClient: Try[DynamoDbAsyncClient] =

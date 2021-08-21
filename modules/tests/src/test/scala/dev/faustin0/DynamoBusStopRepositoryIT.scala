@@ -3,7 +3,6 @@ package dev.faustin0
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import com.dimafeng.testcontainers.{ ForAllTestContainer, GenericContainer }
-import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, Position }
 import dev.faustin0.repositories.DynamoBusStopRepository
 import org.scalatest.freespec.AsyncFreeSpec
@@ -18,13 +17,16 @@ class DynamoBusStopRepositoryIT
 
   override val container: GenericContainer = dynamoContainer
 
+  //TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
+  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
+
   override def afterStart(): Unit =
     Containers
       .createDynamoClient(container)
       .use { dynamoClient =>
         for {
-          _      <- IO(dynamoClient.createTable(DynamoSetUp.BusStopTable.createTableRequest)).fromCompletable
-          tables <- IO(dynamoClient.listTables()).fromCompletable
+          _      <- IO.fromCompletableFuture(IO(dynamoClient.createTable(DynamoSetUp.BusStopTable.createTableRequest)))
+          tables <- IO.fromCompletableFuture(IO(dynamoClient.listTables()))
         } yield tables
       }
       .map(t => assume(!t.tableNames().isEmpty, "dynamo should have tables"))

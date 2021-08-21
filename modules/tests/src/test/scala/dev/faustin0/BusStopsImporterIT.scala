@@ -3,7 +3,6 @@ package dev.faustin0
 import cats.effect.IO
 import cats.effect.testing.scalatest.{ AssertingSyntax, AsyncIOSpec }
 import com.dimafeng.testcontainers.{ ForEachTestContainer, GenericContainer }
-import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, Position }
 import dev.faustin0.importer.Importer
 import dev.faustin0.importer.domain.{ BusStopsDataset, DatasetFileLocation, Failure, Success }
@@ -19,12 +18,16 @@ class BusStopsImporterIT
     with Containers {
 
   override val container: GenericContainer = dynamoContainer
+  //TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
+  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   override def afterStart(): Unit =
     Containers
       .createDynamoClient(dynamoContainer)
       .use { ddb =>
-        IO(ddb.createTable(DynamoSetUp.BusStopTable.createTableRequest)).fromCompletable
+        IO.fromCompletableFuture {
+          IO(ddb.createTable(DynamoSetUp.BusStopTable.createTableRequest))
+        }
       }
       .void
       .unsafeRunSync()
@@ -107,7 +110,7 @@ class BusStopsImporterIT
       }
       .asserting {
         case Success(_, processedItems) =>
-          assert(processedItems === busStopsEntriesNumber - (existingBusStops).size)
+          assert(processedItems === busStopsEntriesNumber - existingBusStops.size)
         case Failure(_, _, _)           => fail()
       }
   }

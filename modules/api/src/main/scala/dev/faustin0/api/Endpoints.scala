@@ -1,7 +1,6 @@
 package dev.faustin0.api
 
-import busInfo.BuildInfo
-import cats.effect.{ ContextShift, IO, Timer }
+import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import dev.faustin0.api.Endpoints.{ busStopByCode, busStopSearch, healthcheck, nextBus }
 import dev.faustin0.domain.BusInfoResponse.GenericDerivation._
@@ -13,31 +12,31 @@ import sttp.tapir._
 import sttp.tapir.docs.openapi._
 import sttp.tapir.generic.auto.schemaForCaseClass
 import sttp.tapir.json.circe.jsonBody
+import sttp.tapir.openapi.OpenAPI
 import sttp.tapir.openapi.circe.yaml.RichOpenAPI
 import sttp.tapir.server.http4s.Http4sServerInterpreter
-import sttp.tapir.swagger.http4s.SwaggerHttp4s
+import sttp.tapir.swagger.SwaggerUI
 
 import java.time.LocalTime
 
-class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
-  cs: ContextShift[IO],
-  timer: Timer[IO]
-) {
+class Endpoints private (private val busInfoService: BusInfoDSL[IO]) {
 
-  val busStopInfoRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(busStopByCode) { busStopCode =>
+  private val http4sInterpreter = Http4sServerInterpreter[IO]()
+
+  val busStopInfoRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopByCode) { busStopCode =>
     busInfoService
       .getBusStop(busStopCode)
       .toRight(left = s"no bus stop with code $busStopCode")
       .value
   }
 
-  val busStopSearchRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(busStopSearch) { busStopName =>
+  val busStopSearchRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopSearch) { busStopName =>
     busInfoService
       .searchBusStop(busStopName)
       .map(_.asRight[Unit])
   }
 
-  val nextBusRoutes: HttpRoutes[IO] = Http4sServerInterpreter.toRoutes(nextBus) { input =>
+  val nextBusRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(nextBus) { input =>
     val (busStopCode, bus, hour) = input
     busInfoService.getNextBuses(BusRequest(busStopCode, bus, hour)).map {
       case x: Successful => x.asRight
@@ -45,25 +44,30 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO])(implicit
     }
   }
 
-  val healthCheckRoutes = Http4sServerInterpreter.toRoutes(healthcheck)(_ => IO("Up and running".asRight[Unit]))
+  val healthCheckRoutes: HttpRoutes[IO] =
+    http4sInterpreter.toRoutes(healthcheck)(_ => IO("Up and running".asRight[Unit]))
 
-  val swaggerRoutes = new SwaggerHttp4s(
-    OpenAPIDocsInterpreter
+  val swaggerUIRoutes: HttpRoutes[IO] = {
+
+    val openApiDocs: OpenAPI = OpenAPIDocsInterpreter()
       .toOpenAPI(
         List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch),
         title = "The bus-info API",
-        version = BuildInfo.version
+        version = "0.2.0"
       )
-      .toYaml
-  ).routes[IO]
+
+    val swaggerRoutes = SwaggerUI[IO](openApiDocs.toYaml)
+    http4sInterpreter.toRoutes(swaggerRoutes)
+  }
+
 }
 
 object Endpoints {
 
   def apply(
     busInfoService: BusInfoDSL[IO]
-  )(implicit cs: ContextShift[IO], timer: Timer[IO]): Endpoints =
-    new Endpoints(busInfoService)(cs, timer)
+  ): Endpoints =
+    new Endpoints(busInfoService)
 
   private val baseEndpoint = endpoint.in("bus-stops")
 
@@ -74,9 +78,9 @@ object Endpoints {
     .out(jsonBody[BusInfoResponse])
     .errorOut(
       oneOf[BusInfoResponse](
-        statusMapping(StatusCode.BadRequest, jsonBody[BusNotHandled]),
-        statusMapping(StatusCode.BadRequest, jsonBody[Failure]),
-        statusMapping(StatusCode.NotFound, jsonBody[BusStopNotHandled])
+        oneOfMapping(StatusCode.BadRequest, jsonBody[BusNotHandled]),
+        oneOfMapping(StatusCode.BadRequest, jsonBody[Failure]),
+        oneOfMapping(StatusCode.NotFound, jsonBody[BusStopNotHandled])
       )
     )
 
