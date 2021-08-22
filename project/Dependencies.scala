@@ -9,7 +9,7 @@ object Dependencies {
   val circeVersion         = "0.14.1"
   val scalaXmlVersion      = "1.3.0"
   val log4catsVersion      = "1.1.1"
-  val awsSdkVersion        = "2.17.19"
+  val awsSdkVersion        = "2.17.24"
   val tapirVersion         = "0.18.0-M15"
   val logbackVersion       = "1.2.5"
   val fs2Version           = "2.5.9"
