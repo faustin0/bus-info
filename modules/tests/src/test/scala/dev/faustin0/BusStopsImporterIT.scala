@@ -19,6 +19,8 @@ class BusStopsImporterIT
     with Containers {
 
   override val container: GenericContainer = dynamoContainer
+  //TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
+  implicit override def executionContext   = scala.concurrent.ExecutionContext.Implicits.global
 
   override def afterStart(): Unit =
     Containers
@@ -107,7 +109,7 @@ class BusStopsImporterIT
       }
       .asserting {
         case Success(_, processedItems) =>
-          assert(processedItems === busStopsEntriesNumber - (existingBusStops).size)
+          assert(processedItems === busStopsEntriesNumber - existingBusStops.size)
         case Failure(_, _, _)           => fail()
       }
   }
