@@ -2,9 +2,9 @@ import sbt._
 
 object Dependencies {
   val http4sVersion        = "0.23.1"
-  val testcontainersScalaV = "0.39.5"
   val catsVersion          = "3.2.3"
-  val kindProjectorV       = "0.13.0"
+  val testcontainersScalaV = "0.39.7"
+  val kindProjectorV       = "0.13.2"
   val betterMonadicForV    = "0.3.1"
   val circeVersion         = "0.14.1"
   val scalaXmlVersion      = "2.0.1"
@@ -17,7 +17,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.9"              % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.52"            % Test, //needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.62"            % Test, //needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.2.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -52,7 +52,7 @@ object Dependencies {
 
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.1",
-    "com.amazonaws"          % "aws-lambda-java-events" % "3.9.0",
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.10.0",
     "software.amazon.awssdk" % "s3"                     % awsSdkVersion
   ) ++ dynamoDeps
 
