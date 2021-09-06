@@ -1,26 +1,26 @@
 import sbt._
 
 object Dependencies {
-  val http4sVersion        = "0.21.26"
-  val testcontainersScalaV = "0.39.5"
-  val catsVersion          = "2.5.3"
-  val kindProjectorV       = "0.13.1"
+  val http4sVersion        = "0.23.1"
+  val catsVersion          = "3.2.3"
+  val testcontainersScalaV = "0.39.7"
+  val kindProjectorV       = "0.13.2"
   val betterMonadicForV    = "0.3.1"
   val circeVersion         = "0.14.1"
-  val scalaXmlVersion      = "1.3.0"
-  val log4catsVersion      = "1.1.1"
-  val awsSdkVersion        = "2.17.34"
-  val tapirVersion         = "0.18.0-M15"
+  val scalaXmlVersion      = "2.0.1"
+  val log4catsVersion      = "2.1.1"
+  val awsSdkVersion        = "2.17.19"
+  val tapirVersion         = "0.19.0-M7"
   val logbackVersion       = "1.2.5"
-  val fs2Version           = "2.5.9"
+  val fs2Version           = "3.0.6"
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                          % "3.2.9"              % Test,
-    "com.dimafeng"   %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"   % "aws-java-sdk"                       % "1.12.57"          % Test, //needed by localstack
-    "com.dimafeng"   %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"      % "0.5.4"              % Test,
-    "org.typelevel"  %% "cats-effect-laws"                   % catsVersion          % Test
+    "org.scalatest" %% "scalatest"                          % "3.2.9"              % Test,
+    "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.62"            % Test, //needed by localstack
+    "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
+    "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.2.0"              % Test,
+    "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
   )
 
   lazy val dependencies = Seq(
@@ -28,7 +28,7 @@ object Dependencies {
     "org.typelevel"          %% "cats-effect"     % catsVersion,
     "io.circe"               %% "circe-generic"   % circeVersion,
     "org.scala-lang.modules" %% "scala-xml"       % scalaXmlVersion,
-    "io.chrisdavenport"      %% "log4cats-slf4j"  % log4catsVersion,
+    "org.typelevel"          %% "log4cats-slf4j"  % log4catsVersion,
     "ch.qos.logback"          % "logback-classic" % logbackVersion % Runtime
   )
 
@@ -46,7 +46,7 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui"         % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % tapirVersion
   )
 
