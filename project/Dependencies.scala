@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   val http4sVersion        = "0.23.3"
-  val catsVersion          = "3.2.3"
+  val catsVersion          = "3.2.8"
   val testcontainersScalaV = "0.39.7"
   val kindProjectorV       = "0.13.2"
   val betterMonadicForV    = "0.3.1"
@@ -11,7 +11,7 @@ object Dependencies {
   val log4catsVersion      = "2.1.1"
   val awsSdkVersion        = "2.17.19"
   val tapirVersion         = "0.19.0-M8"
-  val logbackVersion       = "1.2.5"
+  val logbackVersion       = "1.2.6"
   val fs2Version           = "3.1.1"
 
   lazy val testDependencies = Seq(
