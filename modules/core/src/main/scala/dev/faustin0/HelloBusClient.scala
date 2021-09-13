@@ -1,10 +1,10 @@
 package dev.faustin0
 
-import cats.effect.{ ContextShift, IO, Resource, Timer }
+import cats.effect.{ IO, Resource }
 import dev.faustin0.domain.{ BusInfoResponse, BusRequest, Failure }
 import org.http4s.Method._
+import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client._
-import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.headers._
 import org.http4s.implicits._
@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 import scala.xml.Elem
 
-class HelloBusClient private (private val httpClient: Client[IO])(implicit c: ContextShift[IO], t: Timer[IO]) {
+class HelloBusClient private (private val httpClient: Client[IO]) {
 
   def hello(busRequest: BusRequest): IO[BusInfoResponse] = {
     val request = createHttpRequest(busRequest)
@@ -36,7 +36,7 @@ class HelloBusClient private (private val httpClient: Client[IO])(implicit c: Co
     Request[IO](
       method = POST,
       uri = HelloBusClient.targetUri,
-      headers = Headers.of(
+      headers = Headers(
         Accept(MediaType.application.xml),
         `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
       )
@@ -58,13 +58,13 @@ object HelloBusClient {
   private val targetUri =
     uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
 
-  def apply(httpClient: Client[IO])(implicit c: ContextShift[IO], t: Timer[IO]): HelloBusClient = new HelloBusClient(
+  def apply(httpClient: Client[IO]): HelloBusClient = new HelloBusClient(
     httpClient
   )
 
   def make(
     executionContext: ExecutionContext
-  )(implicit c: ContextShift[IO], t: Timer[IO]): Resource[IO, HelloBusClient] =
+  ): Resource[IO, HelloBusClient] =
     BlazeClientBuilder[IO](executionContext)
       .withConnectTimeout(5 seconds)
       .withRequestTimeout(7 seconds)

@@ -22,6 +22,9 @@ class S3BucketReaderIT
 
   override val container: Container = localStack
 
+  //TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
+  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
+
   override def afterStart(): Unit =
     Containers
       .createS3Client(localStack)
