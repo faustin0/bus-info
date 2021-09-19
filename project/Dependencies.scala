@@ -18,7 +18,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.9"              % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.66"            % Test, //needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.70"            % Test, //needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.3.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
