@@ -32,11 +32,12 @@ lazy val commonSettings = Seq(
 )
 
 lazy val assemblySetting = assembly / assemblyMergeStrategy := {
-  case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") => MergeStrategy.singleOrError
-  case PathList("META-INF", "io.netty.versions.properties")                         => MergeStrategy.last
-  case "module-info.class"                                                          => MergeStrategy.concat
-  case "mime.types"                                                                 => MergeStrategy.filterDistinctLines
-  case s                                                                            => MergeStrategy.defaultMergeStrategy(s)
+  case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties")             => MergeStrategy.singleOrError
+  case PathList("META-INF", "io.netty.versions.properties")                                     => MergeStrategy.last
+  case "module-info.class"                                                                      => MergeStrategy.concat
+  case "mime.types"                                                                             => MergeStrategy.filterDistinctLines
+  case PathList("software", "amazon", "awssdk", "global", "handlers", "execution.interceptors") => MergeStrategy.filterDistinctLines
+  case s                                                                                        => MergeStrategy.defaultMergeStrategy(s)
 }
 
 lazy val root = (project in file("."))
