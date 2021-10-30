@@ -1,22 +1,34 @@
 import sbt._
 
 object Dependencies {
-  val http4sVersion        = "0.23.4"
-  val catsVersion          = "3.2.9"
-  val testcontainersScalaV = "0.39.9"
-  val kindProjectorV       = "0.13.2"
-  val betterMonadicForV    = "0.3.1"
-  val circeVersion         = "0.14.1"
-  val scalaXmlVersion      = "2.0.1"
-  val log4catsVersion      = "2.1.1"
-  val awsSdkVersion        = "2.17.66"
-  val tapirVersion         = "0.19.0-M12"
-  val fs2Version           = "3.1.6"
-  val logbackVersion       = "1.2.6"
+  val http4sVersion = "0.23.4"
 
+  val catsVersion = "3.2.9"
+
+  val testcontainersScalaV = "0.39.9"
+
+  val kindProjectorV = "0.13.2"
+
+  val betterMonadicForV = "0.3.1"
+
+  val circeVersion = "0.14.1"
+
+  val scalaXmlVersion = "2.0.1"
+
+  val log4catsVersion = "2.1.1"
+
+  val tapirVersion = "0.19.0-M12"
+
+  val awsSdkVersion = "2.17.66"
+
+  val fs2Version = "3.1.6"
+
+  val logbackVersion = "1.2.6"
+
+  val xs4sVersion = "0.9.1"
 
   lazy val testDependencies = Seq(
-    "org.scalatest" %% "scalatest"                          % "3.2.10"              % Test,
+    "org.scalatest" %% "scalatest"                          % "3.2.10"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
     "com.amazonaws"  % "aws-java-sdk"                       % "1.12.94"            % Test, //needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
@@ -59,6 +71,10 @@ object Dependencies {
 
   lazy val dynamoDeps = Seq(
     "software.amazon.awssdk" % "dynamodb" % awsSdkVersion
+  )
+
+  lazy val streamingXMl = Seq(
+    "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion
   )
 
 }

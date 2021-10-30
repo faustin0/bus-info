@@ -15,4 +15,5 @@ object BusRequest {
 
   def apply(busStop: Int, busID: String, hour: LocalTime): BusRequest =
     new BusRequest(busStop, Some(busID), Some(hour))
+
 }

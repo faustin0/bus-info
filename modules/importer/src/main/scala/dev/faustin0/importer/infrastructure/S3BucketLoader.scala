@@ -36,4 +36,5 @@ object S3BucketLoader {
   def makeFromAws(): Try[S3BucketLoader] =
     Try(S3Client.builder().build())
       .map(new S3BucketLoader(_))
+
 }

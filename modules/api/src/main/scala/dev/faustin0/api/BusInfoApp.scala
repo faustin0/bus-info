@@ -47,4 +47,5 @@ object BusInfoApp extends IOApp {
         .drain
     }.as(ExitCode.Success)
   }
+
 }

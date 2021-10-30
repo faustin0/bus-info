@@ -49,6 +49,7 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
           .getOrElse("")
       )
     )
+
 }
 
 object HelloBusClient {
@@ -71,4 +72,5 @@ object HelloBusClient {
       .resource
       .map(client => ClientLogger(logHeaders = false, logBody = true)(client))
       .map(client => new HelloBusClient(client))
+
 }

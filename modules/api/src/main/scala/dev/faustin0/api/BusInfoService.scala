@@ -62,4 +62,5 @@ case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {
         .find(_.name.equalsIgnoreCase(busStopName))
         .toList
     )
+
 }

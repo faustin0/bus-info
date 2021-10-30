@@ -38,4 +38,5 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
       .as(ExitCode.Success)
       .unsafeRunSync()
   }
+
 }

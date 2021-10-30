@@ -57,4 +57,5 @@ class S3BucketReaderIT
 
   private def xmlEqualsIgnoringWhiteSpaces(actual: Elem, expected: Elem) =
     trim(actual) === trim(expected)
+
 }

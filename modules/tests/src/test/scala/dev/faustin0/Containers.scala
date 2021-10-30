@@ -1,13 +1,13 @@
 package dev.faustin0
 
-import cats.effect.{IO, Resource}
-import com.dimafeng.testcontainers.{GenericContainer, LocalStackV2Container}
+import cats.effect.{ IO, Resource }
+import com.dimafeng.testcontainers.{ GenericContainer, LocalStackV2Container }
 import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.testcontainers.containers.wait.strategy.Wait
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.auth.credentials.{ AwsBasicCredentials, StaticCredentialsProvider }
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.s3.S3Client
@@ -25,6 +25,7 @@ trait Containers {
     command = Seq("-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"),
     waitStrategy = Wait.forLogMessage(".*CorsParams:.*", 1)
   )
+
 }
 
 object Containers {

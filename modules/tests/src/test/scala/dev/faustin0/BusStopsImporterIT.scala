@@ -120,4 +120,5 @@ class BusStopsImporterIT
       .flatMap(f => IO(xml.XML.load(f)))
       .map(xml => BusStopsDataset("bus-stop-dataset.xml", xml)) -> busStopsEntriesNumber
   }
+
 }

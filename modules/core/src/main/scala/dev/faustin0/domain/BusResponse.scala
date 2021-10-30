@@ -1,9 +1,9 @@
 package dev.faustin0.domain
 
 import cats.implicits.toFunctorOps
-import io.circe.{ Decoder, Encoder }
-import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
+import io.circe.syntax.EncoderOps
+import io.circe.{ Decoder, Encoder }
 
 import scala.xml.Elem
 
@@ -87,5 +87,7 @@ object BusInfoResponse {
         Decoder[Successful].widen,
         Decoder[Failure].widen
       ).reduceLeft(_ or _)
+
   }
+
 }

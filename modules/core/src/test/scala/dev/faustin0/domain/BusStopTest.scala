@@ -33,4 +33,5 @@ class BusStopTest extends AnyFunSuite with Matchers {
 
     parsed shouldBe Right(expected)
   }
+
 }

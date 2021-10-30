@@ -62,5 +62,7 @@ object DynamoSetUp {
           .build()
       )
       .build()
+
   }
+
 }

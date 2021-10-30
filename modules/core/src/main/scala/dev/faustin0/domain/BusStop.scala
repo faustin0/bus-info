@@ -43,4 +43,5 @@ object BusStop {
     }.toEither
       .leftMap(t => TransformError(s"failed to parse xml: ${xml.text}", Some(t)))
   }
+
 }
