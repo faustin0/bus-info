@@ -6,7 +6,7 @@ import com.dimafeng.testcontainers.{ ForEachTestContainer, GenericContainer }
 import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, Position }
 import dev.faustin0.importer.Importer
-import dev.faustin0.importer.domain.{ BusStopsDataset, DatasetFileLocation, Failure, Success }
+import dev.faustin0.importer.domain.{ DatasetFileLocation, Failure, Success }
 import dev.faustin0.repositories.DynamoBusStopRepository
 import fs2._
 import org.scalatest.freespec.AsyncFreeSpec
@@ -32,27 +32,23 @@ class BusStopsImporterIT
       .unsafeRunSync()
 
   "should insert all entries when no one exist" in {
-    val bucketName                       = "bus-stops"
-    val (dataset, busStopsEntriesNumber) = getTestDataset
-
-    val datasetLoader = dataset
-      .map(new InMemoryDatasetLoader(bucketName, _))
+    val bucketName = "bus-stops"
 
     Containers
       .createDynamoClient(dynamoContainer)
       .map(DynamoBusStopRepository(_))
       .use { busStopRepo =>
+        val datasetLoader = new InMemoryDatasetLoader(bucketName)
+        val sut           = new Importer(busStopRepo, datasetLoader)
         for {
-          ds          <- datasetLoader
-          sut          = new Importer(busStopRepo, ds)
-          computation <- sut.importFrom(DatasetFileLocation("bus-stops", "bus-stop-dataset.xml"))
-
-        } yield computation
+          computation   <- sut.importFrom(DatasetFileLocation("bus-stops", "bus-stop-dataset.xml"))
+          expectedCount <- datasetLoader.getBusStopsEntriesNumber
+        } yield (computation, expectedCount)
       }
       .asserting {
-        case Success(_, processedItems) =>
-          assert(processedItems === busStopsEntriesNumber)
-        case Failure(_, _, _)           => fail()
+        case (Success(_, processedItems), expectedCount) =>
+          assert(processedItems === expectedCount)
+        case (Failure(_, _, _), _)                       => fail()
       }
   }
 
@@ -86,39 +82,31 @@ class BusStopsImporterIT
       )
     )
 
-    val bucketName                       = "bus-stops"
-    val (dataset, busStopsEntriesNumber) = getTestDataset
-
-    val datasetLoader = dataset
-      .map(new InMemoryDatasetLoader(bucketName, _))
+    val bucketName = "bus-stops"
 
     Containers
       .createDynamoClient(dynamoContainer)
       .map(DynamoBusStopRepository(_))
       .use { busStopRepo =>
         for {
-          _           <- Stream
-                           .emits(existingBusStops ++ modifiedBusStops)
-                           .through(busStopRepo.batchInsert)
-                           .compile
-                           .drain
-          ds          <- datasetLoader
-          sut          = new Importer(busStopRepo, ds)
-          computation <- sut.importFrom(DatasetFileLocation("bus-stops", "bus-stop-dataset.xml"))
-        } yield computation
+          _ <- Stream
+                 .emits(existingBusStops ++ modifiedBusStops)
+                 .through(busStopRepo.batchInsert)
+                 .compile
+                 .drain
+
+          datasetLoader = new InMemoryDatasetLoader(bucketName)
+          sut           = new Importer(busStopRepo, datasetLoader)
+
+          computation   <- sut.importFrom(DatasetFileLocation("bus-stops", "bus-stop-dataset.xml"))
+          expectedCount <- datasetLoader.getBusStopsEntriesNumber
+        } yield (computation, expectedCount)
       }
       .asserting {
-        case Success(_, processedItems) =>
-          assert(processedItems === busStopsEntriesNumber - existingBusStops.size)
-        case Failure(_, _, _)           => fail()
+        case (Success(_, processedItems), expectedCount) =>
+          assert(processedItems === expectedCount - existingBusStops.size)
+        case (Failure(_, _, _), _)                       => fail()
       }
-  }
-
-  private def getTestDataset: (IO[BusStopsDataset], Int) = {
-    val busStopsEntriesNumber = 31
-    IO(getClass.getClassLoader.getResource("bus-stop-dataset.xml"))
-      .flatMap(f => IO(xml.XML.load(f)))
-      .map(xml => BusStopsDataset("bus-stop-dataset.xml", xml)) -> busStopsEntriesNumber
   }
 
 }
