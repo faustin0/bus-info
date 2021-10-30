@@ -64,7 +64,9 @@ object HelloBusClient {
   def make(
     executionContext: ExecutionContext
   ): Resource[IO, HelloBusClient] =
-    BlazeClientBuilder[IO](executionContext).resource
+    BlazeClientBuilder[IO]
+      .withExecutionContext(executionContext)
+      .resource
       .map(client => ClientLogger(logHeaders = false, logBody = true)(client))
       .map(client => new HelloBusClient(client))
 

@@ -15,7 +15,6 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
-import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
 
 object BusInfoApp extends IOApp {
@@ -38,7 +37,7 @@ object BusInfoApp extends IOApp {
       )
       .map(routes => middlewares(routes))
       .use(app =>
-        BlazeServerBuilder[IO](global)
+        BlazeServerBuilder[IO]
           .bindHttp(80, "0.0.0.0")
           .withHttpApp(app)
           .serve
@@ -67,7 +66,7 @@ object BusInfoApp extends IOApp {
       )
     )(http.orNotFound)
   }.andThen { http =>
-    Logger.httpApp[IO](logHeaders = true, logBody = false)(http)
+    Logger.httpApp[IO](logHeaders = true, logBody = false, logAction = Some(logger.info(_)))(http)
   }
 
 }
