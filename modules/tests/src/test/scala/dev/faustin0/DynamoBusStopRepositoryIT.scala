@@ -18,7 +18,7 @@ class DynamoBusStopRepositoryIT
 
   override val container: GenericContainer = dynamoContainer
 
-  //TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
+  // TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   override def afterStart(): Unit =
@@ -85,7 +85,7 @@ class DynamoBusStopRepositoryIT
       .use { repo =>
         for {
           errors <- entries.through(repo.batchInsert).compile.toList
-          count <- repo.count //todo make the counting "isolated" from other tests
+          count <- repo.count // todo make the counting "isolated" from other tests
         } yield (count, errors)
       }
       .asserting { case (count, errs) =>

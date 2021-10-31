@@ -22,7 +22,7 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
     val logger = context.getLogger
 
     Stream
-      .fromIterator[IO](s3Event.getRecords.asScala.iterator, 10) //TODO chunk size
+      .fromIterator[IO](s3Event.getRecords.asScala.iterator, 10) // TODO chunk size
       .evalTap(s3Event => IO(logger.log(s"S3 event: ${s3Event.getEventName}")))
       .find(e => e.getEventName.contains("ObjectCreated:"))
       .map(s3Record =>
