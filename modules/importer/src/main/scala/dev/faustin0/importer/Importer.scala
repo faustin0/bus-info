@@ -46,7 +46,7 @@ class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[
 
   private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] =
     Stream
-      .fromIterator[IO]((data.content \\ "NewDataSet" \\ "Table").iterator, 10) //todo chunk size ???
+      .fromIterator[IO]((data.content \\ "NewDataSet" \\ "Table").iterator, 10) // todo chunk size ???
       .evalMapChunk(t => IO.fromEither(BusStop.fromXml(t)))
 
 }

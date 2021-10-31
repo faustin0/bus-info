@@ -146,7 +146,7 @@ object DynamoBusStopRepository {
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
         .region(Region.EU_CENTRAL_1)
         .endpointOverride(
-          URI.create("http://localhost:4567") //TODO parametrize endpoint
+          URI.create("http://localhost:4567") // TODO parametrize endpoint
         )
         .build()
     }

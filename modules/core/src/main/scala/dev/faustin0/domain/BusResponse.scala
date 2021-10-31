@@ -59,7 +59,7 @@ object BusInfoResponse {
       .map(_.trim)
 
     splitResponse.partitionMap {
-      case responseRegex(bus, satellite, hour, null) => //info may be omitted
+      case responseRegex(bus, satellite, hour, null) => // info may be omitted
         Right(BusResponse(busStopCode, bus, satellite.contains("Satellite"), hour))
       case responseRegex(bus, satellite, hour, info) =>
         Right(BusResponse(busStopCode, bus, satellite.contains("Satellite"), hour, info.trim))
