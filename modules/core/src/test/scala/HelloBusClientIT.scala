@@ -49,4 +49,5 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
       case _                       => fail()
     }
   }
+
 }

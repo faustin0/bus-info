@@ -3,15 +3,15 @@ import sbt.Keys.parallelExecution
 
 inThisBuild(
   List(
-    organization := "dev.faustin0",
-    developers := List(
+    organization         := "dev.faustin0",
+    developers           := List(
       Developer("faustin0", "Fausto Di Natale", "", url("https://github.com/faustin0")),
       Developer("azanin", "Alessandro Zanin", "ale.zanin90@gmail.com", url("https://github.com/azanin"))
     ),
-    homepage := Some(url("https://github.com/faustin0/bus-info")),
+    homepage             := Some(url("https://github.com/faustin0/bus-info")),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     pomIncludeRepository := { _ => false },
-    version := "0.2.1"
+    version              := "0.2.1"
   )
 )
 
@@ -32,12 +32,18 @@ lazy val commonSettings = Seq(
 )
 
 lazy val assemblySetting = assembly / assemblyMergeStrategy := {
-  case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties")             => MergeStrategy.singleOrError
-  case PathList("META-INF", "io.netty.versions.properties")                                     => MergeStrategy.last
-  case "module-info.class"                                                                      => MergeStrategy.concat
-  case "mime.types"                                                                             => MergeStrategy.filterDistinctLines
-  case PathList("software", "amazon", "awssdk", "global", "handlers", "execution.interceptors") => MergeStrategy.filterDistinctLines
-  case s                                                                                        => MergeStrategy.defaultMergeStrategy(s)
+  case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties")             =>
+    MergeStrategy.singleOrError
+  case PathList("META-INF", "io.netty.versions.properties")                                     =>
+    MergeStrategy.last
+  case "module-info.class"                                                                      =>
+    MergeStrategy.concat
+  case "mime.types"                                                                             =>
+    MergeStrategy.filterDistinctLines
+  case PathList("software", "amazon", "awssdk", "global", "handlers", "execution.interceptors") =>
+    MergeStrategy.filterDistinctLines
+  case s                                                                                        =>
+    MergeStrategy.defaultMergeStrategy(s)
 }
 
 lazy val root = (project in file("."))
@@ -71,7 +77,7 @@ lazy val api = project
   .settings(libraryDependencies ++= httpServerDeps)
   .settings(assembly / assemblyJarName := "bus-info-app.jar")
   .settings(
-    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoKeys    := Seq[BuildInfoKey](version),
     buildInfoPackage := "dev.faustin0.info"
   )
 

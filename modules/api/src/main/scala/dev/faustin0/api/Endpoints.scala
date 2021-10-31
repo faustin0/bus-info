@@ -98,4 +98,5 @@ object Endpoints {
   val healthcheck = endpoint.get
     .in("health")
     .out(jsonBody[String])
+
 }

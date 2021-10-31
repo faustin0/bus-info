@@ -150,4 +150,5 @@ object DynamoBusStopRepository {
         )
         .build()
     }
+
 }

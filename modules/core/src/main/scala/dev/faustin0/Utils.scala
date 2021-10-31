@@ -10,4 +10,5 @@ object Utils {
 
     def fromCompletable: IO[T] = IO.fromCompletableFuture(unevaluatedCF)
   }
+
 }

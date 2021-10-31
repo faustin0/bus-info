@@ -1,7 +1,7 @@
 package dev.faustin0
 
 import cats.effect.{ IO, Resource }
-import dev.faustin0.domain.{ BusInfoResponse, BusRequest, Failure }
+import dev.faustin0.domain.{ BusInfoResponse, BusRequest }
 import org.http4s.Method._
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client._
@@ -13,7 +13,6 @@ import org.http4s.{ Headers, MediaType, Request, UrlForm }
 
 import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
 import scala.xml.Elem
 
 class HelloBusClient private (private val httpClient: Client[IO]) {
@@ -29,7 +28,6 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
           parsedResponse <- IO.fromEither(BusInfoResponse.fromXml(xmlResponse, busRequest.busStop))
         } yield parsedResponse
       }
-      .timeoutTo(10 seconds, fallback = IO(Failure("Tper servers not responding")))
   }
 
   private def createHttpRequest(busRequest: BusRequest): Request[IO] =
@@ -49,6 +47,7 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
           .getOrElse("")
       )
     )
+
 }
 
 object HelloBusClient {
@@ -65,10 +64,10 @@ object HelloBusClient {
   def make(
     executionContext: ExecutionContext
   ): Resource[IO, HelloBusClient] =
-    BlazeClientBuilder[IO](executionContext)
-      .withConnectTimeout(5 seconds)
-      .withRequestTimeout(7 seconds)
+    BlazeClientBuilder[IO]
+      .withExecutionContext(executionContext)
       .resource
       .map(client => ClientLogger(logHeaders = false, logBody = true)(client))
       .map(client => new HelloBusClient(client))
+
 }

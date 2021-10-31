@@ -25,9 +25,7 @@ final case class Failure(
   processedFile: String,
   processedItems: Int,
   failures: Int
-) extends ImportOutcome {
-
-}
+) extends ImportOutcome
 
 object ImportOutcome {
 
