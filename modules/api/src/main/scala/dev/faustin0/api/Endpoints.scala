@@ -81,7 +81,8 @@ object Endpoints {
       oneOf[BusInfoResponse](
         oneOfMapping(StatusCode.BadRequest, jsonBody[BusNotHandled]),
         oneOfMapping(StatusCode.BadRequest, jsonBody[Failure]),
-        oneOfMapping(StatusCode.NotFound, jsonBody[BusStopNotHandled])
+        oneOfMapping(StatusCode.NotFound, jsonBody[BusStopNotHandled]),
+        oneOfMapping(StatusCode.ServiceUnavailable, jsonBody[Suspended])
       )
     )
 
@@ -89,7 +90,7 @@ object Endpoints {
     .in(path[Int]("busStopCode"))
     .in("info")
     .out(jsonBody[BusStop])
-    .errorOut(oneOf[String](statusMapping(StatusCode.NotFound, jsonBody[String])))
+    .errorOut(oneOf[String](oneOfMapping(StatusCode.NotFound, jsonBody[String])))
 
   val busStopSearch = baseEndpoint.get
     .in(query[String]("name"))
