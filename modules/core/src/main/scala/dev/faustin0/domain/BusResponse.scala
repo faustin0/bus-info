@@ -17,6 +17,8 @@ final case class Successful(buses: List[BusResponse]) extends BusInfoResponse
 
 final case class Failure(error: String) extends BusInfoResponse
 
+final case class Suspended(reason: String) extends BusInfoResponse
+
 case class BusResponse(
   busStopCode: Int,
   bus: String,
@@ -32,7 +34,7 @@ object BusInfoResponse {
   private val notHandledBusRegex  = """.*LINEA.*NON GESTITA.*""".r
   private val notHandledStopRegex = """.*FERMATA.*NON GESTITA.*""".r
 
-  def fromXml(xml: Elem, busStopCode: Int): Either[TransformError, BusInfoResponse] = {
+  def fromXml(xml: Elem, requestedBusStopCode: Int): Either[TransformError, BusInfoResponse] = {
     val textResponse = xml \\ "string"
 
     val content = textResponse
@@ -44,7 +46,8 @@ object BusInfoResponse {
       case notHandledBusRegex(_*)              => Right(BusNotHandled("bus not handled"))
       case notHandledStopRegex(_*)             => Right(BusStopNotHandled("bus-stop not handled"))
       case msg if msg.contains("NESSUNA")      => Right(Successful(Nil))
-      case msg if msg.contains("TperHellobus") => extractBusResponse(msg, busStopCode).map(Successful)
+      case msg if msg.contains("TperHellobus") => extractBusResponse(msg, requestedBusStopCode).map(Successful)
+      case msg if msg.contains("SOSPESE")      => Right(Suspended(msg))
       case _                                   => Right(Failure("Unsupported response"))
     }
   }
@@ -78,6 +81,7 @@ object BusInfoResponse {
       case busStopNotHandled: BusStopNotHandled => busStopNotHandled.asJson
       case success: Successful                  => success.buses.asJson
       case failure @ Failure(_)                 => failure.asJson
+      case suspended: Suspended                 => suspended.asJson
     }
 
     implicit val decodeBusInfoResponse: Decoder[BusInfoResponse] =
