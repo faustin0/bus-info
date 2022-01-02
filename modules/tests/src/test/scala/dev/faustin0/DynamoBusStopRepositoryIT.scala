@@ -85,7 +85,7 @@ class DynamoBusStopRepositoryIT
       .use { repo =>
         for {
           errors <- entries.through(repo.batchInsert).compile.toList
-          count <- repo.count // todo make the counting "isolated" from other tests
+          count  <- repo.count // todo make the counting "isolated" from other tests
         } yield (count, errors)
       }
       .asserting { case (count, errs) =>
