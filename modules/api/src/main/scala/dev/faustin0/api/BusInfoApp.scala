@@ -46,14 +46,13 @@ object BusInfoApp extends IOApp {
       )
       .as(ExitCode.Success)
 
-  private val endpoints: Resource[IO, Endpoints] = {
+  private val endpoints: Resource[IO, Endpoints] =
     for {
       tperClient    <- HelloBusClient.make(cachedEc)
       busStopRepo   <- DynamoBusStopRepository.makeResource
       busInfoService = BusInfoService(tperClient, busStopRepo)
       endpoints      = Endpoints(busInfoService)
     } yield endpoints
-  }
 
   private val middlewares: HttpRoutes[IO] => HttpApp[IO] = { http: HttpRoutes[IO] =>
     AutoSlash.httpRoutes(http)
