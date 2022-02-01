@@ -5,7 +5,7 @@ object Dependencies {
 
   val catsVersion = "3.3.4"
 
-  val testcontainersScalaV = "0.39.12"
+  val testcontainersScalaV = "0.40.0"
 
   val kindProjectorV = "0.13.2"
 
