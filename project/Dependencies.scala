@@ -23,7 +23,7 @@ object Dependencies {
 
   val fs2Version = "3.2.5"
 
-  val logbackVersion = "1.2.10"
+  val logbackVersion = "1.2.11"
 
   val xs4sVersion = "0.9.1"
 
