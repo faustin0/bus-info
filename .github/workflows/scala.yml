@@ -26,7 +26,7 @@ jobs:
         run: sbt assembly
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bus-stops-importer.jar
           path: modules/importer/target/scala-2.13/bus-stops-importer.jar
