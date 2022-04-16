@@ -7,7 +7,7 @@ pull_request_rules:
       delete_head_branch: 
         force: true
       queue:
-        method: merge
+        method: rebase
         name: default
         
   - name: automatic merge of dependabot 🤖
@@ -19,7 +19,7 @@ pull_request_rules:
       delete_head_branch: 
         force: true
       queue:
-        method: merge
+        method: rebase
         name: default
 
 queue_rules:
