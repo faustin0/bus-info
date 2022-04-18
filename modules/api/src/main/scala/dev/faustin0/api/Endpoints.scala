@@ -24,29 +24,31 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO]) {
 
   private val http4sInterpreter = Http4sServerInterpreter[IO]()
 
-  val busStopInfoRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopByCode) { busStopCode =>
+  val busStopInfoRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopByCode.serverLogic[IO] { busStopCode =>
     busInfoService
       .getBusStop(busStopCode)
       .toRight(left = s"no bus stop with code $busStopCode")
       .value
-  }
+  })
 
-  val busStopSearchRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopSearch) { busStopName =>
+  val busStopSearchRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopSearch.serverLogic[IO] { busStopName =>
     busInfoService
       .searchBusStop(busStopName)
       .map(_.asRight[Unit])
-  }
+  })
 
-  val nextBusRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(nextBus) { input =>
+  val nextBusRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(nextBus.serverLogic[IO] { input =>
     val (busStopCode, bus, hour) = input
     busInfoService.getNextBuses(BusRequest(busStopCode, bus, hour)).map {
       case x: Successful => x.asRight
       case x             => x.asLeft
     }
-  }
+  })
 
   val healthCheckRoutes: HttpRoutes[IO] =
-    http4sInterpreter.toRoutes(healthcheck)(_ => IO("Up and running".asRight[Unit]))
+    http4sInterpreter.toRoutes(healthcheck.serverLogic[IO] { _ =>
+      IO("Up and running".asRight[Unit])
+    })
 
   val swaggerUIRoutes: HttpRoutes[IO] = {
 
@@ -79,10 +81,10 @@ object Endpoints {
     .out(jsonBody[BusInfoResponse])
     .errorOut(
       oneOf[BusInfoResponse](
-        oneOfMapping(StatusCode.BadRequest, jsonBody[BusNotHandled]),
-        oneOfMapping(StatusCode.BadRequest, jsonBody[Failure]),
-        oneOfMapping(StatusCode.NotFound, jsonBody[BusStopNotHandled]),
-        oneOfMapping(StatusCode.ServiceUnavailable, jsonBody[Suspended])
+        oneOfVariant(StatusCode.BadRequest, jsonBody[BusNotHandled]),
+        oneOfVariant(StatusCode.BadRequest, jsonBody[Failure]),
+        oneOfVariant(StatusCode.NotFound, jsonBody[BusStopNotHandled]),
+        oneOfVariant(StatusCode.ServiceUnavailable, jsonBody[Suspended])
       )
     )
 
@@ -90,7 +92,7 @@ object Endpoints {
     .in(path[Int]("busStopCode"))
     .in("info")
     .out(jsonBody[BusStop])
-    .errorOut(oneOf[String](oneOfMapping(StatusCode.NotFound, jsonBody[String])))
+    .errorOut(oneOf[String](oneOfVariant(StatusCode.NotFound, jsonBody[String])))
 
   val busStopSearch = baseEndpoint.get
     .in(query[String]("name"))
