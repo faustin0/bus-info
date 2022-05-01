@@ -36,12 +36,14 @@ lazy val assemblySetting = assembly / assemblyMergeStrategy := {
     MergeStrategy.singleOrError
   case PathList("META-INF", "io.netty.versions.properties")                                     =>
     MergeStrategy.last
-  case "module-info.class"                                                                      =>
-    MergeStrategy.concat
+  case PathList(ps @ _*) if ps.last.endsWith("module-info.class")                               =>
+    MergeStrategy.discard
   case "mime.types"                                                                             =>
     MergeStrategy.filterDistinctLines
   case PathList("software", "amazon", "awssdk", "global", "handlers", "execution.interceptors") =>
     MergeStrategy.filterDistinctLines
+  case PathList(ps @ _*) if ps.last.endsWith("Log4j2Plugins.dat")                               =>
+    MergeStrategy.concat
   case s                                                                                        =>
     MergeStrategy.defaultMergeStrategy(s)
 }
