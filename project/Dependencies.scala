@@ -5,7 +5,7 @@ object Dependencies {
 
   val catsVersion = "3.3.11"
 
-  val testcontainersScalaV = "0.40.5"
+  val testcontainersScalaV = "0.40.7"
 
   val kindProjectorV = "0.13.2"
 
@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.2.0"
 
-  val tapirVersion = "1.0.0-M7"
+  val tapirVersion = "1.0.0-M8"
 
   val awsSdkVersion = "2.17.176"
 
