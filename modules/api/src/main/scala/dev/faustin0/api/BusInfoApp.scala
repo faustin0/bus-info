@@ -48,7 +48,7 @@ object BusInfoApp extends IOApp {
 
   private val endpoints: Resource[IO, Endpoints] =
     for {
-      tperClient    <- HelloBusClient.make(cachedEc)
+      tperClient    <- HelloBusClient.make(cachedEc, s => logger.info(s))
       busStopRepo   <- DynamoBusStopRepository.makeResource
       busInfoService = BusInfoService(tperClient, busStopRepo)
       endpoints      = Endpoints(busInfoService)

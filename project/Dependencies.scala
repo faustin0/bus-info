@@ -23,7 +23,7 @@ object Dependencies {
 
   val fs2Version = "3.2.7"
 
-  val logbackVersion = "1.2.11"
+  val log4j2Version = "2.17.2"
 
   val xs4sVersion = "0.9.1"
 
@@ -37,12 +37,14 @@ object Dependencies {
   )
 
   lazy val dependencies = Seq(
-    "co.fs2"                 %% "fs2-core"        % fs2Version,
-    "org.typelevel"          %% "cats-effect"     % catsVersion,
-    "io.circe"               %% "circe-generic"   % circeVersion,
-    "org.scala-lang.modules" %% "scala-xml"       % scalaXmlVersion,
-    "org.typelevel"          %% "log4cats-slf4j"  % log4catsVersion,
-    "ch.qos.logback"          % "logback-classic" % logbackVersion % Runtime
+    "co.fs2"                  %% "fs2-core"                   % fs2Version,
+    "org.typelevel"           %% "cats-effect"                % catsVersion,
+    "io.circe"                %% "circe-generic"              % circeVersion,
+    "org.scala-lang.modules"  %% "scala-xml"                  % scalaXmlVersion,
+    "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
+    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
+    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
+    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime
   )
 
   lazy val httpClientDeps = Seq(

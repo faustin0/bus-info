@@ -62,12 +62,13 @@ object HelloBusClient {
   )
 
   def make(
-    executionContext: ExecutionContext
+    executionContext: ExecutionContext,
+    logAction: String => IO[Unit]
   ): Resource[IO, HelloBusClient] =
     BlazeClientBuilder[IO]
       .withExecutionContext(executionContext)
       .resource
-      .map(client => ClientLogger(logHeaders = false, logBody = true)(client))
-      .map(client => new HelloBusClient(client))
+      .map(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction)))
+      .map(new HelloBusClient(_))
 
 }
