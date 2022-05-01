@@ -5,12 +5,13 @@ import dev.faustin0.domain._
 import org.http4s.client.JavaNetClientBuilder
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
+import org.http4s.client.middleware.{ Logger => ClientLogger }
 
 import java.time.LocalTime
 
 class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
 
-  private val httpClient = JavaNetClientBuilder[IO].create
+  private val httpClient = ClientLogger(logHeaders = false, logBody = true)(JavaNetClientBuilder[IO].create)
   private val sut        = HelloBusClient(httpClient)
 
   "should execute sample tper request " in {
