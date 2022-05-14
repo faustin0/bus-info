@@ -23,13 +23,13 @@ jobs:
         run: sbt test
 
       - name: Package artifact
-        run: sbt assembly
+        run: sbt universal:packageBin
 
-      - name: Upload artifact
+      - name: Upload importer artifact
         uses: actions/upload-artifact@v3
         with:
-          name: bus-stops-importer.jar
-          path: modules/importer/target/scala-2.13/bus-stops-importer.jar
+          name: bus-stops-importer.zip
+          path: modules/importer/target/universal/importer-*.zip
           if-no-files-found: error
 
   Build-and-Push-Docker-Image:

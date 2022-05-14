@@ -20,33 +20,8 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.13.8",
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
-  scalacOptions ++= Seq(
-    "-feature",
-    "-deprecation",
-    "-unchecked",
-    "-language:postfixOps",
-    "-language:higherKinds",
-    "-Xfatal-warnings"
-  ),
   libraryDependencies ++= dependencies ++ testDependencies
 )
-
-lazy val assemblySetting = assembly / assemblyMergeStrategy := {
-  case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties")             =>
-    MergeStrategy.singleOrError
-  case PathList("META-INF", "io.netty.versions.properties")                                     =>
-    MergeStrategy.last
-  case PathList(ps @ _*) if ps.last.endsWith("module-info.class")                               =>
-    MergeStrategy.discard
-  case "mime.types"                                                                             =>
-    MergeStrategy.filterDistinctLines
-  case PathList("software", "amazon", "awssdk", "global", "handlers", "execution.interceptors") =>
-    MergeStrategy.filterDistinctLines
-  case PathList(ps @ _*) if ps.last.endsWith("Log4j2Plugins.dat")                               =>
-    MergeStrategy.concat
-  case s                                                                                        =>
-    MergeStrategy.defaultMergeStrategy(s)
-}
 
 lazy val root = (project in file("."))
   .aggregate(core, api, importer, tests)
@@ -58,42 +33,41 @@ lazy val root = (project in file("."))
 lazy val core = project
   .in(file("modules/core"))
   .settings(commonSettings)
-  .settings(name := "core")
-  .settings(Test / parallelExecution := false)
-  .settings(Test / fork := true)
-  .settings(assemblySetting)
-  .settings(assembly / test := {})
-  .settings(libraryDependencies ++= httpClientDeps ++ dynamoDeps)
-//  .settings(assemblyJarName in assembly := "bus-info-app.jar")
+  .settings(
+    name                     := "core",
+    Test / parallelExecution := false,
+    Test / fork              := true,
+    libraryDependencies ++= httpClientDeps ++ dynamoDeps
+  )
 
 lazy val api = project
   .in(file("modules/api"))
-  .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, LauncherJarPlugin)
   .dependsOn(core)
   .settings(commonSettings)
-  .settings(name := "api")
-  .settings(Test / parallelExecution := false)
-  .settings(Test / fork := true)
-  .settings(assemblySetting)
-  .settings(assembly / test := {})
-  .settings(libraryDependencies ++= httpServerDeps)
-  .settings(assembly / assemblyJarName := "bus-info-app.jar")
   .settings(
-    buildInfoKeys    := Seq[BuildInfoKey](version),
-    buildInfoPackage := "dev.faustin0.info"
+    name                     := "api",
+    Test / parallelExecution := false,
+    Test / fork              := true,
+    libraryDependencies ++= httpServerDeps,
+    Compile / mainClass      := Some("dev.faustin0.api.BusInfoApp"),
+    buildInfoKeys            := Seq[BuildInfoKey](version),
+    buildInfoPackage         := "dev.faustin0.info",
+    topLevelDirectory        := None
   )
 
 lazy val importer = project
   .in(file("modules/importer"))
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging)
   .dependsOn(core)
   .settings(commonSettings)
-  .settings(name := "importer")
-  .settings(Test / parallelExecution := false)
-  .settings(Test / fork := true)
-  .settings(assemblySetting)
-  .settings(assembly / test := {})
-  .settings(libraryDependencies ++= awsDeps)
-  .settings(assembly / assemblyJarName := "bus-stops-importer.jar")
+  .settings(
+    name                     := "importer",
+    Test / parallelExecution := false,
+    Test / fork              := true,
+    libraryDependencies ++= awsDeps,
+    topLevelDirectory        := None
+  )
 
 lazy val tests = project
   .in(file("modules/tests"))
@@ -101,9 +75,10 @@ lazy val tests = project
   .configs(IntegrationTest)
   .settings(commonSettings)
   .settings(Defaults.itSettings)
-  .settings(name := "tests")
-  .settings(Test / parallelExecution := false)
-  .settings(Test / fork := true)
-  .settings(IntegrationTest / fork := true)
-  .settings(libraryDependencies ++= awsDeps)
-  .disablePlugins(sbtassembly.AssemblyPlugin)
+  .settings(
+    name                     := "tests",
+    Test / parallelExecution := false,
+    Test / fork              := true,
+    IntegrationTest / fork   := true,
+    libraryDependencies ++= awsDeps
+  )
