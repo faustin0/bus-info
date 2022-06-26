@@ -15,7 +15,7 @@ import java.net.URI
 import scala.jdk.CollectionConverters._
 import scala.util.{ Failure, Success, Try }
 
-class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(implicit L: Logger[IO])
+class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: Logger[IO])
     extends BusStopRepository[IO] {
 
   override def insert(busStop: BusStop): IO[Unit] = {
@@ -117,9 +117,7 @@ class DynamoBusStopRepository private (private val client: DynamoDbAsyncClient)(
 object DynamoBusStopRepository {
 
   def apply(awsClient: DynamoDbAsyncClient)(implicit l: Logger[IO]): DynamoBusStopRepository =
-    new DynamoBusStopRepository(
-      awsClient
-    )
+    new DynamoBusStopRepository(awsClient)
 
   def makeResource(implicit l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
     val client = IO.fromTry(awsDefaultClient.orElse(clientFromEnv))
@@ -129,6 +127,7 @@ object DynamoBusStopRepository {
       .map(DynamoBusStopRepository(_))
   }
 
+  // todo should use IO
   def fromAWS()(implicit l: Logger[IO]): Try[DynamoBusStopRepository] =
     awsDefaultClient.map(DynamoBusStopRepository(_))
 

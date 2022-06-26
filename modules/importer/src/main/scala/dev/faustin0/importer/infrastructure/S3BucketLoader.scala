@@ -6,10 +6,9 @@ import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{ GetObjectRequest, GetObjectResponse }
 
-import scala.util.Try
 import scala.xml.XML
 
-class S3BucketLoader(private val s3Client: S3Client) extends DataSetLoader[IO] {
+class S3BucketLoader(s3Client: S3Client) extends DataSetLoader[IO] {
 
   override def load(datasetFile: DatasetFileLocation): IO[BusStopsDataset] =
     readBucketObjectFromLocation(datasetFile)
@@ -26,15 +25,15 @@ class S3BucketLoader(private val s3Client: S3Client) extends DataSetLoader[IO] {
       .build()
 
     Resource
-      .fromAutoCloseable(IO(s3Client.getObject(getObjectRequest)))
+      .fromAutoCloseable(IO.blocking(s3Client.getObject(getObjectRequest)))
   }
 
 }
 
 object S3BucketLoader {
 
-  def makeFromAws(): Try[S3BucketLoader] =
-    Try(S3Client.builder().build())
+  def makeFromAws(): IO[S3BucketLoader] =
+    IO(S3Client.builder().build())
       .map(new S3BucketLoader(_))
 
 }
