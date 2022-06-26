@@ -1,38 +1,33 @@
 package dev.faustin0.importer
 
 import cats.data.OptionT
-import cats.effect.{ IO, Ref }
+import cats.effect.{ Async, Ref }
+import cats.syntax.all._
 import dev.faustin0.domain.{ BusStop, BusStopRepository }
 import dev.faustin0.importer.domain._
-import dev.faustin0.importer.infrastructure.S3BucketLoader
-import dev.faustin0.repositories.DynamoBusStopRepository
 import fs2.Stream
 import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import scala.util.Try
+class Importer[F[_]: Async: Logger](busStopRepo: BusStopRepository[F], datasetLoader: DataSetLoader[F]) {
+  private val concurrentOps = 4
 
-class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[IO]) {
-  implicit private val log: Logger[IO] = Slf4jLogger.getLogger[IO]
-  private val concurrentOps            = 4
-
-  def importFrom(dataset: DatasetFileLocation): IO[ImportOutcome] = {
+  def importFrom(dataset: DatasetFileLocation): F[ImportOutcome] = {
 
     val value = for {
-      counter  <- Ref.of[IO, Int](0)
+      counter  <- Ref[F].of(0)
       failures <- Stream
                     .eval(datasetLoader.load(dataset))
                     .flatMap(dataset => extractBusStopsFromDataSet(dataset))
                     .parEvalMap(concurrentOps) { busStop =>
                       OptionT(busStopRepo.findBusStopByCode(busStop.code))
-                        .filter(existingBusStop => existingBusStop == busStop)
+                        .filter(_ == busStop)
                         .value
                         .map(existingBusStop => busStop -> existingBusStop)
                     }
                     .collect { case (busStop, None) => busStop }
-                    .evalTap(x => log.info(s"found busStop to update $x") *> counter.getAndUpdate(_ + 1))
+                    .evalTap(x => Logger[F].info(s"found busStop to update $x") *> counter.update(_ + 1))
                     .through(busStopRepo.batchInsert)
-                    .evalTap(failure => log.error(failure.reason)("import operation failed"))
+                    .evalTap(failure => Logger[F].error(failure.reason)("import operation failed"))
                     .compile
                     .fold(0)((acc, _) => acc + 1)
       count    <- counter.get
@@ -44,19 +39,9 @@ class Importer(busStopRepo: BusStopRepository[IO], datasetLoader: DataSetLoader[
     }
   }
 
-  private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[IO, BusStop] =
+  private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[F, BusStop] =
     Stream
-      .fromIterator[IO]((data.content \\ "NewDataSet" \\ "Table").iterator, 10) // todo chunk size ???
-      .evalMapChunk(t => IO.fromEither(BusStop.fromXml(t)))
-
-}
-
-object Importer {
-
-  def makeFromAWS(implicit L: Logger[IO]): Try[Importer] =
-    for {
-      busStopRepo  <- DynamoBusStopRepository.fromAWS()
-      bucketReader <- S3BucketLoader.makeFromAws()
-    } yield new Importer(busStopRepo, bucketReader)
+      .fromIterator[F]((data.content \\ "NewDataSet" \\ "Table").iterator, 10) // todo chunk size ???
+      .evalMapChunk(t => BusStop.fromXml(t).liftTo[F])
 
 }
