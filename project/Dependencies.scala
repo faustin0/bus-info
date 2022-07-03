@@ -21,7 +21,7 @@ object Dependencies {
 
   val awsSdkVersion = "2.17.219"
 
-  val fs2Version = "3.2.8"
+  val fs2Version = "3.2.9"
 
   val log4j2Version = "2.17.2"
 
