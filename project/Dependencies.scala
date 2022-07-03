@@ -19,18 +19,18 @@ object Dependencies {
 
   val tapirVersion = "1.0.0-M9"
 
-  val awsSdkVersion = "2.17.219"
+  val awsSdkVersion = "2.17.224"
 
-  val fs2Version = "3.2.8"
+  val fs2Version = "3.2.9"
 
-  val log4j2Version = "2.17.2"
+  val log4j2Version = "2.18.0"
 
   val xs4sVersion = "0.9.1"
 
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.12"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.248"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.253"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.4.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
