@@ -15,7 +15,7 @@ object Dependencies {
 
   val scalaXmlVersion = "2.1.0"
 
-  val log4catsVersion = "2.3.2"
+  val log4catsVersion = "2.4.0"
 
   val tapirVersion = "1.0.0-M9"
 
