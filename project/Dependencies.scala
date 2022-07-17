@@ -5,7 +5,7 @@ object Dependencies {
 
   val catsVersion = "3.3.13"
 
-  val testcontainersScalaV = "0.40.8"
+  val testcontainersScalaV = "0.40.9"
 
   val kindProjectorV = "0.13.2"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.12"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.257"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.262"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.4.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
