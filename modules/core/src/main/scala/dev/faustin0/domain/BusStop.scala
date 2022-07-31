@@ -1,10 +1,5 @@
 package dev.faustin0.domain
 
-import cats.implicits._
-
-import scala.util.Try
-import scala.xml.NodeSeq
-
 case class BusStop(
   code: Int,
   name: String,
