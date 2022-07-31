@@ -4,6 +4,7 @@ import cats.data.OptionT
 import cats.effect.{ Async, Ref }
 import cats.syntax.all._
 import dev.faustin0.domain.{ BusStop, BusStopRepository }
+import dev.faustin0.importer.domain.XmlDecoder.syntax._
 import dev.faustin0.importer.domain._
 import fs2.Stream
 import org.typelevel.log4cats.Logger
@@ -42,6 +43,6 @@ class Importer[F[_]: Async: Logger](busStopRepo: BusStopRepository[F], datasetLo
   private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[F, BusStop] =
     Stream
       .fromIterator[F]((data.content \\ "NewDataSet" \\ "Table").iterator, 10) // todo chunk size ???
-      .evalMapChunk(t => BusStop.fromXml(t).liftTo[F])
+      .evalMapChunk(t => t.decodeTo[BusStop].liftTo[F])
 
 }
