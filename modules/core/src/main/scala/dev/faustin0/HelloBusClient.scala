@@ -3,16 +3,15 @@ package dev.faustin0
 import cats.effect.{ IO, Resource }
 import dev.faustin0.domain.{ BusInfoResponse, BusRequest }
 import org.http4s.Method._
-import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client._
 import org.http4s.client.middleware.{ Logger => ClientLogger }
+import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers._
 import org.http4s.implicits._
 import org.http4s.scalaxml._
 import org.http4s.{ Headers, MediaType, Request, UrlForm }
 
 import java.time.format.DateTimeFormatter
-import scala.concurrent.ExecutionContext
 import scala.xml.Elem
 
 class HelloBusClient private (private val httpClient: Client[IO]) {
@@ -61,14 +60,11 @@ object HelloBusClient {
     httpClient
   )
 
-  def make(
-    executionContext: ExecutionContext,
-    logAction: String => IO[Unit]
-  ): Resource[IO, HelloBusClient] =
-    BlazeClientBuilder[IO]
-      .withExecutionContext(executionContext)
-      .resource
+  def make(logAction: String => IO[Unit]): Resource[IO, HelloBusClient] =
+    EmberClientBuilder
+      .default[IO]
+      .build
       .map(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction)))
-      .map(new HelloBusClient(_))
+      .map(client => new HelloBusClient(client))
 
 }
