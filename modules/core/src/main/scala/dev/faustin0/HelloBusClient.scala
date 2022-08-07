@@ -65,6 +65,6 @@ object HelloBusClient {
       .default[IO]
       .build
       .map(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction)))
-      .map(client => new HelloBusClient(client))
+      .map(new HelloBusClient(_))
 
 }

@@ -9,7 +9,7 @@ import dev.faustin0.repositories.DynamoBusStopRepository
 
 trait BusInfoDSL[F[_]] {
 
-  def getBusStop(busStopCode: Int): OptionT[F, BusStop]
+  def getBusStop(busStopCode: Int): F[Either[String, BusStop]]
 
   def searchBusStop(busStopName: String): F[List[BusStop]]
 
@@ -21,8 +21,10 @@ class BusInfoService private (
   private val repo: BusStopRepository[IO]
 ) extends BusInfoDSL[IO] {
 
-  override def getBusStop(busStopCode: Int): OptionT[IO, BusStop] =
-    OptionT(repo.findBusStopByCode(busStopCode))
+  override def getBusStop(busStopCode: Int): IO[Either[String, BusStop]] =
+    repo
+      .findBusStopByCode(busStopCode)
+      .map(_.toRight(left = s"no bus stop with code $busStopCode"))
 
   override def getNextBuses(busRequest: BusRequest): IO[BusInfoResponse] =
     OptionT(repo.findBusStopByCode(busRequest.busStop))
@@ -48,8 +50,8 @@ case class InMemoryBusInfoService[F[_]: Applicative]() extends BusInfoDSL[F] {
     150 -> List(BusResponse(303, "27A", true, "14:30"))
   )
 
-  override def getBusStop(busStopCode: Int): OptionT[F, BusStop] =
-    OptionT.fromOption[F](stops.get(busStopCode))
+  override def getBusStop(busStopCode: Int): F[Either[String, BusStop]] =
+    Applicative[F].pure(stops.get(busStopCode).toRight("missing stop"))
 
   override def getNextBuses(busRequest: BusRequest): F[BusInfoResponse] =
     Applicative[F].pure(

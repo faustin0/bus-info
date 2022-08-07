@@ -25,10 +25,7 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO]) {
   private val http4sInterpreter = Http4sServerInterpreter[IO]()
 
   val busStopInfoRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopByCode.serverLogic[IO] { busStopCode =>
-    busInfoService
-      .getBusStop(busStopCode)
-      .toRight(left = s"no bus stop with code $busStopCode")
-      .value
+    busInfoService.getBusStop(busStopCode)
   })
 
   val busStopSearchRoutes: HttpRoutes[IO] = http4sInterpreter.toRoutes(busStopSearch.serverLogic[IO] { busStopName =>
