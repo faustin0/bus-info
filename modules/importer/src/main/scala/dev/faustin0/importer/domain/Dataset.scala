@@ -9,7 +9,7 @@ case class DatasetFileLocation(
   fileName: String
 )
 
-case class BusStopsDataset(
+case class Dataset(
   name: String,
   content: Elem
 )

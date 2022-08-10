@@ -1,7 +1,7 @@
 package dev.faustin0.importer.infrastructure
 
 import cats.effect.{ IO, Resource }
-import dev.faustin0.importer.domain.{ BusStopsDataset, DataSetLoader, DatasetFileLocation }
+import dev.faustin0.importer.domain.{ Dataset, DataSetLoader, DatasetFileLocation }
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{ GetObjectRequest, GetObjectResponse }
@@ -10,10 +10,10 @@ import scala.xml.XML
 
 class S3BucketLoader(s3Client: S3Client) extends DataSetLoader[IO] {
 
-  override def load(datasetFile: DatasetFileLocation): IO[BusStopsDataset] =
+  override def load(datasetFile: DatasetFileLocation): IO[Dataset] =
     readBucketObjectFromLocation(datasetFile)
       .use(responseStream => IO(XML.load(responseStream)))
-      .map(xml => BusStopsDataset("TODO", xml))
+      .map(xml => Dataset("TODO", xml))
 
   private def readBucketObjectFromLocation(
     datasetFile: DatasetFileLocation
