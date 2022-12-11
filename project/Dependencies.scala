@@ -5,7 +5,7 @@ object Dependencies {
 
   val catsVersion = "3.4.2"
 
-  val testcontainersScalaV = "0.40.11"
+  val testcontainersScalaV = "0.40.12"
 
   val kindProjectorV = "0.13.2"
 
@@ -19,7 +19,7 @@ object Dependencies {
 
   val tapirVersion = "1.0.0-M9"
 
-  val awsSdkVersion = "2.18.30"
+  val awsSdkVersion = "2.18.35"
 
   val fs2Version = "3.4.0"
 
