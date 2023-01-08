@@ -49,13 +49,13 @@ object Dependencies {
 
   lazy val httpClientDeps = Seq(
     "org.http4s" %% "http4s-ember-client" % http4sVersion,
-    "org.http4s" %% "http4s-scala-xml"    % "0.23.12"
+    "org.http4s" %% "http4s-scala-xml"    % "0.23.13"
   )
 
   lazy val httpServerDeps = Seq(
     "org.http4s"                  %% "http4s-dsl"               % http4sVersion,
     "org.http4s"                  %% "http4s-ember-server"      % http4sVersion,
-    "org.http4s"                  %% "http4s-scala-xml"         % "0.23.12",
+    "org.http4s"                  %% "http4s-scala-xml"         % "0.23.13",
     "org.http4s"                  %% "http4s-circe"             % http4sVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-core"               % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % tapirVersion,
