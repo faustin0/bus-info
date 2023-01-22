@@ -1,9 +1,9 @@
 import sbt._
 
 object Dependencies {
-  val http4sVersion = "0.23.17"
+  val http4sVersion = "0.23.18"
 
-  val catsVersion = "3.4.4"
+  val catsVersion = "3.4.5"
 
   val testcontainersScalaV = "0.40.12"
 
@@ -21,7 +21,7 @@ object Dependencies {
 
   val awsSdkVersion = "2.19.21"
 
-  val fs2Version = "3.4.0"
+  val fs2Version = "3.5.0"
 
   val log4j2Version = "2.19.0"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.15"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.385"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.389"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
