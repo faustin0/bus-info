@@ -11,7 +11,7 @@ object Dependencies {
 
   val betterMonadicForV = "0.3.1"
 
-  val circeVersion = "0.14.3"
+  val circeVersion = "0.14.4"
 
   val scalaXmlVersion = "2.1.0"
 
@@ -19,9 +19,9 @@ object Dependencies {
 
   val tapirVersion = "1.0.0-M9"
 
-  val awsSdkVersion = "2.19.31"
+  val awsSdkVersion = "2.19.33"
 
-  val fs2Version = "3.5.0"
+  val fs2Version = "3.6.1"
 
   val log4j2Version = "2.19.0"
 
