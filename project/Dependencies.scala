@@ -11,7 +11,7 @@ object Dependencies {
 
   val betterMonadicForV = "0.3.1"
 
-  val circeVersion = "0.14.4"
+  val circeVersion = "0.14.5"
 
   val scalaXmlVersion = "2.1.0"
 
