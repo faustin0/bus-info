@@ -19,7 +19,7 @@ object Dependencies {
 
   val tapirVersion = "1.0.0-M9"
 
-  val awsSdkVersion = "2.20.22"
+  val awsSdkVersion = "2.20.27"
 
   val fs2Version = "3.6.1"
 
@@ -67,7 +67,7 @@ object Dependencies {
 
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.2",
-    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.0",
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.1",
     "software.amazon.awssdk" % "s3"                     % awsSdkVersion
   ) ++ dynamoDeps
 
