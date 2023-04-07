@@ -10,13 +10,10 @@ import io.circe.generic.auto._
 import org.http4s.HttpRoutes
 import sttp.model.StatusCode
 import sttp.tapir._
-import sttp.tapir.docs.openapi._
 import sttp.tapir.generic.auto.schemaForCaseClass
 import sttp.tapir.json.circe.jsonBody
-import sttp.tapir.openapi.OpenAPI
-import sttp.tapir.openapi.circe.yaml.RichOpenAPI
 import sttp.tapir.server.http4s.Http4sServerInterpreter
-import sttp.tapir.swagger.SwaggerUI
+import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 import java.time.LocalTime
 
@@ -49,15 +46,13 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO]) {
 
   val swaggerUIRoutes: HttpRoutes[IO] = {
 
-    val openApiDocs: OpenAPI = OpenAPIDocsInterpreter()
-      .toOpenAPI(
-        List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch),
-        title = "The bus-info API",
-        version = BuildInfo.version
-      )
+    val swaggerEndpoints = SwaggerInterpreter().fromEndpoints[IO](
+      List(Endpoints.busStopByCode, Endpoints.nextBus, Endpoints.busStopSearch),
+      title = "The bus-info API",
+      version = BuildInfo.version
+    )
 
-    val swaggerRoutes = SwaggerUI[IO](openApiDocs.toYaml)
-    http4sInterpreter.toRoutes(swaggerRoutes)
+    http4sInterpreter.toRoutes(swaggerEndpoints)
   }
 
 }
