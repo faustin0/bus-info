@@ -1,4 +1,4 @@
-FROM  eed3si9n/sbt:jdk11-alpine AS builder
+FROM sbtscala/scala-sbt:graalvm-ce-22.3.0-b2-java17_1.8.2_2.13.10 AS builder
 
 WORKDIR /code
 COPY . /code

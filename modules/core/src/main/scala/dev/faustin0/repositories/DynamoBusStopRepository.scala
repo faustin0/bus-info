@@ -1,7 +1,7 @@
 package dev.faustin0.repositories
 
 import cats.effect.{ IO, Resource }
-import cats.implicits._
+import cats.syntax.all._
 import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
 import scala.jdk.CollectionConverters._
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
 
 class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: Logger[IO])
     extends BusStopRepository[IO] {
@@ -120,26 +120,21 @@ object DynamoBusStopRepository {
     new DynamoBusStopRepository(awsClient)
 
   def makeResource(implicit l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
-    val client = IO.fromTry(awsDefaultClient.orElse(clientFromEnv))
+    val client = awsDefaultClient.orElse(clientFromEnv)
 
     Resource
       .fromAutoCloseable(client)
       .map(DynamoBusStopRepository(_))
   }
 
-  // todo should use IO
-  def fromAWS()(implicit l: Logger[IO]): Try[DynamoBusStopRepository] =
+  def fromAWS()(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
     awsDefaultClient.map(DynamoBusStopRepository(_))
 
-  private def awsDefaultClient: Try[DynamoDbAsyncClient] =
-    Try {
-      DynamoDbAsyncClient
-        .builder()
-        .build()
-    }
+  private def awsDefaultClient: IO[DynamoDbAsyncClient] =
+    IO(DynamoDbAsyncClient.create())
 
-  private def clientFromEnv: Try[DynamoDbAsyncClient] =
-    Try {
+  private def clientFromEnv: IO[DynamoDbAsyncClient] =
+    IO {
       DynamoDbAsyncClient
         .builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())

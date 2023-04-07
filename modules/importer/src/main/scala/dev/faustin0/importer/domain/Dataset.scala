@@ -29,22 +29,18 @@ final case class Failure(
 
 object ImportOutcome {
 
-  implicit object showForImportOutcome extends Show[ImportOutcome] {
-
-    override def show(t: ImportOutcome): String =
-      t match {
-        case Success(processedFileName, processedItems)       =>
-          s"""
-             |successfully processed file: '$processedFileName'
-             |extracted items count: '$processedItems'
-             |""".stripMargin
-        case Failure(processedFile, processedItems, failures) =>
-          s"""
-             |Failed to process file: '$processedFile'
-             |extracted items count: '$processedItems'
-             |failed inserts count: '$failures'
-             |""".stripMargin
-      }
+  implicit val showForImportOutcome: Show[ImportOutcome] = {
+    case Success(processedFileName, processedItems)       =>
+      s"""
+         |successfully processed file: '$processedFileName'
+         |extracted items count: '$processedItems'
+         |""".stripMargin
+    case Failure(processedFile, processedItems, failures) =>
+      s"""
+         |Failed to process file: '$processedFile'
+         |extracted items count: '$processedItems'
+         |failed inserts count: '$failures'
+         |""".stripMargin
 
   }
 

@@ -18,15 +18,15 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
   implicit private lazy val runtime: IORuntime = IORuntime.global
 
   override def handleRequest(s3Event: S3Event, context: Context): ExitCode = {
-    implicit val loggerWithID = Slf4jLogger.getLogger[IO].addContext(Map("RequestId" -> context.getAwsRequestId))
+    implicit val logger = Slf4jLogger.getLogger[IO].addContext(Map("RequestId" -> context.getAwsRequestId))
 
     val computation = for {
-      busStopRepo  <- DynamoBusStopRepository.fromAWS().liftTo[IO]
+      busStopRepo  <- DynamoBusStopRepository.fromAWS()
       bucketReader <- S3BucketLoader.makeFromAws()
       importer      = new Importer(busStopRepo, bucketReader)
       _            <- Stream
                         .fromIterator[IO](s3Event.getRecords.asScala.iterator, 10) // TODO chunk size
-                        .evalTap(s3Event => loggerWithID.info(s"S3 event: ${s3Event.toString}"))
+                        .evalTap(s3Event => logger.info(s"S3 event: ${s3Event.toString}"))
                         .find(e => e.getEventName.contains("ObjectCreated:"))
                         .map(s3Record =>
                           DatasetFileLocation(
@@ -35,7 +35,7 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
                           )
                         )
                         .evalMap(dataset => importer.importFrom(dataset))
-                        .evalTap(outcome => loggerWithID.info(outcome.show))
+                        .evalTap(outcome => logger.info(outcome.show))
                         .compile
                         .drain
     } yield ExitCode.Success
