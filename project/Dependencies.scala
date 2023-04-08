@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.5.0"
 
-  val tapirVersion = "1.0.0-M9"
+  val tapirVersion = "1.0.6"
 
   val awsSdkVersion = "2.20.37"
 
@@ -53,16 +53,16 @@ object Dependencies {
   )
 
   lazy val httpServerDeps = Seq(
-    "org.http4s"                  %% "http4s-dsl"               % http4sVersion,
-    "org.http4s"                  %% "http4s-ember-server"      % http4sVersion,
-    "org.http4s"                  %% "http4s-scala-xml"         % "0.23.13",
-    "org.http4s"                  %% "http4s-circe"             % http4sVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-core"               % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui"         % tapirVersion,
-    "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % tapirVersion
+    "org.http4s"                  %% "http4s-dsl"              % http4sVersion,
+    "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
+    "org.http4s"                  %% "http4s-scala-xml"        % "0.23.13",
+    "org.http4s"                  %% "http4s-circe"            % http4sVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"      % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui"        % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
   )
 
   lazy val awsDeps = Seq(
