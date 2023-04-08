@@ -46,8 +46,8 @@ object BusInfoResponse {
       case notHandledBusRegex(_*)              => Right(BusNotHandled("bus not handled"))
       case notHandledStopRegex(_*)             => Right(BusStopNotHandled("bus-stop not handled"))
       case msg if msg.contains("NESSUNA")      => Right(Successful(Nil))
-      case msg if msg.contains("TperHellobus") => extractBusResponse(msg, requestedBusStopCode).map(Successful)
       case msg if msg.contains("SOSPESE")      => Right(Suspended(msg))
+      case msg if msg.contains("TperHellobus") => extractBusResponse(msg, requestedBusStopCode).map(Successful)
       case _                                   => Right(Failure("Unsupported response"))
     }
   }

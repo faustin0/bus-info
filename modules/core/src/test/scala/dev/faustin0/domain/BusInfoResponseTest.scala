@@ -40,7 +40,7 @@ class BusInfoResponseTest extends AnyFunSuite with EitherValues with Matchers {
 
   private val outOfService: Elem =
     <string xmlns="https://hellobuswsweb.tper.it/web-services/hellobus.asmx">
-      INFORMAZIONI SUI BUS TEMPORANEAMENTE SOSPESE
+      TperHellobus: INFORMAZIONI SUI BUS TEMPORANEAMENTE SOSPESE
     </string>
 
   test("should parse xml from tper into successful response ") {
@@ -108,7 +108,7 @@ class BusInfoResponseTest extends AnyFunSuite with EitherValues with Matchers {
   test("should parse oos response") {
 
     val result   = BusInfoResponse.fromXml(outOfService, 14)
-    val expected = Suspended("INFORMAZIONI SUI BUS TEMPORANEAMENTE SOSPESE")
+    val expected = Suspended("TperHellobus: INFORMAZIONI SUI BUS TEMPORANEAMENTE SOSPESE")
 
     result.value.shouldBe(expected)
   }
