@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.6.0"
 
-  val tapirVersion = "1.7.0"
+  val tapirVersion = "1.7.2"
 
   val awsSdkVersion = "2.20.130"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.16"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.528"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.533"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -66,7 +66,7 @@ object Dependencies {
   )
 
   lazy val awsDeps = Seq(
-    "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.2",
+    "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.3",
     "com.amazonaws"          % "aws-lambda-java-events" % "3.11.2",
     "software.amazon.awssdk" % "s3"                     % awsSdkVersion
   ) ++ dynamoDeps
