@@ -11,7 +11,7 @@ object Dependencies {
 
   val betterMonadicForV = "0.3.1"
 
-  val circeVersion = "0.14.5"
+  val circeVersion = "0.14.6"
 
   val scalaXmlVersion = "2.2.0"
 
@@ -19,9 +19,9 @@ object Dependencies {
 
   val tapirVersion = "1.7.2"
 
-  val awsSdkVersion = "2.20.135"
+  val awsSdkVersion = "2.20.140"
 
-  val fs2Version = "3.8.0"
+  val fs2Version = "3.9.1"
 
   val log4j2Version = "2.20.0"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.16"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.538"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.543"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -67,7 +67,7 @@ object Dependencies {
 
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.3",
-    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.2",
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.3",
     "software.amazon.awssdk" % "s3"                     % awsSdkVersion
   ) ++ dynamoDeps
 
