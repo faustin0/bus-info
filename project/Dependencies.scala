@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   val http4sVersion = "0.23.23"
 
-  val catsVersion = "3.5.0"
+  val catsVersion = "3.5.2"
 
   val testcontainersScalaV = "0.41.0"
 
@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.6.0"
 
-  val tapirVersion = "1.7.4"
+  val tapirVersion = "1.7.5"
 
   val awsSdkVersion = "2.20.153"
 
