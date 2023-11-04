@@ -38,7 +38,7 @@ class BusStopsImporterIT
 
     Containers
       .createDynamoClient(dynamoContainer)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { busStopRepo =>
         val datasetLoader = new InMemoryDatasetLoader(bucketName)
         val sut           = new Importer(busStopRepo, datasetLoader)
@@ -88,7 +88,7 @@ class BusStopsImporterIT
 
     Containers
       .createDynamoClient(dynamoContainer)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { busStopRepo =>
         for {
           _ <- Stream

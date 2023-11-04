@@ -47,7 +47,7 @@ class DynamoBusStopRepositoryIT
 
     Containers
       .createDynamoClient(container)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { repo =>
         for {
           _      <- repo.insert(starting)
@@ -81,7 +81,7 @@ class DynamoBusStopRepositoryIT
 
     Containers
       .createDynamoClient(container)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { repo =>
         for {
           errors <- entries.through(repo.batchInsert).compile.toList
@@ -101,7 +101,7 @@ class DynamoBusStopRepositoryIT
 
     Containers
       .createDynamoClient(container)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { repo =>
         for {
           _      <- repo.insert(s303)

@@ -75,8 +75,6 @@ object Dependencies {
     "software.amazon.awssdk" % "dynamodb" % awsSdkVersion
   )
 
-  lazy val streamingXMl = Seq(
-    "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion
-  )
+  lazy val streamingXMl = "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion
 
 }

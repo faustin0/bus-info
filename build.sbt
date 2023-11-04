@@ -42,18 +42,20 @@ lazy val core = project
 
 lazy val api = project
   .in(file("modules/api"))
-  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, LauncherJarPlugin)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, LauncherJarPlugin, NativeImagePlugin)
   .dependsOn(core)
   .settings(commonSettings)
   .settings(
     name                     := "api",
     Test / parallelExecution := false,
     Test / fork              := true,
-    libraryDependencies ++= httpServerDeps,
-    Compile / mainClass      := Some("dev.faustin0.api.BusInfoApp"),
+    libraryDependencies ++= (httpServerDeps ++ Seq("org.typelevel" %% "feral-lambda-http4s" % "0.2.2")),
+    Compile / mainClass      := Some("dev.faustin0.api.http4sHandler"),
     buildInfoKeys            := Seq[BuildInfoKey](version),
     buildInfoPackage         := "dev.faustin0.info",
-    topLevelDirectory        := None
+    topLevelDirectory        := None,
+    nativeImageOptions += "--no-fallback",
+    nativeImageVersion       := "22.1.0" // It should be at least version 21.0.0
   )
 
 lazy val importer = project

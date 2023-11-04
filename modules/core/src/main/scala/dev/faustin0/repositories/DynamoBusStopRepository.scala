@@ -31,7 +31,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
     busStops
-      .map(busStop => BusStopTable.busStopToDynamoMapping(busStop))
+      .map(BusStopTable.busStopToDynamoMapping)
       .map(item => PutRequest.builder().item(item).build())
       .map(putReq => WriteRequest.builder().putRequest(putReq).build())
       .chunkN(BusStopTable.MAX_BATCH_SIZE, allowFewer = true)
@@ -103,12 +103,12 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
       .build()
 
     for {
-      _             <- L.debug(s"Searching busStops $name")
-      result        <- IO(client.query(queryRequest)).fromCompletable
-      mappedBusStops = Option(result.items()).toList
-                         .flatMap(_.asScala)
-                         .traverse(item => BusStopTable.dynamoItemToBusStop(item))
-      busStop       <- IO.fromTry(mappedBusStops)
+      _       <- L.debug(s"Searching busStops $name")
+      result  <- IO(client.query(queryRequest)).fromCompletable
+      busStop <- Option(result.items()).toList
+                   .flatMap(_.asScala)
+                   .traverse(item => BusStopTable.dynamoItemToBusStop(item))
+                   .liftTo[IO]
     } yield busStop
   }
 
@@ -116,19 +116,20 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 
 object DynamoBusStopRepository {
 
-  def apply(awsClient: DynamoDbAsyncClient)(implicit l: Logger[IO]): DynamoBusStopRepository =
-    new DynamoBusStopRepository(awsClient)
+  def apply(awsClient: DynamoDbAsyncClient, l: Logger[IO]): DynamoBusStopRepository =
+    new DynamoBusStopRepository(awsClient )(l)
 
-  def makeResource(implicit l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
+  def makeResource(l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
+    //todo remove this shit
     val client = awsDefaultClient.orElse(clientFromEnv)
 
     Resource
       .fromAutoCloseable(client)
-      .map(DynamoBusStopRepository(_))
+      .map(c => DynamoBusStopRepository(c, l))
   }
 
   def fromAWS()(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
-    awsDefaultClient.map(DynamoBusStopRepository(_))
+    awsDefaultClient.map(DynamoBusStopRepository(_, l))
 
   private def awsDefaultClient: IO[DynamoDbAsyncClient] =
     IO(DynamoDbAsyncClient.create())

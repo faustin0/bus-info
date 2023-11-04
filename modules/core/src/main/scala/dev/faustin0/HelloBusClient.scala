@@ -56,15 +56,7 @@ object HelloBusClient {
   private val targetUri =
     uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
 
-  def apply(httpClient: Client[IO]): HelloBusClient = new HelloBusClient(
-    httpClient
-  )
-
-  def make(logAction: String => IO[Unit]): Resource[IO, HelloBusClient] =
-    EmberClientBuilder
-      .default[IO]
-      .build
-      .map(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction)))
-      .map(new HelloBusClient(_))
+  def apply(client: Client[IO], logAction: String => IO[Unit]): HelloBusClient =
+    new HelloBusClient(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction))(client))
 
 }
