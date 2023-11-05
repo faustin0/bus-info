@@ -2,9 +2,11 @@ package dev.faustin0.api
 
 import cats.effect.IO
 import cats.effect.kernel.Resource
+import cats.effect.std.Dispatcher
 import cats.syntax.all._
 import dev.faustin0.HelloBusClient
 import dev.faustin0.repositories.DynamoBusStopRepository
+import dev.faustin0.repositories.DynamoBusStopRepository.EmberAsyncHttpClient
 import feral.lambda._
 import feral.lambda.events._
 import feral.lambda.http4s._
@@ -52,7 +54,8 @@ object http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStr
     for {
       logger        <- Slf4jLogger.create[IO].toResource
       emberClient   <- EmberClientBuilder.default[IO].build
-      busStopRepo   <- DynamoBusStopRepository.makeResource(logger)
+      dispatcher    <- Dispatcher.sequential[IO](await = true)
+      busStopRepo   <- DynamoBusStopRepository.makeResource(new EmberAsyncHttpClient(emberClient, dispatcher), logger)
       tperClient     = HelloBusClient(emberClient, logger.info(_))
       busInfoService = BusInfoService(tperClient, busStopRepo)
       endpoints      = Endpoints(busInfoService)

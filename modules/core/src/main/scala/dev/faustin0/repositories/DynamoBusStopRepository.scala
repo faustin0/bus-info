@@ -1,18 +1,31 @@
 package dev.faustin0.repositories
 
+import cats.effect.std.Dispatcher
 import cats.effect.{ IO, Resource }
 import cats.syntax.all._
+import org.http4s.syntax.all._
 import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
+import fs2.concurrent.Channel
 import fs2.{ Stream, _ }
+import org.http4s.{ Header, Headers, Method, Query, Request, Uri }
+import org.http4s.client.Client
+import org.reactivestreams.{ Subscriber, Subscription }
+import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
+import software.amazon.awssdk.http.SdkHttpMethod
+import software.amazon.awssdk.http.async.{ AsyncExecuteRequest, SdkAsyncHttpClient }
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
+import java.nio.ByteBuffer
+import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 import scala.jdk.CollectionConverters._
+import scala.jdk.FunctionConverters._
 import scala.util.{ Failure, Success }
 
 class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: Logger[IO])
@@ -117,22 +130,26 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 object DynamoBusStopRepository {
 
   def apply(awsClient: DynamoDbAsyncClient, l: Logger[IO]): DynamoBusStopRepository =
-    new DynamoBusStopRepository(awsClient )(l)
+    new DynamoBusStopRepository(awsClient)(l)
 
-  def makeResource(l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
-    //todo remove this shit
-    val client = awsDefaultClient.orElse(clientFromEnv)
+  def makeResource(httpClient: EmberAsyncHttpClient, l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
+    // todo remove this shit
+    val client = awsDefaultClient(httpClient).orElse(clientFromEnv)
 
     Resource
       .fromAutoCloseable(client)
       .map(c => DynamoBusStopRepository(c, l))
   }
 
-  def fromAWS()(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
-    awsDefaultClient.map(DynamoBusStopRepository(_, l))
+  def fromAWS(httpClient: EmberAsyncHttpClient)(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
+    awsDefaultClient(httpClient).map(DynamoBusStopRepository(_, l))
 
-  private def awsDefaultClient: IO[DynamoDbAsyncClient] =
-    IO(DynamoDbAsyncClient.create())
+  @Deprecated
+  def fromAWS(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
+    IO(DynamoDbAsyncClient.create()).map(DynamoBusStopRepository(_, l))
+
+  private def awsDefaultClient(httpClient: EmberAsyncHttpClient): IO[DynamoDbAsyncClient] =
+    IO(DynamoDbAsyncClient.builder().httpClient(httpClient).build())
 
   private def clientFromEnv: IO[DynamoDbAsyncClient] =
     IO {
@@ -145,5 +162,83 @@ object DynamoBusStopRepository {
         )
         .build()
     }
+
+  class EmberAsyncHttpClient(client: Client[IO], dispatcher: Dispatcher[IO]) extends SdkAsyncHttpClient {
+
+    override def execute(request: AsyncExecuteRequest): CompletableFuture[Void] = {
+      val adaptedRequest = for {
+        channel  <- Channel.unbounded[IO, Byte]
+        _         = request
+                      .requestContentPublisher()
+                      .subscribe(new Subscriber[ByteBuffer] {
+                        override def onSubscribe(s: Subscription): Unit = println("onSubscribe")
+
+                        override def onNext(t: ByteBuffer): Unit = {
+                          println("onNext")
+                          dispatcher.unsafeRunSync(
+                            Stream
+                              .chunk(Chunk.byteBuffer(t))
+                              .covary[IO]
+                              .through(channel.sendAll)
+                              .compile
+                              .drain
+                          )
+                        }
+
+                        override def onError(t: Throwable): Unit = dispatcher.unsafeRunSync(IO.raiseError(t))
+
+                        override def onComplete(): Unit = {
+                          println("onComplete")
+                          dispatcher.unsafeRunSync(channel.closed)
+                        }
+                      })
+        uri       = Uri(
+                      path = Uri.Path.unsafeFromString(request.request().getUri.toString).concat(
+                        Uri.Path.unsafeFromString(request.request().encodedPath())
+                      ) ,
+                      query = adaptQuery(request)
+                    )
+        req       = Request.apply(
+                      method = request.request().method() match {
+                        case SdkHttpMethod.GET     => Method.GET
+                        case SdkHttpMethod.POST    => Method.POST
+                        case SdkHttpMethod.PUT     => Method.PUT
+                        case SdkHttpMethod.DELETE  => Method.DELETE
+                        case SdkHttpMethod.HEAD    => Method.HEAD
+                        case SdkHttpMethod.PATCH   => Method.PATCH
+                        case SdkHttpMethod.OPTIONS => Method.OPTIONS
+                      },
+                      uri = uri,
+                      headers = Headers(
+                        request
+                          .request()
+                          .headers()
+                          .asScala
+                          .map { case (k, values) => Header.Raw(CIString(k), values.get(0)) }
+                          .toList
+                      ),
+                      body = channel.stream
+                    )
+        response <- client.run(req).use(resp => resp.as[String].flatMap(IO.println))
+      } yield response
+
+//      Stream.chunk(Chunk.byteBuffer())
+
+      dispatcher
+        .unsafeToCompletableFuture(adaptedRequest)
+        .thenApply((t: Unit) => null) // adapting to void
+    }
+
+    private def adaptQuery(request: AsyncExecuteRequest): Query =
+      request
+        .request()
+        .encodedQueryParameters()
+        .map(Query.unsafeFromString)
+        .orElseGet(new Supplier[Query] {
+          override def get(): Query = Query.empty
+        })
+
+    override def close(): Unit = ()
+  }
 
 }

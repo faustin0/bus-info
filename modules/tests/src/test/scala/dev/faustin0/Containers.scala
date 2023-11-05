@@ -1,7 +1,11 @@
 package dev.faustin0
 
+import cats.effect.std.Dispatcher
 import cats.effect.{ IO, Resource }
 import com.dimafeng.testcontainers.{ GenericContainer, LocalStackV2Container }
+import dev.faustin0.repositories.DynamoBusStopRepository.EmberAsyncHttpClient
+import org.http4s.client.middleware
+import org.http4s.ember.client.EmberClientBuilder
 import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.testcontainers.containers.wait.strategy.Wait
@@ -45,16 +49,25 @@ object Containers {
     lazy val dynamoDbEndpoint =
       s"http://${dynamoContainer.container.getHost}:${dynamoContainer.container.getFirstMappedPort}"
 
-    Resource.fromAutoCloseable {
-      IO(
-        DynamoDbAsyncClient
-          .builder()
-          .region(Region.EU_CENTRAL_1)
-          .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy", "dummy")))
-          .endpointOverride(URI.create(dynamoDbEndpoint))
-          .build()
-      )
-    }
+    for {
+      emberClient  <- EmberClientBuilder.default[IO].build
+      loggedCLient  = middleware.Logger(logHeaders = true, logBody = true)(emberClient) //todo move to EmberAsyncHttpClient
+      dispatcher   <- Dispatcher.sequential[IO](await = true)
+      dynamoClient <- Resource.fromAutoCloseable {
+                        IO(
+                          DynamoDbAsyncClient
+                            .builder()
+                            .region(Region.EU_CENTRAL_1)
+                            .credentialsProvider(
+                              StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy", "dummy"))
+                            )
+                            .endpointOverride(URI.create(dynamoDbEndpoint))
+                            .httpClient(new EmberAsyncHttpClient(loggedCLient, dispatcher))
+                            .build()
+                        )
+                      }
+    } yield dynamoClient
+
   }
 
 }
