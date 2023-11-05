@@ -49,8 +49,11 @@ lazy val api = project
     name                     := "api",
     Test / parallelExecution := false,
     Test / fork              := true,
-    libraryDependencies ++= (httpServerDeps ++ Seq("org.typelevel" %% "feral-lambda-http4s" % "0.2.2")),
-    Compile / mainClass      := Some("dev.faustin0.api.http4sHandler"),
+    libraryDependencies ++= (httpServerDeps ++ Seq(
+      "org.typelevel" %% "feral-lambda-http4s"                      % "0.2.3",
+      "com.amazonaws"  % "aws-lambda-java-runtime-interface-client" % "2.3.1"
+    )),
+    Compile / mainClass      := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
     buildInfoKeys            := Seq[BuildInfoKey](version),
     buildInfoPackage         := "dev.faustin0.info",
     topLevelDirectory        := None,
