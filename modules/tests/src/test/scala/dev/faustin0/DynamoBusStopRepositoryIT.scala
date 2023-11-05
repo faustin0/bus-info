@@ -2,10 +2,9 @@ package dev.faustin0
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.unsafe.IORuntime
-import com.dimafeng.testcontainers.{ForAllTestContainer, GenericContainer}
+import com.dimafeng.testcontainers.{ ForAllTestContainer, GenericContainer }
 import dev.faustin0.Utils.JavaFutureOps
-import dev.faustin0.domain.{BusStop, Position}
+import dev.faustin0.domain.{ BusStop, Position }
 import dev.faustin0.repositories.DynamoBusStopRepository
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
