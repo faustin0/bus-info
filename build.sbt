@@ -58,7 +58,12 @@ lazy val api = project
     buildInfoPackage         := "dev.faustin0.info",
     topLevelDirectory        := None,
     nativeImageOptions += "--no-fallback",
-    nativeImageVersion       := "22.1.0" // It should be at least version 21.0.0
+    nativeImageVersion       := "22.1.0", // It should be at least version 21.0.0
+    excludeDependencies ++= Seq(
+      // commons-logging is replaced by jcl-over-slf4j
+      ExclusionRule("commons-logging", "commons-logging"),
+      ExclusionRule("io.netty")
+    )
   )
 
 lazy val importer = project
