@@ -7,11 +7,14 @@ import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
 import org.typelevel.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
+import software.amazon.awssdk.http.async.SdkAsyncHttpClient
+import software.amazon.awssdk.http.crt.AwsCrtAsyncHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
+import java.time.Duration
 import scala.jdk.CollectionConverters._
 import scala.util.{ Failure, Success }
 
@@ -117,16 +120,25 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 object DynamoBusStopRepository {
 
   def apply(awsClient: DynamoDbAsyncClient, l: Logger[IO]): DynamoBusStopRepository =
-    new DynamoBusStopRepository(awsClient )(l)
+    new DynamoBusStopRepository(awsClient)(l)
 
-  def makeResource(l: Logger[IO]): Resource[IO, DynamoBusStopRepository] = {
-    //todo remove this shit
-    val client = awsDefaultClient.orElse(clientFromEnv)
+  def makeResource(l: Logger[IO]): Resource[IO, DynamoBusStopRepository] =
+    // todo remove this shit
+//    val client = awsDefaultClient.orElse(clientFromEnv)
 
     Resource
-      .fromAutoCloseable(client)
+      .fromAutoCloseable(
+        IO(
+          AwsCrtAsyncHttpClient
+            .builder()
+            .maxConcurrency(4)
+            .connectionTimeout(Duration.ofSeconds(1))
+            .connectionMaxIdleTime(Duration.ofSeconds(5))
+            .build()
+        )
+      )
+      .flatMap(c => Resource.fromAutoCloseable(clientFromEnv(c)))
       .map(c => DynamoBusStopRepository(c, l))
-  }
 
   def fromAWS()(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
     awsDefaultClient.map(DynamoBusStopRepository(_, l))
@@ -134,15 +146,13 @@ object DynamoBusStopRepository {
   private def awsDefaultClient: IO[DynamoDbAsyncClient] =
     IO(DynamoDbAsyncClient.create())
 
-  private def clientFromEnv: IO[DynamoDbAsyncClient] =
+  private def clientFromEnv(httpClient: SdkAsyncHttpClient): IO[DynamoDbAsyncClient] =
     IO {
       DynamoDbAsyncClient
         .builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
         .region(Region.EU_CENTRAL_1)
-        .endpointOverride(
-          URI.create("http://localhost:4567") // TODO parametrize endpoint
-        )
+        .httpClient(httpClient)
         .build()
     }
 

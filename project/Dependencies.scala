@@ -72,7 +72,8 @@ object Dependencies {
   ) ++ dynamoDeps
 
   lazy val dynamoDeps = Seq(
-    "software.amazon.awssdk" % "dynamodb" % awsSdkVersion
+    "software.amazon.awssdk" % "dynamodb"       % awsSdkVersion,  //todo exclude ("io.netty", "netty-nio-client") exclude ("software.amazon.awssdk", "apache-client"),
+    "software.amazon.awssdk" % "aws-crt-client" % "2.21.15"
   )
 
   lazy val streamingXMl = "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion
