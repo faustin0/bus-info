@@ -36,6 +36,13 @@ jobs:
           path: modules/importer/target/universal/importer-*.zip
           if-no-files-found: error
 
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: native-api.zip
+          path: /modules/api/target/native-image/
+          if-no-files-found: error
+
   Build-and-Push-Docker-Image:
     runs-on: ubuntu-latest
     needs: build-and-test
