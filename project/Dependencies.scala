@@ -44,7 +44,8 @@ object Dependencies {
     "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
     "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
     "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
-    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime
+    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
+    "org.slf4j"                % "jcl-over-slf4j"             % "1.7.36"      % Runtime // same version of slf4j used by log4cats
   )
 
   lazy val httpClientDeps = Seq(
@@ -72,7 +73,7 @@ object Dependencies {
   ) ++ dynamoDeps
 
   lazy val dynamoDeps = Seq(
-    "software.amazon.awssdk" % "dynamodb"       % awsSdkVersion,  //todo exclude ("io.netty", "netty-nio-client") exclude ("software.amazon.awssdk", "apache-client"),
+    "software.amazon.awssdk" % "dynamodb"       % awsSdkVersion, // todo exclude ("io.netty", "netty-nio-client") exclude ("software.amazon.awssdk", "apache-client"),
     "software.amazon.awssdk" % "aws-crt-client" % "2.21.15"
   )
 
