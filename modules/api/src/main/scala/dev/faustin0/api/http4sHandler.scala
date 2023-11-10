@@ -8,17 +8,15 @@ import dev.faustin0.repositories.DynamoBusStopRepository
 import feral.lambda._
 import feral.lambda.events._
 import feral.lambda.http4s._
-import org.http4s.{ HttpRoutes, _ }
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.Router
 import org.http4s.server.middleware.{ AutoSlash, Logger, Timeout }
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.http4s.{ HttpRoutes, _ }
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.concurrent.duration.DurationInt
 
 object http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2] {
-//  implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   /** Actually, this is a `Resource` that builds your handler. The handler is acquired exactly once when your Lambda
     * starts and is permanently installed to process all incoming events.
@@ -64,9 +62,8 @@ object http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStr
         10.seconds,
         IO(Response[IO](Status.GatewayTimeout).withEntity("TPER server timed out")) // todo chagne timeout location
       )
+    } andThen {
+      Logger.httpRoutes[IO](logHeaders = true, logBody = false)
     }
-//  andThen {
-//      Logger.httpRoutes[IO](logHeaders = true, logBody = false, logAction = Some(logger.info(_)))
-//    }
 
 }
