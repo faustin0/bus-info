@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: native-api.zip
-          path: /modules/api/target/native-image/
+          path: modules/api/target/native-image/
           if-no-files-found: error
 
   Build-and-Push-Docker-Image:
