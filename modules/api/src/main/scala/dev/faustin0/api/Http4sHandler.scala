@@ -16,7 +16,7 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.concurrent.duration.DurationInt
 
-object http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2] {
+class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2] {
 
   /** Actually, this is a `Resource` that builds your handler. The handler is acquired exactly once when your Lambda
     * starts and is permanently installed to process all incoming events.

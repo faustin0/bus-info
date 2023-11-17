@@ -2,24 +2,21 @@ package dev.faustin0.repositories
 
 import cats.effect.{ IO, Resource }
 import cats.syntax.all._
-import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
 import org.typelevel.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
-import software.amazon.awssdk.http.async.SdkAsyncHttpClient
-import software.amazon.awssdk.http.crt.AwsCrtAsyncHttpClient
+import software.amazon.awssdk.http.SdkHttpClient
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
 import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model._
 
-import java.net.URI
 import java.time.Duration
 import scala.jdk.CollectionConverters._
 import scala.util.{ Failure, Success }
 
-class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: Logger[IO])
-    extends BusStopRepository[IO] {
+class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logger[IO]) extends BusStopRepository[IO] {
 
   override def insert(busStop: BusStop): IO[Unit] = {
     val request = PutItemRequest
@@ -29,7 +26,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
       .build()
 
     L.debug(s"Inserting bus-stop $busStop") *>
-      IO(client.putItem(request)).fromCompletable.void
+      IO.blocking(client.putItem(request)).void
   }
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
@@ -48,7 +45,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
       .flatMap { batchReq =>
         Stream.attemptEval {
           L.debug(s"batch inserting bus-stop $batchReq") *>
-            IO(client.batchWriteItem(batchReq)).fromCompletable
+            IO.blocking(client.batchWriteItem(batchReq))
         }.collect { case Left(error) =>
           FailureReason(error)
         }
@@ -67,7 +64,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 
     for {
       _            <- L.debug(s"Getting busStop $code")
-      result       <- IO(client.getItem(request)).fromCompletable
+      result       <- IO.blocking(client.getItem(request))
       mappedBusStop = Option(result.item())
                         .filterNot(_.isEmpty)
                         .traverse(item => BusStopTable.dynamoItemToBusStop(item))
@@ -86,7 +83,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
       .tableName(BusStopTable.name)
       .build()
 
-    IO(client.describeTable(tableDesc)).fromCompletable
+    IO.blocking(client.describeTable(tableDesc))
       .map(resp => resp.table())
       .map(table => table.itemCount())
   }
@@ -107,7 +104,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 
     for {
       _       <- L.debug(s"Searching busStops $name")
-      result  <- IO(client.query(queryRequest)).fromCompletable
+      result  <- IO.blocking(client.query(queryRequest))
       busStop <- Option(result.items()).toList
                    .flatMap(_.asScala)
                    .traverse(item => BusStopTable.dynamoItemToBusStop(item))
@@ -119,7 +116,7 @@ class DynamoBusStopRepository private (client: DynamoDbAsyncClient)(implicit L: 
 
 object DynamoBusStopRepository {
 
-  def apply(awsClient: DynamoDbAsyncClient, l: Logger[IO]): DynamoBusStopRepository =
+  def apply(awsClient: DynamoDbClient, l: Logger[IO]): DynamoBusStopRepository =
     new DynamoBusStopRepository(awsClient)(l)
 
   def makeResource(l: Logger[IO]): Resource[IO, DynamoBusStopRepository] =
@@ -129,26 +126,18 @@ object DynamoBusStopRepository {
     Resource
       .fromAutoCloseable(
         IO(
-          AwsCrtAsyncHttpClient
+          UrlConnectionHttpClient
             .builder()
-            .maxConcurrency(4)
             .connectionTimeout(Duration.ofSeconds(1))
-            .connectionMaxIdleTime(Duration.ofSeconds(5))
             .build()
         )
       )
       .flatMap(c => Resource.fromAutoCloseable(clientFromEnv(c)))
       .map(c => DynamoBusStopRepository(c, l))
 
-  def fromAWS()(implicit l: Logger[IO]): IO[DynamoBusStopRepository] =
-    awsDefaultClient.map(DynamoBusStopRepository(_, l))
-
-  private def awsDefaultClient: IO[DynamoDbAsyncClient] =
-    IO(DynamoDbAsyncClient.create())
-
-  private def clientFromEnv(httpClient: SdkAsyncHttpClient): IO[DynamoDbAsyncClient] =
+  private def clientFromEnv(httpClient: SdkHttpClient): IO[DynamoDbClient] =
     IO {
-      DynamoDbAsyncClient
+      DynamoDbClient
         .builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
         .region(Region.EU_CENTRAL_1)

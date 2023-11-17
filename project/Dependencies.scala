@@ -1,4 +1,4 @@
-import sbt._
+import sbt.*
 
 object Dependencies {
   val http4sVersion = "0.23.24"
@@ -37,15 +37,16 @@ object Dependencies {
   )
 
   lazy val dependencies = Seq(
-    "co.fs2"                  %% "fs2-core"                   % fs2Version,
-    "org.typelevel"           %% "cats-effect"                % catsVersion,
-    "io.circe"                %% "circe-generic"              % circeVersion,
-    "org.scala-lang.modules"  %% "scala-xml"                  % scalaXmlVersion,
-    "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
-    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
-    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
-    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
-    "org.slf4j"                % "jcl-over-slf4j"             % "1.7.36"      % Runtime // same version of slf4j used by log4cats
+    "co.fs2"                 %% "fs2-core"        % fs2Version,
+    "org.typelevel"          %% "cats-effect"     % catsVersion,
+    "io.circe"               %% "circe-generic"   % circeVersion,
+    "org.scala-lang.modules" %% "scala-xml"       % scalaXmlVersion,
+    "org.typelevel"          %% "log4cats-slf4j"  % log4catsVersion,
+//    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
+//    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
+//    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
+    "org.slf4j"               % "jcl-over-slf4j"  % "1.7.36" % Runtime, // same version of slf4j used by log4cats
+    "ch.qos.logback"          % "logback-classic" % "1.4.11" % Runtime
   )
 
   lazy val httpClientDeps = Seq(
@@ -73,8 +74,8 @@ object Dependencies {
   ) ++ dynamoDeps
 
   lazy val dynamoDeps = Seq(
-    "software.amazon.awssdk" % "dynamodb"       % awsSdkVersion, // todo exclude ("io.netty", "netty-nio-client") exclude ("software.amazon.awssdk", "apache-client"),
-    "software.amazon.awssdk" % "aws-crt-client" % "2.21.15"
+    "software.amazon.awssdk" % "dynamodb"              % awsSdkVersion, // todo exclude ("io.netty", "netty-nio-client") exclude ("software.amazon.awssdk", "apache-client"),
+    "software.amazon.awssdk" % "url-connection-client" % awsSdkVersion
   )
 
   lazy val streamingXMl = "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion

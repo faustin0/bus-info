@@ -1,6 +1,8 @@
 import Dependencies._
 import sbt.Keys.parallelExecution
 
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 inThisBuild(
   List(
     organization         := "dev.faustin0",
@@ -42,23 +44,57 @@ lazy val core = project
 
 lazy val api = project
   .in(file("modules/api"))
-  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, LauncherJarPlugin, NativeImagePlugin)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, LauncherJarPlugin, GraalVMNativeImagePlugin)
   .dependsOn(core)
   .settings(commonSettings)
   .settings(
-    name                     := "api",
-    Test / parallelExecution := false,
-    Test / fork              := true,
+    name                           := "api",
+    Test / parallelExecution       := false,
+    Test / fork                    := true,
     libraryDependencies ++= (httpServerDeps ++ Seq(
-      "org.typelevel" %% "feral-lambda-http4s"                      % "0.2.3",
-      "com.amazonaws"  % "aws-lambda-java-runtime-interface-client" % "2.3.1"
+      "org.typelevel" %% "feral-lambda-http4s"                      % "0.2.4",
+      "com.amazonaws"  % "aws-lambda-java-runtime-interface-client" % "2.3.1",
+      "com.amazonaws"  % "aws-lambda-java-core"                     % "1.2.3",
+      "com.amazonaws"  % "aws-lambda-java-events"                   % "3.11.3"
     )),
-    Compile / mainClass      := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
-    buildInfoKeys            := Seq[BuildInfoKey](version),
-    buildInfoPackage         := "dev.faustin0.info",
-    topLevelDirectory        := None,
-    nativeImageOptions += "--no-fallback",
-    nativeImageVersion       := "22.1.0", // It should be at least version 21.0.0
+    Compile / mainClass            := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
+    buildInfoKeys                  := Seq[BuildInfoKey](version),
+    buildInfoPackage               := "dev.faustin0.info",
+    topLevelDirectory              := None,
+//    nativeImageOptions ++= Seq(
+//      "--no-fallback",
+//      "--link-at-build-time",
+//      "--initialize-at-build-time=org.slf4j",
+//      "--enable-url-protocols=http",
+//      "--add-opens java.base/java.util=ALL-UNNAMED",
+//      "--enable-url-protocols=https,http",
+//      s"-H:ReflectionConfigurationFiles=${target.value / "native-image-configs" / "reflect-config.json"}",
+//      s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}",
+//      "-H:+JNI"
+//      s"-H:ReflectionConfigurationFiles=${target.value / "native-image-configs" / "reflect-config.json"}",
+//      s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}"
+//    ),
+//    nativeImageVersion       := "22.1.0", // It should be at least version 21.0.0
+    graalVMNativeImageGraalVersion := Some("22.1.0"),
+    graalVMNativeImageOptions      := Seq(
+      "--static",
+      "--verbose",
+      "--no-fallback",
+      "--initialize-at-build-time=org.slf4j",
+      "--initialize-at-build-time=org.slf4j.LoggerFactory",
+      "--initialize-at-build-time=ch.qos.logback",
+      "--initialize-at-build-time=org.apache.logging.slf4j", // non serve rorse
+      "--enable-http",
+      "--enable-https",
+      "--enable-all-security-services",
+      "--enable-url-protocols=https,http",
+      "--enable-url-protocols=http",
+//      "--allow-incomplete-classpath",
+//      "--libc=musl",     // questo serve per http4s e segmentanio fault
+      "-H:+StaticExecutableWithDynamicLibC", // questo server per http4s e segmentanio fault
+      "-H:+ReportExceptionStackTraces"
+//      "-H:+AllowIncompleteClasspath",
+    ),
     excludeDependencies ++= Seq(
       // commons-logging is replaced by jcl-over-slf4j
       ExclusionRule("commons-logging", "commons-logging"),
