@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build-and-test:
+  build-test-package:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,10 +29,8 @@ jobs:
       - name: Package native artifact
         run: sbt 'show graalvm-native-image:packageBin'
 
-      - uses: actions/github-script@v7
-#        id: set-result
-      - name: Get result
-        run: zip api.zip modules/api/target/graalvm-native-image/api
+      - name: Create API bootable zip
+        run: zip -j api.zip modules/api/target/graalvm-native-image/api modules/api/src/main/resources/bootstrap
 
       - name: Upload importer artifact
         uses: actions/upload-artifact@v4
@@ -41,41 +39,9 @@ jobs:
           path: modules/importer/target/universal/importer-*.zip
           if-no-files-found: error
 
-      - name: Upload native artifact
+      - name: Upload API native artifact
         uses: actions/upload-artifact@v3
         with:
           name: native-api.zip
-          path: modules/api/target/native-image/
+          path: api.zip
           if-no-files-found: error
-
-  Build-and-Push-Docker-Image:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    name: Docker Build, Tag, Push
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.0.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Tag
-        id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v5.4.0
-        with:
-          images: ghcr.io/faustin0/bus-info/app # base name for tag
-          tags: |
-            type=ref,event=tag
-            type=sha
-
-      - name: Build container image
-        uses: docker/build-push-action@v5
-        with:
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          labels: ${{ steps.docker_meta.outputs.labels }}
