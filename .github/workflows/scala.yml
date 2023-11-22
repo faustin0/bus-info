@@ -27,7 +27,7 @@ jobs:
         run: sbt universal:packageBin
 
       - name: Package native artifact
-        run: sbt nativeImage
+        run: sbt 'show graalvm-native-image:packageBin'
 
       - uses: actions/github-script@v7
 #        id: set-result
