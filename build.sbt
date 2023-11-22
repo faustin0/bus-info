@@ -20,6 +20,7 @@ inThisBuild(
 // General Settings
 lazy val commonSettings = Seq(
   scalaVersion := "2.13.10",
+  scalacOptions ++= Seq("-encoding", "utf8"),
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
   libraryDependencies ++= dependencies ++ testDependencies
@@ -53,7 +54,7 @@ lazy val api = project
     Test / fork                    := true,
     libraryDependencies ++= (httpServerDeps ++ Seq(
       "org.typelevel" %% "feral-lambda-http4s"                      % "0.2.4",
-      "com.amazonaws"  % "aws-lambda-java-runtime-interface-client" % "2.3.1",
+      "com.amazonaws"  % "aws-lambda-java-runtime-interface-client" % "2.4.1",
       "com.amazonaws"  % "aws-lambda-java-core"                     % "1.2.3",
       "com.amazonaws"  % "aws-lambda-java-events"                   % "3.11.3"
     )),
@@ -75,11 +76,12 @@ lazy val api = project
 //      s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}"
 //    ),
 //    nativeImageVersion       := "22.1.0", // It should be at least version 21.0.0
-    graalVMNativeImageGraalVersion := Some("22.1.0"),
+    graalVMNativeImageGraalVersion := Some("22.3.3"),
     graalVMNativeImageOptions      := Seq(
       "--static",
       "--verbose",
       "--no-fallback",
+      "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time=org.slf4j",
       "--initialize-at-build-time=org.slf4j.LoggerFactory",
       "--initialize-at-build-time=ch.qos.logback",
@@ -91,8 +93,9 @@ lazy val api = project
       "--enable-url-protocols=http",
 //      "--allow-incomplete-classpath",
 //      "--libc=musl",     // questo serve per http4s e segmentanio fault
-      "-H:+StaticExecutableWithDynamicLibC", // questo server per http4s e segmentanio fault
-      "-H:+ReportExceptionStackTraces"
+      "-H:+StaticExecutableWithDynamicLibC",                 // questo server per http4s e segmentanio fault
+      "-H:+ReportExceptionStackTraces",
+      "-J-Dfile.encoding=UTF-8"
 //      "-H:+AllowIncompleteClasspath",
     ),
     excludeDependencies ++= Seq(

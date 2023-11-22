@@ -5,6 +5,18 @@
         "pattern": ".*swagger-ui/.*"
       },
       {
+        "pattern": ".*swagger-ui-bundle.js"
+      },
+      {
+        "pattern": ".*/swagger-ui.*"
+      },
+      {
+        "pattern": ".*/webjars.*"
+      },
+      {
+        "pattern": ".*\\.js$"
+      },
+      {
         "pattern": ".*mimeByExtensions.txt"
       },
       {

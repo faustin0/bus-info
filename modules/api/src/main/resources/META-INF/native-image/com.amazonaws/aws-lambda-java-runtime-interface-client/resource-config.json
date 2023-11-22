@@ -2,25 +2,16 @@
   "resources": {
     "includes": [
       {
-        "pattern": "\\Qlinux/x86_64/libaws-crt-jni.so\\E"
+        "pattern": "\\Qjni/libaws-lambda-jni.linux-x86_64.so\\E"
       },
       {
-        "pattern": "\\Qlinux/armv8/libaws-crt-jni.so\\E"
+        "pattern": "\\Qjni/libaws-lambda-jni.linux-aarch_64.so\\E"
       },
       {
-        "pattern": "\\Qaarch64/aws-lambda-runtime-interface-client.glibc.so\\E"
+        "pattern": "\\Qjni/libaws-lambda-jni.linux_musl-x86_64.so\\E"
       },
       {
-        "pattern": "\\Qaarch64/aws-lambda-runtime-interface-client.musl.so\\E"
-      },
-      {
-        "pattern": "\\Qx86_64/aws-lambda-runtime-interface-client.glibc.so\\E"
-      },
-      {
-        "pattern": "\\Qx86_64/aws-lambda-runtime-interface-client.musl.so\\E"
-      },
-      {
-        "pattern": "\\Qlinux/x86_64/libaws-crt-jni.so\\E"
+        "pattern": "\\Qjni/libaws-lambda-jni.linux_musl-aarch_64.so\\E"
       }
     ]
   },
