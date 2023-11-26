@@ -23,7 +23,7 @@ object Dependencies {
 
   val fs2Version = "3.9.3"
 
-  val log4j2Version = "2.21.1"
+  val log4j2Version = "2.22.0"
 
   val xs4sVersion = "0.9.1"
 
