@@ -76,7 +76,7 @@ lazy val api = project
 //      s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}"
 //    ),
 //    nativeImageVersion       := "22.1.0", // It should be at least version 21.0.0
-    graalVMNativeImageGraalVersion := Some("22.3.3"),
+//    graalVMNativeImageGraalVersion := Some("22.3.3"), //todo re enable
     graalVMNativeImageOptions      := Seq(
       "--static",
       "--verbose",
