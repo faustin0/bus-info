@@ -45,7 +45,7 @@ lazy val core = project
 
 lazy val api = project
   .in(file("modules/api"))
-  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, LauncherJarPlugin, GraalVMNativeImagePlugin)
+  .enablePlugins(BuildInfoPlugin, GraalVMNativeImagePlugin)
   .dependsOn(core)
   .settings(commonSettings)
   .settings(
@@ -95,6 +95,7 @@ lazy val api = project
 //      "--libc=musl",     // questo serve per http4s e segmentanio fault
       "-H:+StaticExecutableWithDynamicLibC",                 // questo server per http4s e segmentanio fault
       "-H:+ReportExceptionStackTraces",
+      "-H:+BuildReport",
       "-J-Dfile.encoding=UTF-8"
 //      "-H:+AllowIncompleteClasspath",
     ),
