@@ -19,7 +19,7 @@ inThisBuild(
 
 // General Settings
 lazy val commonSettings = Seq(
-  scalaVersion := "2.13.10",
+  scalaVersion := "2.13.12",
   scalacOptions ++= Seq("-encoding", "utf8"),
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
