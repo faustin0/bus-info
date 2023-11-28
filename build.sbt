@@ -95,7 +95,6 @@ lazy val api = project
 //      "--libc=musl",     // questo serve per http4s e segmentanio fault
       "-H:+StaticExecutableWithDynamicLibC",                 // questo server per http4s e segmentanio fault
       "-H:+ReportExceptionStackTraces",
-      "-H:+BuildReport",
       "-J-Dfile.encoding=UTF-8"
 //      "-H:+AllowIncompleteClasspath",
     ),
