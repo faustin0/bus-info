@@ -16,9 +16,8 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.3.3' # ideally in sync with the one specified in the build.sbt
           java-version: '21'
-          distribution: 'graalvm-community'
+          distribution: 'graalvm'
           cache: 'sbt'
           check-for-updates: true
           native-image-job-reports: true
