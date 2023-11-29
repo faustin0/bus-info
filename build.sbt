@@ -81,7 +81,7 @@ lazy val api = project
       "--static",
       "--verbose",
       "--no-fallback",
-      "-march=native",
+      "-march=x86-64-v2", // https://docs.aws.amazon.com/linux/al2023/ug/performance-optimizations.html
       "--strict-image-heap",
 //      "-Ob",
       "--report-unsupported-elements-at-runtime",
@@ -103,8 +103,9 @@ lazy val api = project
     ),
     excludeDependencies ++= Seq(
       // commons-logging is replaced by jcl-over-slf4j
-      ExclusionRule("commons-logging", "commons-logging"),
-      ExclusionRule("io.netty")
+      ExclusionRule(organization = "commons-logging", name = "commons-logging"),
+      ExclusionRule(organization = "software.amazon.awssdk", name = "netty-nio-client"),
+      ExclusionRule(organization = "software.amazon.awssdk", name = "apache-client")
     )
   )
 
