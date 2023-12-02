@@ -90,6 +90,11 @@ lazy val api = project
 //      "--initialize-at-build-time=org.slf4j.LoggerFactory",
 //      "--initialize-at-build-time=ch.qos.logback",
 //      "--initialize-at-build-time=org.apache.logging.slf4j", // non serve rorse
+      "--initialize-at-run-time=com.amazonaws.ClientConfiguration",
+      "--initialize-at-run-time=software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy",
+      "--initialize-at-run-time=software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy",
+      "--initialize-at-run-time=com.amazonaws.retry.PredefinedBackoffStrategies$EqualJitterBackoffStrategy",
+      "--initialize-at-run-time=com.amazonaws.retry.PredefinedBackoffStrategies$FullJitterBackoffStrategy",
       "--enable-http",
       "--enable-https",
       "--enable-all-security-services",
