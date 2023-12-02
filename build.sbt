@@ -85,10 +85,11 @@ lazy val api = project
       "--strict-image-heap",
 //      "-Ob",
       "--report-unsupported-elements-at-runtime",
-      "--initialize-at-build-time=org.slf4j",
-      "--initialize-at-build-time=org.slf4j.LoggerFactory",
-      "--initialize-at-build-time=ch.qos.logback",
-      "--initialize-at-build-time=org.apache.logging.slf4j", // non serve rorse
+      "--initialize-at-build-time",
+//      "--initialize-at-build-time=org.slf4j",
+//      "--initialize-at-build-time=org.slf4j.LoggerFactory",
+//      "--initialize-at-build-time=ch.qos.logback",
+//      "--initialize-at-build-time=org.apache.logging.slf4j", // non serve rorse
       "--enable-http",
       "--enable-https",
       "--enable-all-security-services",
