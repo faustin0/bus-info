@@ -67,7 +67,7 @@ object Dependencies {
 
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.3",
-    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.3",
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.4",
     "software.amazon.awssdk" % "s3"                     % awsSdkVersion
   ) ++ dynamoDeps
 
