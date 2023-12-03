@@ -86,18 +86,10 @@ lazy val api = project
 //      "-Ob",
       "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time",
-//      "--initialize-at-build-time=org.slf4j",
-//      "--initialize-at-build-time=org.slf4j.LoggerFactory",
-//      "--initialize-at-build-time=ch.qos.logback",
-//      "--initialize-at-build-time=org.apache.logging.slf4j", // non serve rorse
-      "--trace-object-instantiation=java.util.Random", //todo remove once sorted out the build
       "--initialize-at-run-time=scala.util.Random",
-      "--initialize-at-run-time=org.http4s.multipart.Boundary$", //todo open PR
-      "--initialize-at-run-time=com.amazonaws.ClientConfiguration",
+      "--initialize-at-run-time=org.http4s.multipart.Boundary$", //todo open PR on tapir?
       "--initialize-at-run-time=software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy",
       "--initialize-at-run-time=software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy",
-      "--initialize-at-run-time=com.amazonaws.retry.PredefinedBackoffStrategies$EqualJitterBackoffStrategy",
-      "--initialize-at-run-time=com.amazonaws.retry.PredefinedBackoffStrategies$FullJitterBackoffStrategy",
       "--enable-http",
       "--enable-https",
       "--enable-all-security-services",
