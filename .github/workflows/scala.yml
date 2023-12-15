@@ -27,7 +27,7 @@ jobs:
         run: sbt universal:packageBin
 
       - name: Upload importer artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bus-stops-importer.zip
           path: modules/importer/target/universal/importer-*.zip
