@@ -49,35 +49,15 @@ lazy val api = project
   .dependsOn(core)
   .settings(commonSettings)
   .settings(
-    name                           := "api",
-    Test / parallelExecution       := false,
-    Test / fork                    := true,
-    libraryDependencies ++= (httpServerDeps ++ Seq(
-      "org.typelevel" %% "feral-lambda-http4s"                      % "0.2.4",
-      "com.amazonaws"  % "aws-lambda-java-runtime-interface-client" % "2.4.1",
-      "com.amazonaws"  % "aws-lambda-java-core"                     % "1.2.3",
-      "com.amazonaws"  % "aws-lambda-java-events"                   % "3.11.3"
-    )),
-    Compile / mainClass            := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
-    buildInfoKeys                  := Seq[BuildInfoKey](version),
-    buildInfoPackage               := "dev.faustin0.info",
-    topLevelDirectory              := None,
-//    nativeImageOptions ++= Seq(
-//      "--no-fallback",
-//      "--link-at-build-time",
-//      "--initialize-at-build-time=org.slf4j",
-//      "--enable-url-protocols=http",
-//      "--add-opens java.base/java.util=ALL-UNNAMED",
-//      "--enable-url-protocols=https,http",
-//      s"-H:ReflectionConfigurationFiles=${target.value / "native-image-configs" / "reflect-config.json"}",
-//      s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}",
-//      "-H:+JNI"
-//      s"-H:ReflectionConfigurationFiles=${target.value / "native-image-configs" / "reflect-config.json"}",
-//      s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}"
-//    ),
-//    nativeImageVersion       := "22.1.0", // It should be at least version 21.0.0
-//    graalVMNativeImageGraalVersion := Some("22.3.3"), //todo re enable
-    graalVMNativeImageOptions      := Seq(
+    name                      := "api",
+    Test / parallelExecution  := false,
+    Test / fork               := true,
+    libraryDependencies ++= (httpServerDeps ++ awsLambdaDeps :+ lambdaRuntimeDeps),
+    Compile / mainClass       := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
+    buildInfoKeys             := Seq[BuildInfoKey](version),
+    buildInfoPackage          := "dev.faustin0.info",
+    topLevelDirectory         := None,
+    graalVMNativeImageOptions := Seq(
       "--static",
       "--verbose",
       "--no-fallback",
@@ -87,7 +67,7 @@ lazy val api = project
       "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time",
       "--initialize-at-run-time=scala.util.Random",
-      "--initialize-at-run-time=org.http4s.multipart.Boundary$", //todo open PR on tapir?
+      "--initialize-at-run-time=org.http4s.multipart.Boundary$", // todo open PR on tapir?
       "--initialize-at-run-time=software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy",
       "--initialize-at-run-time=software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy",
       "--enable-http",
@@ -95,12 +75,9 @@ lazy val api = project
       "--enable-all-security-services",
       "--enable-url-protocols=https,http",
       "--enable-url-protocols=http",
-//      "--allow-incomplete-classpath",
-//      "--libc=musl",     // questo serve per http4s e segmentanio fault
-      "-H:+StaticExecutableWithDynamicLibC",                 // questo server per http4s e segmentanio fault
+      "-H:+StaticExecutableWithDynamicLibC", // avoid http4s segmentation fault, an alternative to --libc=musl
       "-H:+ReportExceptionStackTraces",
       "-J-Dfile.encoding=UTF-8"
-//      "-H:+AllowIncompleteClasspath",
     ),
     excludeDependencies ++= Seq(
       // commons-logging is replaced by jcl-over-slf4j

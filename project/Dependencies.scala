@@ -59,6 +59,7 @@ object Dependencies {
     "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
     "org.http4s"                  %% "http4s-scala-xml"        % "0.23.13",
     "org.http4s"                  %% "http4s-circe"            % http4sVersion,
+    "org.typelevel"               %% "feral-lambda-http4s"     % "0.2.4",
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
@@ -67,6 +68,14 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
   )
 
+  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.4.1"
+
+  lazy val awsLambdaDeps = Seq(
+    "com.amazonaws" % "aws-lambda-java-core"   % "1.2.3",
+    "com.amazonaws" % "aws-lambda-java-events" % "3.11.3"
+  )
+
+  @deprecated
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.3",
     "com.amazonaws"          % "aws-lambda-java-events" % "3.11.4",
