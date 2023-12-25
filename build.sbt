@@ -63,7 +63,6 @@ lazy val api = project
       "--no-fallback",
       "-march=x86-64-v2", // https://docs.aws.amazon.com/linux/al2023/ug/performance-optimizations.html
       "--strict-image-heap",
-//      "-Ob",
       "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time",
       "--initialize-at-run-time=scala.util.Random",
@@ -78,7 +77,7 @@ lazy val api = project
       "-H:+StaticExecutableWithDynamicLibC", // avoid http4s segmentation fault, an alternative to --libc=musl
       "-H:+ReportExceptionStackTraces",
       "-J-Dfile.encoding=UTF-8"
-    ),
+    ) ++ optimizationLevel(),
     excludeDependencies ++= Seq(
       // commons-logging is replaced by jcl-over-slf4j
       ExclusionRule(organization = "commons-logging", name = "commons-logging"),
@@ -113,3 +112,12 @@ lazy val tests = project
     IntegrationTest / fork   := true,
     libraryDependencies ++= awsDeps
   )
+
+def optimizationLevel(): Seq[String] =
+  sys.env
+    .get("OPTIMIZE_NATIVE")
+    .collect {
+      case "true"  => "-O2"
+      case "false" => "-Ob"
+    }
+    .toSeq

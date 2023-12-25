@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  OPTIMIZE_NATIVE: ${{ github.ref == 'refs/heads/master' && 'true' || 'false' }}
+
+
 jobs:
   build-test-package:
     runs-on: ubuntu-latest
