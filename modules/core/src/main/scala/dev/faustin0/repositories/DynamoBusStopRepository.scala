@@ -5,6 +5,7 @@ import cats.syntax.all._
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
 import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.http.SdkHttpClient
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
@@ -115,14 +116,12 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
 }
 
 object DynamoBusStopRepository {
+  private val logger = Slf4jLogger.getLogger[IO]
 
   def apply(awsClient: DynamoDbClient, l: Logger[IO]): DynamoBusStopRepository =
     new DynamoBusStopRepository(awsClient)(l)
 
-  def makeResource(l: Logger[IO]): Resource[IO, DynamoBusStopRepository] =
-    // todo remove this shit
-//    val client = awsDefaultClient.orElse(clientFromEnv)
-
+  def makeResource(): Resource[IO, DynamoBusStopRepository] =
     Resource
       .fromAutoCloseable(
         IO(
@@ -133,7 +132,7 @@ object DynamoBusStopRepository {
         )
       )
       .flatMap(c => Resource.fromAutoCloseable(clientFromEnv(c)))
-      .map(c => DynamoBusStopRepository(c, l))
+      .map(c => DynamoBusStopRepository(c, logger))
 
   private def clientFromEnv(httpClient: SdkHttpClient): IO[DynamoDbClient] =
     IO {

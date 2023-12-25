@@ -16,7 +16,7 @@ class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   private val httpClient = ClientLogger(logHeaders = false, logBody = true)(JavaNetClientBuilder[IO].create)
-  private val sut        = HelloBusClient(httpClient, logger.info(_))
+  private val sut        = HelloBusClient(httpClient)
 
   "should execute sample tper request " in {
     val actual = sut.hello(BusRequest(303, "27"))

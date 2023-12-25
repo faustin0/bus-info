@@ -12,7 +12,6 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.Router
 import org.http4s.server.middleware.{ AutoSlash, Logger, Timeout }
 import org.http4s.{ HttpRoutes, _ }
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.concurrent.duration.DurationInt
 
@@ -47,14 +46,12 @@ class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStru
       .map(middlewares(_))
 
   private val endpoints: Resource[IO, Endpoints] =
-    for {
-      logger        <- Slf4jLogger.create[IO].toResource
-      emberClient   <- EmberClientBuilder.default[IO].build
-      busStopRepo   <- DynamoBusStopRepository.makeResource(logger)
-      tperClient     = HelloBusClient(emberClient, logger.info(_))
-      busInfoService = BusInfoService(tperClient, busStopRepo)
-      endpoints      = Endpoints(busInfoService)
-    } yield endpoints
+    (EmberClientBuilder.default[IO].build, DynamoBusStopRepository.makeResource()).parMapN {
+      case (emberClient, busStopRepo) =>
+        val tperClient     = HelloBusClient(emberClient)
+        val busInfoService = BusInfoService(tperClient, busStopRepo)
+        Endpoints(busInfoService)
+    }
 
   private def middlewares: HttpRoutes[IO] => HttpRoutes[IO] =
     (AutoSlash.httpRoutes(_: HttpRoutes[IO])).andThen {
