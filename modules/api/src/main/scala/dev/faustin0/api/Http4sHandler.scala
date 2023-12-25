@@ -24,10 +24,10 @@ class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStru
     * triggered. This may seem counter-intuitive at first: where does the event come from? Because accessing the event
     * via `LambdaEnv` is now also an effect in `IO`, it becomes a step in your program.
     */
-  def handler: Resource[IO, LambdaEnv[IO, ApiGatewayProxyEventV2] => IO[Option[ApiGatewayProxyStructuredResultV2]]] =
-    myRoutes.map { routes => implicit env =>
+  def handler: Resource[IO, ApiGatewayProxyInvocationV2[IO] => IO[Option[ApiGatewayProxyStructuredResultV2]]] =
+    myRoutes.map { routes => implicit invocation =>
       // a "middleware" that converts an HttpRoutes into a ApiGatewayProxyHandler
-      ApiGatewayProxyHandler(routes)
+      ApiGatewayProxyHandlerV2[IO](routes.orNotFound)
     }
 
   def myRoutes: Resource[IO, HttpRoutes[IO]] =
