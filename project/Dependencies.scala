@@ -1,4 +1,4 @@
-import sbt._
+import sbt.*
 
 object Dependencies {
   val http4sVersion = "0.23.24"
@@ -37,14 +37,16 @@ object Dependencies {
   )
 
   lazy val dependencies = Seq(
-    "co.fs2"                  %% "fs2-core"                   % fs2Version,
-    "org.typelevel"           %% "cats-effect"                % catsVersion,
-    "io.circe"                %% "circe-generic"              % circeVersion,
-    "org.scala-lang.modules"  %% "scala-xml"                  % scalaXmlVersion,
-    "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
-    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
-    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
-    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime
+    "co.fs2"                 %% "fs2-core"        % fs2Version,
+    "org.typelevel"          %% "cats-effect"     % catsVersion,
+    "io.circe"               %% "circe-generic"   % circeVersion,
+    "org.scala-lang.modules" %% "scala-xml"       % scalaXmlVersion,
+    "org.typelevel"          %% "log4cats-slf4j"  % log4catsVersion,
+//    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
+//    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
+//    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
+    "org.slf4j"               % "jcl-over-slf4j"  % "1.7.36" % Runtime, // same version of slf4j used by log4cats
+    "ch.qos.logback"          % "logback-classic" % "1.4.11" % Runtime
   )
 
   lazy val httpClientDeps = Seq(
@@ -57,6 +59,7 @@ object Dependencies {
     "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
     "org.http4s"                  %% "http4s-scala-xml"        % "0.23.13",
     "org.http4s"                  %% "http4s-circe"            % http4sVersion,
+    "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.0-M3",
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
@@ -65,6 +68,14 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
   )
 
+  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.4.1"
+
+  lazy val awsLambdaDeps = Seq(
+    "com.amazonaws" % "aws-lambda-java-core"   % "1.2.3",
+    "com.amazonaws" % "aws-lambda-java-events" % "3.11.3"
+  )
+
+  @deprecated
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.3",
     "com.amazonaws"          % "aws-lambda-java-events" % "3.11.4",
@@ -72,11 +83,10 @@ object Dependencies {
   ) ++ dynamoDeps
 
   lazy val dynamoDeps = Seq(
-    "software.amazon.awssdk" % "dynamodb" % awsSdkVersion
+    "software.amazon.awssdk" % "dynamodb"              % awsSdkVersion, // todo exclude ("io.netty", "netty-nio-client") exclude ("software.amazon.awssdk", "apache-client"),
+    "software.amazon.awssdk" % "url-connection-client" % awsSdkVersion
   )
 
-  lazy val streamingXMl = Seq(
-    "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion
-  )
+  lazy val streamingXMl = "com.scalawilliam" %% "xs4s-fs2v3" % xs4sVersion
 
 }

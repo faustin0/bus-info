@@ -3,7 +3,6 @@ package dev.faustin0
 import cats.effect.IO
 import cats.effect.testing.scalatest.{ AssertingSyntax, AsyncIOSpec }
 import com.dimafeng.testcontainers.{ ForEachTestContainer, GenericContainer }
-import dev.faustin0.Utils.JavaFutureOps
 import dev.faustin0.domain.{ BusStop, Position }
 import dev.faustin0.importer.Importer
 import dev.faustin0.importer.domain.{ DatasetFileLocation, Failure, Success }
@@ -28,7 +27,7 @@ class BusStopsImporterIT
     Containers
       .createDynamoClient(dynamoContainer)
       .use { ddb =>
-        IO(ddb.createTable(DynamoSetUp.BusStopTable.createTableRequest)).fromCompletable
+        IO.blocking(ddb.createTable(DynamoSetUp.BusStopTable.createTableRequest))
       }
       .void
       .unsafeRunSync()
@@ -38,7 +37,7 @@ class BusStopsImporterIT
 
     Containers
       .createDynamoClient(dynamoContainer)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { busStopRepo =>
         val datasetLoader = new InMemoryDatasetLoader(bucketName)
         val sut           = new Importer(busStopRepo, datasetLoader)
@@ -88,7 +87,7 @@ class BusStopsImporterIT
 
     Containers
       .createDynamoClient(dynamoContainer)
-      .map(DynamoBusStopRepository(_))
+      .map(DynamoBusStopRepository(_, logger))
       .use { busStopRepo =>
         for {
           _ <- Stream

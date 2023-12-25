@@ -6,10 +6,14 @@ import org.http4s.client.JavaNetClientBuilder
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.http4s.client.middleware.{ Logger => ClientLogger }
+import org.http4s.ember.client.EmberClientBuilder
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.time.LocalTime
 
 class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
+  implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   private val httpClient = ClientLogger(logHeaders = false, logBody = true)(JavaNetClientBuilder[IO].create)
   private val sut        = HelloBusClient(httpClient)

@@ -1,0 +1,34 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": ".*swagger-ui/.*"
+      },
+      {
+        "pattern": ".*swagger-ui-bundle.js"
+      },
+      {
+        "pattern": ".*/swagger-ui.*"
+      },
+      {
+        "pattern": ".*/webjars.*"
+      },
+      {
+        "pattern": ".*\\.js$"
+      },
+      {
+        "pattern": ".*mimeByExtensions.txt"
+      },
+      {
+        "pattern": ".*logback.xml"
+      },
+      {
+        "pattern": "\\Qlibrary.properties\\E"
+      },
+      {
+        "pattern": "\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"
+      }
+    ]
+  },
+  "bundles": []
+}
