@@ -46,7 +46,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload API native artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: native-api.zip
           path: api.zip
