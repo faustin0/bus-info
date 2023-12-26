@@ -1,4 +1,4 @@
-import Dependencies._
+import Dependencies.*
 import sbt.Keys.parallelExecution
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -66,7 +66,6 @@ lazy val api = project
       "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time",
       "--initialize-at-run-time=scala.util.Random",
-      "--initialize-at-run-time=org.http4s.multipart.Boundary$", // todo open PR on tapir?
       "--initialize-at-run-time=software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy",
       "--initialize-at-run-time=software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy",
       "--enable-http",
