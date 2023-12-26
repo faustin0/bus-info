@@ -5,13 +5,11 @@ import dev.faustin0.domain._
 import org.http4s.client.JavaNetClientBuilder
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
-import org.typelevel.log4cats.SelfAwareStructuredLogger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.time.LocalTime
 
 class HelloBusClientIT extends AsyncFreeSpec with AsyncIOSpec with Matchers {
-  implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
+//  implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   private val httpClient = JavaNetClientBuilder[IO].create
   private val sut        = HelloBusClient(httpClient)

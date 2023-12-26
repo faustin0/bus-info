@@ -1,4 +1,5 @@
 import Dependencies.*
+import org.typelevel.scalacoptions.ScalacOptions
 import sbt.Keys.parallelExecution
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -23,7 +24,8 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq("-encoding", "utf8"),
   addCompilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV cross CrossVersion.full),
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
-  libraryDependencies ++= dependencies ++ testDependencies
+  libraryDependencies ++= dependencies ++ testDependencies,
+  Test / tpolecatExcludeOptions += ScalacOptions.warnNonUnitStatement  // work-around https://github.com/typelevel/sbt-tpolecat/issues/139
 )
 
 lazy val root = (project in file("."))
@@ -40,7 +42,13 @@ lazy val core = project
     name                     := "core",
     Test / parallelExecution := false,
     Test / fork              := true,
-    libraryDependencies ++= httpClientDeps ++ dynamoDeps
+    libraryDependencies ++= httpClientDeps ++ dynamoDeps,
+    Test / tpolecatExcludeOptions ++= ScalacOptions.default ++ ScalacOptions.privateWarnOptions, // work-around https://github.com/typelevel/sbt-tpolecat/issues/139
+    IntegrationTest / tpolecatExcludeOptions ++= Set(
+      ScalacOptions.warnValueDiscard,
+      ScalacOptions.warnNonUnitStatement
+    )  // work-around https://github.com/typelevel/sbt-tpolecat/issues/139
+
   )
 
 lazy val api = project
@@ -101,15 +109,13 @@ lazy val importer = project
 lazy val tests = project
   .in(file("modules/tests"))
   .dependsOn(core, importer, api)
-  .configs(IntegrationTest)
   .settings(commonSettings)
-  .settings(Defaults.itSettings)
   .settings(
     name                     := "tests",
     Test / parallelExecution := false,
     Test / fork              := true,
     IntegrationTest / fork   := true,
-    libraryDependencies ++= awsDeps
+    libraryDependencies ++= awsDeps,
   )
 
 def optimizationLevel(): Seq[String] =

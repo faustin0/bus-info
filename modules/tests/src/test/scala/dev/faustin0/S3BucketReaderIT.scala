@@ -9,6 +9,7 @@ import org.scalatest.freespec.AsyncFreeSpec
 import software.amazon.awssdk.services.s3.model.{ CreateBucketRequest, PutObjectRequest }
 
 import java.nio.file.Paths
+import scala.concurrent.ExecutionContext
 import scala.io.Source
 import scala.xml.Utility.trim
 import scala.xml.{ Elem, XML }
@@ -23,7 +24,7 @@ class S3BucketReaderIT
   override val container: Container = localStack
 
   // TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
-  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit override def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   override def afterStart(): Unit =
     Containers
