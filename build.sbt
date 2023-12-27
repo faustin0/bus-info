@@ -73,6 +73,7 @@ lazy val api = project
       "--strict-image-heap",
       "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time",
+      "--trace-object-instantiation=scala.util.Random",
       "--initialize-at-run-time=scala.util.Random",
       "--initialize-at-run-time=software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy",
       "--initialize-at-run-time=software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy",
