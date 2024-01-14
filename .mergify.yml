@@ -2,7 +2,7 @@ pull_request_rules:
   - name: Automatic merge of scala-steward PRs 
     conditions:
       - head~=^update/
-      - check-success=build-and-test
+      - check-success=build-test-package
     actions:
       delete_head_branch: 
         force: true
@@ -13,7 +13,7 @@ pull_request_rules:
   - name: automatic merge of dependabot 🤖
     conditions:
       - author~=^dependabot(|-preview)\[bot\]$
-      - check-success=build-and-test
+      - check-success=build-test-package
       - base=master
     actions:
       delete_head_branch: 
@@ -26,4 +26,4 @@ queue_rules:
   - name: default
     conditions:
       # Conditions to get out of the queue (= merged)
-      - check-success=build-and-test
+      - check-success=build-test-package
