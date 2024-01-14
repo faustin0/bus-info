@@ -1,7 +1,7 @@
 import sbt.*
 
 object Dependencies {
-  val http4sVersion = "0.23.24"
+  val http4sVersion = "0.23.25"
 
   val catsVersion = "3.5.2"
 
@@ -46,7 +46,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
     "org.slf4j"               % "jcl-over-slf4j"  % "1.7.36" % Runtime, // same version of slf4j used by log4cats
-    "ch.qos.logback"          % "logback-classic" % "1.4.11" % Runtime
+    "ch.qos.logback"          % "logback-classic" % "1.4.14" % Runtime
   )
 
   lazy val httpClientDeps = Seq(
