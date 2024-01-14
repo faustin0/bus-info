@@ -1,7 +1,7 @@
 import sbt.*
 
 object Dependencies {
-  val http4sVersion = "0.23.24"
+  val http4sVersion = "0.23.25"
 
   val catsVersion = "3.5.2"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.17"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.625"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.636"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -46,7 +46,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
     "org.slf4j"               % "jcl-over-slf4j"  % "1.7.36" % Runtime, // same version of slf4j used by log4cats
-    "ch.qos.logback"          % "logback-classic" % "1.4.11" % Runtime
+    "ch.qos.logback"          % "logback-classic" % "1.4.14" % Runtime
   )
 
   lazy val httpClientDeps = Seq(
@@ -59,7 +59,7 @@ object Dependencies {
     "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
     "org.http4s"                  %% "http4s-scala-xml"        % "0.23.13",
     "org.http4s"                  %% "http4s-circe"            % http4sVersion,
-    "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.0-M3",
+    "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.0-RC1",
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
