@@ -45,7 +45,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
-    "org.slf4j"               % "jcl-over-slf4j"  % "1.7.36" % Runtime, // same version of slf4j used by log4cats
+    "org.slf4j"               % "jcl-over-slf4j"  % "2.0.11" % Runtime, // same version of slf4j used by log4cats
     "ch.qos.logback"          % "logback-classic" % "1.4.11" % Runtime
   )
 
