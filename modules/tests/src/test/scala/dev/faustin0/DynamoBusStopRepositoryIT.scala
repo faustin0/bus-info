@@ -8,6 +8,8 @@ import dev.faustin0.repositories.DynamoBusStopRepository
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
+import scala.concurrent.ExecutionContext
+
 class DynamoBusStopRepositoryIT
     extends AsyncFreeSpec
     with ForAllTestContainer
@@ -18,7 +20,7 @@ class DynamoBusStopRepositoryIT
   override val container: GenericContainer = dynamoContainer
 
   // TODO remove me once this is solved https://github.com/typelevel/cats-effect-testing/issues/145
-  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit override def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   override def afterStart(): Unit =
     Containers

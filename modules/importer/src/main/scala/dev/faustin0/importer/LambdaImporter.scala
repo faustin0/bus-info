@@ -1,16 +1,17 @@
 package dev.faustin0.importer
 
 import cats.effect.unsafe.IORuntime
-import cats.effect.{ExitCode, IO}
+import cats.effect.{ ExitCode, IO }
 import cats.implicits._
 import com.amazonaws.services.lambda.runtime.events.S3Event
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
 import dev.faustin0.importer.domain.DatasetFileLocation
 import dev.faustin0.importer.infrastructure.S3BucketLoader
 import dev.faustin0.repositories.DynamoBusStopRepository
 import fs2.Stream
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import software.amazon.awssdk.services.dynamodb.{DynamoDbAsyncClient, DynamoDbClient}
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
@@ -19,7 +20,8 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
   implicit private lazy val runtime: IORuntime = IORuntime.global
 
   override def handleRequest(s3Event: S3Event, context: Context): ExitCode = {
-    implicit val logger = Slf4jLogger.getLogger[IO].addContext(Map("RequestId" -> context.getAwsRequestId))
+    implicit val logger: SelfAwareStructuredLogger[IO] =
+      Slf4jLogger.getLogger[IO].addContext(Map("RequestId" -> context.getAwsRequestId))
 
     val computation = for {
       busStopRepo  <- IO(DynamoDbClient.create()).map(DynamoBusStopRepository.apply(_, logger)) // todo client
@@ -43,8 +45,5 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
 
     computation.unsafeRunSync()
   }
-
-  private def awsDefaultClient: IO[DynamoDbAsyncClient] =
-    IO(DynamoDbAsyncClient.create())
 
 }

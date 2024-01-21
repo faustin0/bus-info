@@ -60,7 +60,7 @@ object BusStopTable {
 
   private def attribute(b: AttributeValue.Builder => AttributeValue.Builder): AttributeValue = {
     val builder = AttributeValue.builder()
-    b(builder)
+    val _       = b(builder)
     builder.build()
   }
 

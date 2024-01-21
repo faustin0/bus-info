@@ -46,11 +46,16 @@ class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStru
       .map(middlewares(_))
 
   private val endpoints: Resource[IO, Endpoints] =
-    (EmberClientBuilder.default[IO].build, DynamoBusStopRepository.makeResource()).parMapN {
-      case (emberClient, busStopRepo) =>
-        val tperClient     = HelloBusClient(emberClient)
-        val busInfoService = BusInfoService(tperClient, busStopRepo)
-        Endpoints(busInfoService)
+    (
+      EmberClientBuilder
+        .default[IO]
+        .withIdleConnectionTime(1.minute)
+        .build,
+      DynamoBusStopRepository.makeResource()
+    ).parMapN { case (emberClient, busStopRepo) =>
+      val tperClient     = HelloBusClient(emberClient)
+      val busInfoService = BusInfoService(tperClient, busStopRepo)
+      Endpoints(busInfoService)
     }
 
   private def middlewares: HttpRoutes[IO] => HttpRoutes[IO] =
