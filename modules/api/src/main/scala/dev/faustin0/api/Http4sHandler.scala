@@ -45,7 +45,7 @@ class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStru
       )
       .map(middlewares(_))
 
-  private val endpoints: Resource[IO, Endpoints] =
+  private def endpoints: Resource[IO, Endpoints] =
     (EmberClientBuilder.default[IO].build, DynamoBusStopRepository.makeResource()).parMapN {
       case (emberClient, busStopRepo) =>
         val tperClient     = HelloBusClient(emberClient)
