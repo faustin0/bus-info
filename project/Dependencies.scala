@@ -28,9 +28,9 @@ object Dependencies {
   val xs4sVersion = "0.9.1"
 
   lazy val testDependencies = Seq(
-    "org.scalatest" %% "scalatest"                          % "3.2.17"             % Test,
+    "org.scalatest" %% "scalatest"                          % "3.2.18"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.651"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.656"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -45,7 +45,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
-    "org.slf4j"               % "jcl-over-slf4j"  % "1.7.36" % Runtime, // same version of slf4j used by log4cats
+    "org.slf4j"               % "jcl-over-slf4j"  % "2.0.12" % Runtime, // same version of slf4j used by log4cats
     "ch.qos.logback"          % "logback-classic" % "1.4.14" % Runtime
   )
 
