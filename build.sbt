@@ -61,7 +61,7 @@ lazy val api = project
       "--static",
       "--verbose",
       "--no-fallback",
-      "-march=x86-64-v2", // https://docs.aws.amazon.com/linux/al2023/ug/performance-optimizations.html
+      "-march=x86-64-v2",                                        // https://docs.aws.amazon.com/linux/al2023/ug/performance-optimizations.html
       "--strict-image-heap",
       "--report-unsupported-elements-at-runtime",
       "--initialize-at-build-time",
@@ -74,7 +74,7 @@ lazy val api = project
       "--enable-all-security-services",
       "--enable-url-protocols=https,http",
       "--enable-url-protocols=http",
-      "-H:+StaticExecutableWithDynamicLibC", // avoid http4s segmentation fault, an alternative to --libc=musl
+      "-H:+StaticExecutableWithDynamicLibC",                     // avoid http4s segmentation fault, an alternative to --libc=musl
       "-H:+ReportExceptionStackTraces",
       "-J-Dfile.encoding=UTF-8"
     ) ++ optimizationLevel(),

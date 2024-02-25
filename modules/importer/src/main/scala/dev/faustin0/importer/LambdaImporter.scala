@@ -1,16 +1,16 @@
 package dev.faustin0.importer
 
 import cats.effect.unsafe.IORuntime
-import cats.effect.{ExitCode, IO}
+import cats.effect.{ ExitCode, IO }
 import cats.implicits._
 import com.amazonaws.services.lambda.runtime.events.S3Event
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
 import dev.faustin0.importer.domain.DatasetFileLocation
 import dev.faustin0.importer.infrastructure.S3BucketLoader
 import dev.faustin0.repositories.DynamoBusStopRepository
 import fs2.Stream
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import software.amazon.awssdk.services.dynamodb.{DynamoDbAsyncClient, DynamoDbClient}
+import software.amazon.awssdk.services.dynamodb.{ DynamoDbAsyncClient, DynamoDbClient }
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
