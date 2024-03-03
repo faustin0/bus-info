@@ -19,7 +19,7 @@ object Dependencies {
 
   val tapirVersion = "1.9.10"
 
-  val awsSdkVersion = "2.24.10"
+  val awsSdkVersion = "2.24.13"
 
   val fs2Version = "3.9.4"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.18"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.666"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.671"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -68,7 +68,7 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
   )
 
-  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.4.1"
+  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.4.2"
 
   lazy val awsLambdaDeps = Seq(
     "com.amazonaws" % "aws-lambda-java-core"   % "1.2.3",
