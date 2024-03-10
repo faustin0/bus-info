@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.18"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.671"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.676"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -46,7 +46,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
     "org.slf4j"               % "jcl-over-slf4j"  % "2.0.12" % Runtime, // same version of slf4j used by log4cats
-    "ch.qos.logback"          % "logback-classic" % "1.5.0"  % Runtime
+    "ch.qos.logback"          % "logback-classic" % "1.5.3"  % Runtime
   )
 
   lazy val httpClientDeps = Seq(
