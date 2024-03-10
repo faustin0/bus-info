@@ -1,9 +1,9 @@
 import sbt.*
 
 object Dependencies {
-  val http4sVersion = "0.23.25"
+  val http4sVersion = "0.23.26"
 
-  val catsVersion = "3.5.3"
+  val catsVersion = "3.5.4"
 
   val testcontainersScalaV = "0.41.3"
 
@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.6.0"
 
-  val tapirVersion = "1.9.10"
+  val tapirVersion = "1.9.11"
 
   val awsSdkVersion = "2.25.6"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.18"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.671"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.676"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
@@ -46,7 +46,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
     "org.slf4j"               % "jcl-over-slf4j"  % "2.0.12" % Runtime, // same version of slf4j used by log4cats
-    "ch.qos.logback"          % "logback-classic" % "1.5.0"  % Runtime
+    "ch.qos.logback"          % "logback-classic" % "1.5.3"  % Runtime
   )
 
   lazy val httpClientDeps = Seq(
