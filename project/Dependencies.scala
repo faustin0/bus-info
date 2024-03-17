@@ -19,7 +19,7 @@ object Dependencies {
 
   val tapirVersion = "1.9.11"
 
-  val awsSdkVersion = "2.25.6"
+  val awsSdkVersion = "2.25.11"
 
   val fs2Version = "3.9.4"
 
