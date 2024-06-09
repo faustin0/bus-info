@@ -19,7 +19,7 @@ object Dependencies {
 
   val tapirVersion = "1.10.8"
 
-  val awsSdkVersion = "2.25.64"
+  val awsSdkVersion = "2.25.69"
 
   val fs2Version = "3.10.2"
 
@@ -51,13 +51,13 @@ object Dependencies {
 
   lazy val httpClientDeps = Seq(
     "org.http4s" %% "http4s-ember-client" % http4sVersion,
-    "org.http4s" %% "http4s-scala-xml"    % "0.23.13"
+    "org.http4s" %% "http4s-scala-xml"    % "0.23.14"
   )
 
   lazy val httpServerDeps = Seq(
     "org.http4s"                  %% "http4s-dsl"              % http4sVersion,
     "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
-    "org.http4s"                  %% "http4s-scala-xml"        % "0.23.13",
+    "org.http4s"                  %% "http4s-scala-xml"        % "0.23.14",
     "org.http4s"                  %% "http4s-circe"            % http4sVersion,
     "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.0-RC2",
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
