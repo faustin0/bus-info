@@ -5,7 +5,7 @@ object Dependencies {
 
   val catsVersion = "3.5.4"
 
-  val testcontainersScalaV = "0.41.3"
+  val testcontainersScalaV = "0.41.4"
 
   val kindProjectorV = "0.13.3"
 
@@ -78,7 +78,7 @@ object Dependencies {
   @deprecated
   lazy val awsDeps = Seq(
     "com.amazonaws"          % "aws-lambda-java-core"   % "1.2.3",
-    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.5",
+    "com.amazonaws"          % "aws-lambda-java-events" % "3.11.6",
     "software.amazon.awssdk" % "s3"                     % awsSdkVersion
   ) ++ dynamoDeps
 
