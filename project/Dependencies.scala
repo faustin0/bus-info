@@ -11,7 +11,7 @@ object Dependencies {
 
   val betterMonadicForV = "0.3.1"
 
-  val circeVersion = "0.14.7"
+  val circeVersion = "0.14.8"
 
   val scalaXmlVersion = "2.2.0"
 
@@ -30,7 +30,7 @@ object Dependencies {
   lazy val testDependencies = Seq(
     "org.scalatest" %% "scalatest"                          % "3.2.19"             % Test,
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
-    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.744"           % Test, // needed by localstack
+    "com.amazonaws"  % "aws-java-sdk"                       % "1.12.748"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
     "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
