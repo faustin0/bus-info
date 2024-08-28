@@ -58,7 +58,7 @@ lazy val api = project
     buildInfoPackage          := "dev.faustin0.info",
     topLevelDirectory         := None,
     graalVMNativeImageOptions := Seq(
-      "--static",
+//      "--static",
       "--verbose",
       "--no-fallback",
       "-march=x86-64-v2",                                        // https://docs.aws.amazon.com/linux/al2023/ug/performance-optimizations.html
