@@ -68,7 +68,7 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
   )
 
-  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.5.1"
+  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.6.0"
 
   lazy val awsLambdaDeps = Seq(
     "com.amazonaws" % "aws-lambda-java-core"   % "1.2.3",
