@@ -70,6 +70,7 @@ lazy val api = project
       "--initialize-at-run-time=org.http4s.multipart.Boundary$", // todo open PR on tapir?
       "--initialize-at-run-time=software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy",
       "--initialize-at-run-time=software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy",
+      "--initialize-at-run-time=com.amazonaws.services.lambda.runtime.api.client.LambdaEnvironment", //CANI di AWS
       "--enable-http",
       "--enable-https",
       "--enable-all-security-services",
