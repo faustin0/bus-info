@@ -12,6 +12,9 @@
       },
       {
         "pattern": "\\Qjni/libaws-lambda-jni.linux_musl-aarch_64.so\\E"
+      },
+      {
+        "pattern": "CAZZO"
       }
     ]
   },
