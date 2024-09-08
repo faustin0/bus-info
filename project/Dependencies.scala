@@ -46,7 +46,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
     "org.slf4j"               % "jcl-over-slf4j"  % "2.0.13" % Runtime, // same version of slf4j used by log4cats
-    "ch.qos.logback"          % "logback-classic" % "1.5.6"  % Runtime
+    "ch.qos.logback"          % "logback-classic" % "1.5.8"  % Runtime
   )
 
   lazy val httpClientDeps = Seq(
