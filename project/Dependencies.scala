@@ -59,7 +59,7 @@ object Dependencies {
     "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
     "org.http4s"                  %% "http4s-scala-xml"        % "0.23.14",
     "org.http4s"                  %% "http4s-circe"            % http4sVersion,
-    "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.0-RC2",
+    "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.1",
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
