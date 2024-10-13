@@ -27,6 +27,7 @@ object Entrypoint extends IOApp.Simple {
     EmberClientBuilder
       .default[IO]
       .withTimeout(2.minutes)
+      .withIdleConnectionTime(5.minutes)
       .withIdleTimeInPool(5.minutes)
       .build
       .use { httpClient =>
@@ -38,6 +39,7 @@ object Entrypoint extends IOApp.Simple {
         val lambdaHandler       = handler(httpClient)
         LambdaRuntime[IO, ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2](loggedRuntimeClient)(lambdaHandler)
       }
+      .onError(err => logger.error(err)("Unhandled exception, please find the cause and fix it"))
 
   /** Actually, this is a `Resource` that builds your handler. The handler is acquired exactly once when your Lambda
     * starts and is permanently installed to process all incoming events.
