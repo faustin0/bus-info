@@ -15,12 +15,13 @@ object LambdaRuntime {
   def apply[F[_]: Temporal: Logger: LambdaRuntimeEnv, Event: Decoder, Result: Encoder](
     client: Client[F]
   )(handler: Resource[F, Invocation[F, Event] => F[Option[Result]]]): F[Unit] =
-    LambdaRuntimeAPIClient(client).flatMap { client =>
-      (handler, LambdaSettings.fromLambdaEnv.toResource)
-        .parMapN((handler, settings) => runLoop(client, settings, handler))
-        .use_
-        .onError { case ex => client.reportInitError(ex) }
-    }
+    LambdaRuntimeAPIClient(client).flatMap(client =>
+      (handler, LambdaSettings.fromLambdaEnv.toResource).parTupled.attempt
+        .use[Unit] {
+          case Right((handler, settings)) => runLoop(client, settings, handler)
+          case Left(ex)                   => client.reportInitError(ex) *> ex.raiseError
+        }
+    )
 
   private def runLoop[F[_]: Temporal: Logger, Event: Decoder, Result: Encoder](
     client: LambdaRuntimeAPIClient[F],
