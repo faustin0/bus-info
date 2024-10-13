@@ -49,8 +49,9 @@ object Dependencies {
     "ch.qos.logback"          % "logback-classic" % "1.5.6"  % Runtime
   )
 
-  lazy val httpClientDeps = Seq(
+  lazy val httpClientDeps = Seq( //todo remove xml from here
     "org.http4s" %% "http4s-ember-client" % http4sVersion,
+    "org.http4s" %% "http4s-circe" % http4sVersion,
     "org.http4s" %% "http4s-scala-xml"    % "0.23.14"
   )
 
