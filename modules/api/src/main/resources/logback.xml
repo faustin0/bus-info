@@ -1,4 +1,7 @@
 <configuration>
+
+    <variable name="ROOT_LOG_LEVEL" value="${ROOT_LOG_LEVEL:-INFO}" />
+
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <!-- On Windows machines setting withJansi to true enables ANSI
              color code interpretation by the Jansi library. This requires
@@ -7,10 +10,10 @@
              support ANSI color codes by default. -->
         <!--    <withJansi>true</withJansi>-->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %green([%thread]) %highlight(%level) %logger{20} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %level %logger{20} - %msg%n</pattern>
         </encoder>
     </appender>
-    <root level="INFO">
+    <root level="${ROOT_LOG_LEVEL}">
         <appender-ref ref="console"/>
     </root>
     <logger name="org.http4s" level="INFO"/>
