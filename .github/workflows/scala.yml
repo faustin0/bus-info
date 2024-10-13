@@ -25,6 +25,7 @@ jobs:
           cache: 'sbt'
           check-for-updates: true
           native-image-job-reports: true
+          native-image-musl: true
 
       - name: Run tests
         run: sbt test

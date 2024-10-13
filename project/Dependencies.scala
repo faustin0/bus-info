@@ -49,8 +49,9 @@ object Dependencies {
     "ch.qos.logback"          % "logback-classic" % "1.5.6"  % Runtime
   )
 
-  lazy val httpClientDeps = Seq(
+  lazy val httpClientDeps = Seq( //todo remove xml from here
     "org.http4s" %% "http4s-ember-client" % http4sVersion,
+    "org.http4s" %% "http4s-circe" % http4sVersion,
     "org.http4s" %% "http4s-scala-xml"    % "0.23.14"
   )
 
@@ -68,7 +69,7 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
   )
 
-  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.5.0"
+  lazy val lambdaRuntimeDeps = "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "2.4.1"
 
   lazy val awsLambdaDeps = Seq(
     "com.amazonaws" % "aws-lambda-java-core"   % "1.2.3",

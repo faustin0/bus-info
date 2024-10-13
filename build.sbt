@@ -43,22 +43,34 @@ lazy val core = project
     libraryDependencies ++= httpClientDeps ++ dynamoDeps
   )
 
+lazy val lambda_runtime = project
+  .in(file("modules/lambda-custom-runtime"))
+  .settings(commonSettings)
+  .settings(
+    name                     := "lambda-custom-runtime",
+    Test / parallelExecution := false,
+    Test / fork              := true,
+    libraryDependencies ++= httpClientDeps
+  )
+
 lazy val api = project
   .in(file("modules/api"))
   .enablePlugins(BuildInfoPlugin, GraalVMNativeImagePlugin)
-  .dependsOn(core)
+  .dependsOn(core, lambda_runtime)
   .settings(commonSettings)
   .settings(
     name                      := "api",
     Test / parallelExecution  := false,
     Test / fork               := true,
     libraryDependencies ++= (httpServerDeps ++ awsLambdaDeps :+ lambdaRuntimeDeps),
-    Compile / mainClass       := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
+//    Compile / mainClass       := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
+    Compile / mainClass       := Some("dev.faustin0.api.Entrypoint"),
     buildInfoKeys             := Seq[BuildInfoKey](version),
     buildInfoPackage          := "dev.faustin0.info",
     topLevelDirectory         := None,
     graalVMNativeImageOptions := Seq(
       "--static",
+      "--libc=musl",
       "--verbose",
       "--no-fallback",
       "-march=x86-64-v2",                                        // https://docs.aws.amazon.com/linux/al2023/ug/performance-optimizations.html
@@ -74,7 +86,7 @@ lazy val api = project
       "--enable-all-security-services",
       "--enable-url-protocols=https,http",
       "--enable-url-protocols=http",
-      "-H:+StaticExecutableWithDynamicLibC",                     // avoid http4s segmentation fault, an alternative to --libc=musl
+//      "-H:+StaticExecutableWithDynamicLibC",                     // avoid http4s segmentation fault, an alternative to --libc=musl
       "-H:+ReportExceptionStackTraces",
       "-J-Dfile.encoding=UTF-8"
     ) ++ optimizationLevel(),

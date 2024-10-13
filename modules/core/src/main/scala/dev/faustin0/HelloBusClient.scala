@@ -50,15 +50,19 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
 }
 
 object HelloBusClient {
-  private val logger          = Slf4jLogger.getLogger[IO]
+  private val logger = Slf4jLogger.getLogger[IO]
+
   private val dateTimePattern = DateTimeFormatter.ofPattern("HHmm")
 
-  private val targetUri =
+  private val targetUri       =
     uri"https://hellobuswsweb.tper.it/web-services/hello-bus.asmx/QueryHellobus"
 
-  def apply(client: Client[IO]): HelloBusClient = {
+  def apply(httpClient: Client[IO]) = new HelloBusClient(httpClient)
+
+  def withLogging(httpClient: Client[IO]): HelloBusClient = {
+
     val logAction: String => IO[Unit] = logger.info(_)
-    new HelloBusClient(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction))(client))
+    new HelloBusClient(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction))(httpClient))
   }
 
 }
