@@ -16,5 +16,5 @@
     <root level="${ROOT_LOG_LEVEL}">
         <appender-ref ref="console"/>
     </root>
-    <logger name="org.http4s" level="INFO"/>
+<!--    <logger name="org.http4s" level="INFO"/>-->
 </configuration>

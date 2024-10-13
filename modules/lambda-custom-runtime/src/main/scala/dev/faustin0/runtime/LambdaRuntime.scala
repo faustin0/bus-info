@@ -33,8 +33,7 @@ object LambdaRuntime {
         .flatMap(handleSingleRequest(client, settings, run))
         .handleErrorWith {
           case ex @ ContainerError => ex.raiseError[F, Unit]
-//          case NonFatal(_)         => ().pure
-          case NonFatal(err)         => Logger[F].error(err)("Failure during loop").void
+          case NonFatal(_)         => ().pure
           case ex                  => ex.raiseError
         }
         .foreverM
