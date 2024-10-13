@@ -1,7 +1,7 @@
 package dev.faustin0.api
 
 import cats.effect.kernel.Resource
-import cats.effect.{ IO, IOApp }
+import cats.effect.{IO, IOApp}
 import cats.syntax.all._
 import dev.faustin0.HelloBusClient
 import dev.faustin0.repositories.DynamoBusStopRepository
@@ -10,34 +10,34 @@ import feral.lambda._
 import feral.lambda.events._
 import feral.lambda.http4s._
 import org.http4s.client.Client
-import org.http4s.client.middleware.{ Logger => ClientLogger }
+import org.http4s.client.middleware.{Logger => ClientLogger}
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.Router
-import org.http4s.server.middleware.{ AutoSlash, Logger, Timeout }
-import org.http4s.{ HttpRoutes, _ }
+import org.http4s.server.middleware.{AutoSlash, Logger, Timeout}
+import org.http4s.{HttpRoutes, _}
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.concurrent.duration.DurationInt
 
 object Entrypoint extends IOApp.Simple {
+  implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   override def run: IO[Unit] =
-    (
-      Slf4jLogger.create[IO].toResource,
-      EmberClientBuilder
-        .default[IO]
-        .withTimeout(2.minutes)
-        .withIdleTimeInPool(5.minutes)
-        .build
-    ).tupled.use { case (logger, httpClient) =>
-      val loggedRuntimeClient = ClientLogger(
-        logHeaders = false,
-        logBody = true,
-        logAction = Some((str: String) => logger.trace(str))
-      )(httpClient)
-      val lambdaHandler       = handler(httpClient)
-      LambdaRuntime[IO, ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2](loggedRuntimeClient)(lambdaHandler)
-    }
+    EmberClientBuilder
+      .default[IO]
+      .withTimeout(2.minutes)
+      .withIdleTimeInPool(5.minutes)
+      .build
+      .use { httpClient =>
+        val loggedRuntimeClient = ClientLogger(
+          logHeaders = false,
+          logBody = true,
+          logAction = Some((str: String) => logger.trace(str))
+        )(httpClient)
+        val lambdaHandler       = handler(httpClient)
+        LambdaRuntime[IO, ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2](loggedRuntimeClient)(lambdaHandler)
+      }
 
   /** Actually, this is a `Resource` that builds your handler. The handler is acquired exactly once when your Lambda
     * starts and is permanently installed to process all incoming events.

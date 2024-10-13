@@ -6,12 +6,13 @@ import cats.syntax.all._
 import dev.faustin0.runtime.models.{ Context, Invocation, LambdaRequest, LambdaSettings }
 import io.circe.{ Decoder, Encoder }
 import org.http4s.client.Client
+import org.typelevel.log4cats.Logger
 
 import scala.util.control.NonFatal
 
 object LambdaRuntime {
 
-  def apply[F[_]: Temporal: LambdaRuntimeEnv, Event: Decoder, Result: Encoder](
+  def apply[F[_]: Temporal: Logger: LambdaRuntimeEnv, Event: Decoder, Result: Encoder](
     client: Client[F]
   )(handler: Resource[F, Invocation[F, Event] => F[Option[Result]]]): F[Unit] =
     LambdaRuntimeAPIClient(client).flatMap { client =>
@@ -21,20 +22,22 @@ object LambdaRuntime {
         .onError { case ex => client.reportInitError(ex) }
     }
 
-  private def runLoop[F[_]: Temporal, Event: Decoder, Result: Encoder](
+  private def runLoop[F[_]: Temporal: Logger, Event: Decoder, Result: Encoder](
     client: LambdaRuntimeAPIClient[F],
     settings: LambdaSettings,
     run: Invocation[F, Event] => F[Option[Result]]
   ): F[Unit] =
-    client
-      .nextInvocation()
-      .flatMap(handleSingleRequest(client, settings, run))
-      .handleErrorWith {
-        case ex @ ContainerError => ex.raiseError[F, Unit]
-        case NonFatal(_)         => ().pure
-        case ex                  => ex.raiseError
-      }
-      .foreverM
+    Logger[F].trace("Starting runtime loop...") *>
+      client
+        .nextInvocation()
+        .flatMap(handleSingleRequest(client, settings, run))
+        .handleErrorWith {
+          case ex @ ContainerError => ex.raiseError[F, Unit]
+//          case NonFatal(_)         => ().pure
+          case NonFatal(err)         => Logger[F].error(err)("Failure during loop").void
+          case ex                  => ex.raiseError
+        }
+        .foreverM
 
   private def handleSingleRequest[F[_]: Temporal, Event: Decoder, Result: Encoder](
     client: LambdaRuntimeAPIClient[F],
