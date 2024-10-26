@@ -10,12 +10,18 @@ import feral.lambda.events._
 import feral.lambda.http4s._
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.Router
-import org.http4s.server.middleware.{ AutoSlash, Logger, Timeout }
-import org.http4s.{ HttpRoutes, _ }
+import org.http4s.server.middleware.{AutoSlash, Logger, Timeout}
+import org.http4s.{HttpRoutes, _}
+import org.slf4j.LoggerFactory
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.concurrent.duration.DurationInt
 
 class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStructuredResultV2] {
+
+  implicit private val logger: SelfAwareStructuredLogger[IO] =
+    Slf4jLogger.getLoggerFromBlockingSlf4j[IO](LoggerFactory.getLogger(Entrypoint.getClass))
 
   /** Actually, this is a `Resource` that builds your handler. The handler is acquired exactly once when your Lambda
     * starts and is permanently installed to process all incoming events.
@@ -46,9 +52,9 @@ class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStru
       .map(middlewares(_))
 
   private def endpoints: Resource[IO, Endpoints] =
-    (EmberClientBuilder.default[IO].build, DynamoBusStopRepository.makeResource()).parMapN {
+    (EmberClientBuilder.default[IO].build, DynamoBusStopRepository.makeResource(logger)).parMapN {
       case (emberClient, busStopRepo) =>
-        val tperClient     = HelloBusClient.withLogging(emberClient)
+        val tperClient     = HelloBusClient.withLogging(emberClient,logger)
         val busInfoService = BusInfoService(tperClient, busStopRepo)
         Endpoints(busInfoService)
     }

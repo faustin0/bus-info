@@ -19,7 +19,7 @@ class LambdaImporter() extends RequestHandler[S3Event, ExitCode] {
   implicit private lazy val runtime: IORuntime = IORuntime.global
 
   override def handleRequest(s3Event: S3Event, context: Context): ExitCode = {
-    implicit val logger = Slf4jLogger.getLogger[IO].addContext(Map("RequestId" -> context.getAwsRequestId))
+    implicit val logger = Slf4jLogger.getLogger[IO].addContext(Map("RequestId" -> context.getAwsRequestId)) //todo make blocking
 
     val computation = for {
       busStopRepo  <- IO(DynamoDbClient.create()).map(DynamoBusStopRepository.apply(_, logger)) // todo client

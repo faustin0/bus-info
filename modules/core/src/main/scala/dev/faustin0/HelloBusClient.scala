@@ -1,14 +1,15 @@
 package dev.faustin0
 
 import cats.effect.IO
-import dev.faustin0.domain.{ BusInfoResponse, BusRequest }
+import dev.faustin0.domain.{BusInfoResponse, BusRequest}
 import org.http4s.Method._
 import org.http4s.client._
-import org.http4s.client.middleware.{ Logger => ClientLogger }
+import org.http4s.client.middleware.{Logger => ClientLogger}
 import org.http4s.headers._
 import org.http4s.implicits._
 import org.http4s.scalaxml._
-import org.http4s.{ Headers, MediaType, Request, UrlForm }
+import org.http4s.{Headers, MediaType, Request, UrlForm}
+import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.time.format.DateTimeFormatter
@@ -50,7 +51,6 @@ class HelloBusClient private (private val httpClient: Client[IO]) {
 }
 
 object HelloBusClient {
-  private val logger = Slf4jLogger.getLogger[IO]
 
   private val dateTimePattern = DateTimeFormatter.ofPattern("HHmm")
 
@@ -59,7 +59,7 @@ object HelloBusClient {
 
   def apply(httpClient: Client[IO]) = new HelloBusClient(httpClient)
 
-  def withLogging(httpClient: Client[IO]): HelloBusClient = {
+  def withLogging(httpClient: Client[IO], logger: Logger[IO]): HelloBusClient = {
 
     val logAction: String => IO[Unit] = logger.info(_)
     new HelloBusClient(ClientLogger(logHeaders = false, logBody = true, logAction = Some(logAction))(httpClient))
