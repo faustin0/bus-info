@@ -1,7 +1,7 @@
 package dev.faustin0.api
 
 import cats.effect.kernel.Resource
-import cats.effect.{IO, IOApp}
+import cats.effect.{ IO, IOApp }
 import cats.syntax.all._
 import dev.faustin0.HelloBusClient
 import dev.faustin0.repositories.DynamoBusStopRepository
@@ -10,15 +10,15 @@ import feral.lambda._
 import feral.lambda.events._
 import feral.lambda.http4s._
 import org.http4s.client.Client
-import org.http4s.client.middleware.{Logger => ClientLogger}
+import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.Router
-import org.http4s.server.middleware.{AutoSlash, Logger, Timeout}
-import org.http4s.{HttpRoutes, _}
+import org.http4s.server.middleware.{ AutoSlash, Logger, Timeout }
+import org.http4s.{ HttpRoutes, _ }
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{ Duration, DurationInt }
 
 object Entrypoint extends IOApp.Simple {
   implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
@@ -28,9 +28,7 @@ object Entrypoint extends IOApp.Simple {
   override def run: IO[Unit] =
     EmberClientBuilder
       .default[IO]
-      .withTimeout(2.minutes)
-      .withIdleConnectionTime(5.minutes)
-      .withIdleTimeInPool(5.minutes)
+      .withTimeout(Duration.Inf) // users should set their custom timeouts
       .build
       .use { httpClient =>
         val loggedRuntimeClient = ClientLogger(
