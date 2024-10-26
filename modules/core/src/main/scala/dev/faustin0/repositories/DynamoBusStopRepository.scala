@@ -124,7 +124,7 @@ object DynamoBusStopRepository {
   def makeResource(): Resource[IO, DynamoBusStopRepository] =
     Resource
       .fromAutoCloseable(
-        IO(
+        IO.blocking(
           UrlConnectionHttpClient
             .builder()
             .connectionTimeout(Duration.ofSeconds(1))
@@ -135,7 +135,7 @@ object DynamoBusStopRepository {
       .map(c => DynamoBusStopRepository(c, logger))
 
   private def clientFromEnv(httpClient: SdkHttpClient): IO[DynamoDbClient] =
-    IO {
+    IO.blocking {
       DynamoDbClient
         .builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
