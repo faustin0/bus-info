@@ -2,7 +2,7 @@
 
     <variable name="ROOT_LOG_LEVEL" value="${ROOT_LOG_LEVEL:-INFO}" />
 
-    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <!-- On Windows machines setting withJansi to true enables ANSI
              color code interpretation by the Jansi library. This requires
              org.fusesource.jansi:jansi:1.8 on the class path.  Note that
@@ -13,8 +13,13 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %level %logger{20} - %msg%n</pattern>
         </encoder>
     </appender>
+
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="CONSOLE" />
+    </appender>
+
     <root level="${ROOT_LOG_LEVEL}">
-        <appender-ref ref="console"/>
+        <appender-ref ref="ASYNC"/>
     </root>
 <!--    <logger name="org.http4s" level="INFO"/>-->
 </configuration>
