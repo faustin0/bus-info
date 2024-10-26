@@ -23,6 +23,8 @@ import scala.concurrent.duration.DurationInt
 object Entrypoint extends IOApp.Simple {
   implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
+  override protected def blockedThreadDetectionEnabled: Boolean = true
+
   override def run: IO[Unit] =
     EmberClientBuilder
       .default[IO]
