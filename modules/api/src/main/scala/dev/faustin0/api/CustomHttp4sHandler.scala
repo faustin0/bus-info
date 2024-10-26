@@ -15,13 +15,16 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.server.Router
 import org.http4s.server.middleware.{ AutoSlash, Logger, Timeout }
 import org.http4s.{ HttpRoutes, _ }
+import org.slf4j.LoggerFactory
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.concurrent.duration.{ Duration, DurationInt }
 
 object Entrypoint extends IOApp.Simple {
-  implicit private val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
+
+  implicit private val logger: SelfAwareStructuredLogger[IO] =
+    Slf4jLogger.getLoggerFromBlockingSlf4j[IO](LoggerFactory.getLogger(Entrypoint.getClass))
 
   override protected def blockedThreadDetectionEnabled: Boolean = true
 
@@ -89,8 +92,8 @@ object Entrypoint extends IOApp.Simple {
       .map(middlewares(_))
 
   private def endpoints(client: Client[IO]): Resource[IO, Endpoints] =
-    DynamoBusStopRepository.makeResource().map { case busStopRepo =>
-      val tperClient     = HelloBusClient.withLogging(client)
+    DynamoBusStopRepository.makeResource(logger).map { busStopRepo =>
+      val tperClient     = HelloBusClient.withLogging(client, logger)
       val busInfoService = BusInfoService(tperClient, busStopRepo)
       Endpoints(busInfoService)
     }

@@ -116,12 +116,11 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
 }
 
 object DynamoBusStopRepository {
-  private val logger = Slf4jLogger.getLogger[IO]
 
   def apply(awsClient: DynamoDbClient, l: Logger[IO]): DynamoBusStopRepository =
     new DynamoBusStopRepository(awsClient)(l)
 
-  def makeResource(): Resource[IO, DynamoBusStopRepository] =
+  def makeResource(logger: Logger[IO]): Resource[IO, DynamoBusStopRepository] =
     Resource
       .fromAutoCloseable(
         IO.blocking(
