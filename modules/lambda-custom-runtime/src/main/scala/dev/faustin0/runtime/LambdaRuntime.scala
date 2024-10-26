@@ -3,14 +3,13 @@ package dev.faustin0.runtime
 import cats.data.EitherT
 import cats.effect.implicits.effectResourceOps
 import cats.effect.{ Resource, Temporal }
-import cats.effect.syntax.all._
 import cats.syntax.all._
 import dev.faustin0.runtime.models.{ Context, Invocation, LambdaRequest, LambdaSettings }
 import io.circe.{ Decoder, Encoder }
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 
-import scala.concurrent.duration.DurationInt
+import scala.util.control.NonFatal
 
 class LambdaRuntime[F[_]: Temporal: Logger](lambdaAPI: LambdaRuntimeAPIClient[F]) {
 
@@ -20,11 +19,15 @@ class LambdaRuntime[F[_]: Temporal: Logger](lambdaAPI: LambdaRuntimeAPIClient[F]
   ): F[Unit] =
     lambdaAPI
       .nextInvocation()
-      .timeoutTo(2.minutes, lambdaAPI.nextInvocation()) // do not fail on timeouts
       .flatMap(req =>
         handleSingleRequest(settings, run)(req)
           .foldF(ex => lambdaAPI.reportInvocationError(req.id, ex), _ => ().pure)
       )
+      .handleErrorWith {
+        case ex @ ContainerError => ex.raiseError
+        case NonFatal(err)       => Logger[F].warn(err)("Caught error during runtime loop")
+        case ex                  => ex.raiseError
+      }
       .foreverM // iterator-style blocking API
 
   private def handleSingleRequest[Event: Decoder, Result: Encoder](

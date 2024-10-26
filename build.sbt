@@ -90,7 +90,9 @@ lazy val api = project
       "--enable-url-protocols=http",
 //      "-H:+StaticExecutableWithDynamicLibC",                     // avoid http4s segmentation fault, an alternative to --libc=musl
       "-H:+ReportExceptionStackTraces",
-      "-J-Dfile.encoding=UTF-8"
+      "-J-Dfile.encoding=UTF-8",
+      "-Dcats.effect.tracing.mode=full",
+      "-Dcats.effect.tracing.buffer.size=1024"
     ) ++ optimizationLevel(),
     excludeDependencies ++= Seq(
       // commons-logging is replaced by jcl-over-slf4j
