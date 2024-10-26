@@ -49,8 +49,10 @@ lazy val lambda_runtime = project
   .settings(
     name                     := "lambda-custom-runtime",
     Test / parallelExecution := false,
-    Test / fork              := true,
-    libraryDependencies ++= httpClientDeps
+    Test / fork              := false,
+    libraryDependencies ++= httpClientDeps ++ Seq(
+      "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test
+    )
   )
 
 lazy val api = project
