@@ -3,11 +3,11 @@ package dev.faustin0.runtime
 import cats.effect.Concurrent
 import cats.syntax.all._
 import dev.faustin0.runtime.headers.`Lambda-Runtime-Function-Error-Type`
-import dev.faustin0.runtime.models.{ErrorRequest, ErrorResponse, LambdaRequest}
+import dev.faustin0.runtime.models.{ ErrorRequest, ErrorResponse, LambdaRequest }
 import io.circe.Encoder
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.client.Client
-import org.http4s.{Method, Request, Response, Status}
+import org.http4s.{ Method, Request, Response, Status }
 
 /** AWS Lambda Runtime API Client
   */
@@ -35,7 +35,9 @@ private[runtime] trait LambdaRuntimeAPIClient[F[_]] {
 private[runtime] object LambdaRuntimeAPIClient {
   final val ApiVersion = "2018-06-01"
 
-  def apply[F[_]: Concurrent: LambdaRuntimeEnv](client: Client[F]): F[LambdaRuntimeAPIClient[F]] = //todo pass only the uri
+  def apply[F[_]: Concurrent: LambdaRuntimeEnv](
+    client: Client[F]
+  ): F[LambdaRuntimeAPIClient[F]] = // todo pass only the uri
     LambdaRuntimeEnv[F].lambdaRuntimeApi.map { host =>
       val runtimeApi = host / ApiVersion / "runtime"
       new LambdaRuntimeAPIClient[F] {
@@ -70,7 +72,7 @@ private[runtime] object LambdaRuntimeAPIClient {
                 .withMethod(Method.POST)
                 .withUri(runtimeApi / "invocation" / awsRequestId / "error")
                 .withEntity(ErrorRequest.fromThrowable(t))
-                .withHeaders(`Lambda-Runtime-Function-Error-Type`("Runtime.UnknownReason")) //todo check this reason
+                .withHeaders(`Lambda-Runtime-Function-Error-Type`("Runtime.UnknownReason")) // todo check this reason
             )
             .use[Unit](handleResponse)
       }

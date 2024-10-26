@@ -1,5 +1,6 @@
 package dev.faustin0.runtime
 
+import cats.data.EitherT
 import cats.effect.implicits.effectResourceOps
 import cats.effect.{ Resource, Temporal }
 import cats.syntax.all._
@@ -7,8 +8,6 @@ import dev.faustin0.runtime.models.{ Context, Invocation, LambdaRequest, LambdaS
 import io.circe.{ Decoder, Encoder }
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
-
-import scala.util.control.NonFatal
 
 object LambdaRuntime {
 
@@ -28,35 +27,27 @@ object LambdaRuntime {
     settings: LambdaSettings,
     run: Invocation[F, Event] => F[Option[Result]]
   ): F[Unit] =
-    Logger[F].trace("Starting runtime loop...") *>
-      client
-        .nextInvocation()
-        .flatMap(handleSingleRequest(client, settings, run))
-        .handleErrorWith {
-          case ex @ ContainerError => ex.raiseError[F, Unit]
-          case NonFatal(_)         => ().pure
-          case ex                  => ex.raiseError
-        }
-        .foreverM
+    client
+      .nextInvocation()
+      .flatMap(req =>
+        handleSingleRequest(client, settings, run)(req)
+          .foldF(ex => client.reportInvocationError(req.id, ex), _ => ().pure)
+      )
+      .foreverM
 
   private def handleSingleRequest[F[_]: Temporal, Event: Decoder, Result: Encoder](
     client: LambdaRuntimeAPIClient[F],
     settings: LambdaSettings,
     run: Invocation[F, Event] => F[Option[Result]]
-  )(request: LambdaRequest): F[Unit] = {
-    val program = for {
-      event       <- request.body.as[Event].liftTo[F]
-      maybeResult <- run(Invocation(event, contextFrom[F](request, settings)))
-      _           <- maybeResult.traverse(client.submit(request.id, _))
+  )(request: LambdaRequest): EitherT[F, Throwable, Unit] =
+    for {
+      event       <- EitherT.fromEither[F](request.body.as[Event])
+      invocation   = Invocation(event, contextFrom[F](request, settings))
+      maybeResult <- EitherT(run(invocation).attempt)
+      _           <- EitherT.liftF(maybeResult.traverse(client.submit(request.id, _)))
     } yield ()
-    program.handleErrorWith {
-      case ex @ ContainerError => ex.raiseError
-      case NonFatal(ex)        => client.reportInvocationError(request.id, ex)
-      case ex                  => ex.raiseError
-    }
-  }
 
-  def contextFrom[F[_]](request: LambdaRequest, settings: LambdaSettings)(implicit F: Temporal[F]): Context[F] =
+  private def contextFrom[F[_]](request: LambdaRequest, settings: LambdaSettings)(implicit F: Temporal[F]): Context[F] =
     Context[F](
       functionName = settings.functionName,
       functionVersion = settings.functionVersion,
