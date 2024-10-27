@@ -36,6 +36,8 @@ object Dependencies {
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
   )
 
+  lazy val munit = "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test
+
   lazy val dependencies = Seq(
     "co.fs2"                 %% "fs2-core"        % fs2Version,
     "org.typelevel"          %% "cats-effect"     % catsVersion,
@@ -49,12 +51,13 @@ object Dependencies {
     "ch.qos.logback"          % "logback-classic" % "1.5.6"  % Runtime
   )
 
-  lazy val httpClientDeps: Seq[ModuleID] = Seq( //todo remove xml from here
+  lazy val http4sClient: Seq[ModuleID] = Seq(
     "org.http4s" %% "http4s-ember-client" % http4sVersion,
-    "org.http4s" %% "http4s-circe" % http4sVersion,
-    "org.http4s" %% "http4s-dsl" % http4sVersion,
-    "org.http4s" %% "http4s-scala-xml"    % "0.23.14"
+    "org.http4s" %% "http4s-circe"        % http4sVersion,
+    "org.http4s" %% "http4s-dsl"          % http4sVersion
   )
+
+  lazy val http4sXML = "org.http4s" %% "http4s-scala-xml" % "0.23.14"
 
   lazy val httpServerDeps = Seq(
     "org.http4s"                  %% "http4s-dsl"              % http4sVersion,

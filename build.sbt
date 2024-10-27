@@ -1,4 +1,4 @@
-import Dependencies._
+import Dependencies.*
 import sbt.Keys.parallelExecution
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -40,7 +40,7 @@ lazy val core = project
     name                     := "core",
     Test / parallelExecution := false,
     Test / fork              := true,
-    libraryDependencies ++= httpClientDeps ++ dynamoDeps
+    libraryDependencies ++= http4sClient ++ dynamoDeps :+ http4sXML
   )
 
 lazy val lambda_runtime = project
@@ -50,9 +50,7 @@ lazy val lambda_runtime = project
     name                     := "lambda-custom-runtime",
     Test / parallelExecution := false,
     Test / fork              := false,
-    libraryDependencies ++= httpClientDeps ++ Seq(
-      "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test
-    )
+    libraryDependencies ++= http4sClient :+ munit
   )
 
 lazy val api = project
@@ -65,7 +63,6 @@ lazy val api = project
     Test / parallelExecution  := false,
     Test / fork               := true,
     libraryDependencies ++= (httpServerDeps ++ awsLambdaDeps :+ lambdaRuntimeDeps),
-//    Compile / mainClass       := Some("com.amazonaws.services.lambda.runtime.api.client.AWSLambda"),
     Compile / mainClass       := Some("dev.faustin0.api.Entrypoint"),
     buildInfoKeys             := Seq[BuildInfoKey](version),
     buildInfoPackage          := "dev.faustin0.info",
@@ -90,7 +87,7 @@ lazy val api = project
       "--enable-url-protocols=http",
 //      "-H:+StaticExecutableWithDynamicLibC",                     // avoid http4s segmentation fault, an alternative to --libc=musl
       "-H:+ReportExceptionStackTraces",
-      "-J-Dfile.encoding=UTF-8",
+      "-J-Dfile.encoding=UTF-8"
 //      "-Dcats.effect.tracing.mode=full",
 //      "-Dcats.effect.tracing.buffer.size=1024"
     ) ++ optimizationLevel(),

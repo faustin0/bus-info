@@ -63,12 +63,14 @@ object LambdaRuntime {
   def apply[F[_]: Temporal: Logger: LambdaRuntimeEnv, Event: Decoder, Result: Encoder](
     client: Client[F]
   )(handler: Resource[F, Invocation[F, Event] => F[Option[Result]]]): F[Unit] =
-    LambdaRuntimeAPIClient(client).flatMap(client =>
-      (handler, LambdaSettings.fromLambdaEnv.toResource).parTupled.attempt
-        .use[Unit] {
-          case Right((handler, settings)) => new LambdaRuntime[F](client).runLoop(settings, handler)
-          case Left(ex)                   => client.reportInitError(ex) *> ex.raiseError
-        }
-    )
+    for {
+      host      <- LambdaRuntimeEnv[F].lambdaRuntimeApi
+      runtimeAPI = LambdaRuntimeAPIClient(client, host)
+      _         <- (handler, LambdaSettings.fromLambdaEnv.toResource).parTupled.attempt
+                     .use[Unit] {
+                       case Right((handler, settings)) => new LambdaRuntime[F](runtimeAPI).runLoop(settings, handler)
+                       case Left(ex)                   => runtimeAPI.reportInitError(ex) *> ex.raiseError
+                     }
+    } yield ()
 
 }
