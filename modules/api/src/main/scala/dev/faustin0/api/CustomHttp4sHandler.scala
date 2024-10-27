@@ -32,6 +32,7 @@ object Entrypoint extends IOApp.Simple {
     EmberClientBuilder
       .default[IO]
       .withTimeout(Duration.Inf) // users should set their custom timeouts
+      .withIdleConnectionTime(Duration.Inf)
       .build
       .use { httpClient =>
         val loggedRuntimeClient = ClientLogger(
