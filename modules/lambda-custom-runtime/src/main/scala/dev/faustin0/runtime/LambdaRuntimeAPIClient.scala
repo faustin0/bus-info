@@ -7,7 +7,7 @@ import dev.faustin0.runtime.models.{ ErrorRequest, ErrorResponse, LambdaRequest 
 import io.circe.Encoder
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.client.Client
-import org.http4s.{ Method, Request, Response, Status }
+import org.http4s.{ Method, Request, Response, Status, Uri }
 
 /** AWS Lambda Runtime API Client
   */
@@ -35,48 +35,48 @@ private[runtime] trait LambdaRuntimeAPIClient[F[_]] {
 private[runtime] object LambdaRuntimeAPIClient {
   final val ApiVersion = "2018-06-01"
 
-  def apply[F[_]: Concurrent: LambdaRuntimeEnv](
-    client: Client[F]
-  ): F[LambdaRuntimeAPIClient[F]] = // todo pass only the uri
-    LambdaRuntimeEnv[F].lambdaRuntimeApi.map { host =>
-      val runtimeApi = host / ApiVersion / "runtime"
-      new LambdaRuntimeAPIClient[F] {
-        def reportInitError(t: Throwable): F[Unit] =
-          client
-            .run(
-              Request[F]()
-                .withMethod(Method.POST)
-                .withUri(runtimeApi / "init" / "error")
-                .withHeaders(`Lambda-Runtime-Function-Error-Type`("Runtime.UnknownReason"))
-                .withEntity(ErrorRequest.fromThrowable(t))
-            )
-            .use[Unit](handleResponse)
+  def apply[F[_]: Concurrent](
+    client: Client[F],
+    host: Uri
+  ): LambdaRuntimeAPIClient[F] = { // todo pass only the uri
+    val runtimeApi = host / ApiVersion / "runtime"
+    new LambdaRuntimeAPIClient[F] {
+      def reportInitError(t: Throwable): F[Unit] =
+        client
+          .run(
+            Request[F]()
+              .withMethod(Method.POST)
+              .withUri(runtimeApi / "init" / "error")
+              .withHeaders(`Lambda-Runtime-Function-Error-Type`("Runtime.UnknownReason"))
+              .withEntity(ErrorRequest.fromThrowable(t))
+          )
+          .use[Unit](handleResponse)
 
-        def nextInvocation(): F[LambdaRequest] =
-          client.get(runtimeApi / "invocation" / "next")(LambdaRequest.fromResponse[F])
+      def nextInvocation(): F[LambdaRequest] =
+        client.get(runtimeApi / "invocation" / "next")(LambdaRequest.fromResponse[F])
 
-        def submit[T: Encoder](awsRequestId: String, responseBody: T): F[Unit] =
-          client
-            .run(
-              Request[F]()
-                .withMethod(Method.POST)
-                .withUri(runtimeApi / "invocation" / awsRequestId / "response")
-                .withEntity(responseBody)(jsonEncoderOf)
-            )
-            .use[Unit](handleResponse)
+      def submit[T: Encoder](awsRequestId: String, responseBody: T): F[Unit] =
+        client
+          .run(
+            Request[F]()
+              .withMethod(Method.POST)
+              .withUri(runtimeApi / "invocation" / awsRequestId / "response")
+              .withEntity(responseBody)(jsonEncoderOf)
+          )
+          .use[Unit](handleResponse)
 
-        def reportInvocationError(awsRequestId: String, t: Throwable): F[Unit] =
-          client
-            .run(
-              Request[F]()
-                .withMethod(Method.POST)
-                .withUri(runtimeApi / "invocation" / awsRequestId / "error")
-                .withEntity(ErrorRequest.fromThrowable(t))
-                .withHeaders(`Lambda-Runtime-Function-Error-Type`("Runtime.UnknownReason")) // todo check this reason
-            )
-            .use[Unit](handleResponse)
-      }
+      def reportInvocationError(awsRequestId: String, t: Throwable): F[Unit] =
+        client
+          .run(
+            Request[F]()
+              .withMethod(Method.POST)
+              .withUri(runtimeApi / "invocation" / awsRequestId / "error")
+              .withEntity(ErrorRequest.fromThrowable(t))
+              .withHeaders(`Lambda-Runtime-Function-Error-Type`("Runtime.UnknownReason")) // todo check this reason
+          )
+          .use[Unit](handleResponse)
     }
+  }
 
   private def handleResponse[F[_]: Concurrent](response: Response[F]): F[Unit] =
     response.status match {
