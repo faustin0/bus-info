@@ -5,7 +5,6 @@ import cats.syntax.all._
 import dev.faustin0.domain.{ BusStop, BusStopRepository, FailureReason }
 import fs2.{ Stream, _ }
 import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.http.SdkHttpClient
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient
