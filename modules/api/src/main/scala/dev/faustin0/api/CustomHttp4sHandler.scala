@@ -100,17 +100,15 @@ object Entrypoint extends IOApp.Simple {
     }
 
   private def middlewares: HttpRoutes[IO] => HttpRoutes[IO] =
-    (AutoSlash.httpRoutes(_: HttpRoutes[IO])).andThen {
-      Timeout.httpRoutes(
-        10.seconds,
-        IO(Response[IO](Status.GatewayTimeout).withEntity("TPER server timed out")) // todo chagne timeout location
-      )
-    } andThen {
-      Logger.httpRoutes[IO](
-        logHeaders = true,
-        logBody = false,
-        logAction = Some(logger.withModifiedString(s => s"[server] $s").info(_))
-      )
-    }
+    (AutoSlash
+      .httpRoutes(_: HttpRoutes[IO]))
+      .andThen(Timeout.httpRoutes(10.seconds))
+      .andThen {
+        Logger.httpRoutes[IO](
+          logHeaders = true,
+          logBody = false,
+          logAction = Some(logger.withModifiedString(s => s"[server] $s").info(_))
+        )
+      }
 
 }

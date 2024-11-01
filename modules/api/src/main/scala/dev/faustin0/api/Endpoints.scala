@@ -41,7 +41,7 @@ class Endpoints private (private val busInfoService: BusInfoDSL[IO]) {
 
   val healthCheckRoutes: HttpRoutes[IO] =
     http4sInterpreter.toRoutes(healthcheck.serverLogic[IO] { _ =>
-      IO("Up and running".asRight[Unit])
+      IO.pure("Up and running".asRight[Unit])
     })
 
   val swaggerUIRoutes: HttpRoutes[IO] = {
