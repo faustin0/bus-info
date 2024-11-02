@@ -48,7 +48,7 @@ object Containers {
       s"http://${dynamoContainer.container.getHost}:${dynamoContainer.container.getFirstMappedPort}"
 
     Resource.fromAutoCloseable {
-      IO(
+      IO.blocking(
         DynamoDbClient
           .builder()
           .region(Region.EU_CENTRAL_1)

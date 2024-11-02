@@ -26,7 +26,7 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
       .build()
 
     L.debug(s"Inserting bus-stop $busStop") *>
-      IO.blocking(client.putItem(request)).void
+      IO.interruptible(client.putItem(request)).void
   }
 
   override def batchInsert: Pipe[IO, BusStop, FailureReason] = { busStops =>
@@ -45,7 +45,7 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
       .flatMap { batchReq =>
         Stream.attemptEval {
           L.debug(s"batch inserting bus-stop $batchReq") *>
-            IO.blocking(client.batchWriteItem(batchReq))
+            IO.interruptible(client.batchWriteItem(batchReq))
         }.collect { case Left(error) =>
           FailureReason(error)
         }
@@ -64,7 +64,7 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
 
     for {
       _            <- L.debug(s"Getting busStop $code")
-      result       <- IO.blocking(client.getItem(request))
+      result       <- IO.interruptible(client.getItem(request))
       mappedBusStop = Option(result.item())
                         .filterNot(_.isEmpty)
                         .traverse(item => BusStopTable.dynamoItemToBusStop(item))
@@ -83,7 +83,7 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
       .tableName(BusStopTable.name)
       .build()
 
-    IO.blocking(client.describeTable(tableDesc))
+    IO.interruptible(client.describeTable(tableDesc))
       .map(resp => resp.table())
       .map(table => table.itemCount())
   }
@@ -104,7 +104,7 @@ class DynamoBusStopRepository private (client: DynamoDbClient)(implicit L: Logge
 
     for {
       _       <- L.debug(s"Searching busStops $name")
-      result  <- IO.blocking(client.query(queryRequest))
+      result  <- IO.interruptible(client.query(queryRequest))
       busStop <- Option(result.items()).toList
                    .flatMap(_.asScala)
                    .traverse(item => BusStopTable.dynamoItemToBusStop(item))
