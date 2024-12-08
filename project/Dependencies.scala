@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.7.0"
 
-  val tapirVersion = "1.11.9"
+  val tapirVersion = "1.11.10"
 
   val awsSdkVersion = "2.26.20"
 
@@ -32,7 +32,7 @@ object Dependencies {
     "com.dimafeng"  %% "testcontainers-scala-localstack-v2" % testcontainersScalaV % Test,
     "com.amazonaws"  % "aws-java-sdk"                       % "1.12.779"           % Test, // needed by localstack
     "com.dimafeng"  %% "testcontainers-scala-scalatest"     % testcontainersScalaV % Test,
-    "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.5.0"              % Test,
+    "org.typelevel" %% "cats-effect-testing-scalatest"      % "1.6.0"              % Test,
     "org.typelevel" %% "cats-effect-laws"                   % catsVersion          % Test
   )
 
