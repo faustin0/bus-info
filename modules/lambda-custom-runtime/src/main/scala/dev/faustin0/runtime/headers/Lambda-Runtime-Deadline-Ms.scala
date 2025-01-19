@@ -3,10 +3,9 @@ package dev.faustin0.runtime.headers
 import org.http4s._
 import org.typelevel.ci._
 
-/**
- * Function execution deadline counted in milliseconds since the Unix epoch.
- */
-private[runtime] final class `Lambda-Runtime-Deadline-Ms`(val value: Long)
+/** Function execution deadline counted in milliseconds since the Unix epoch.
+  */
+final private[runtime] class `Lambda-Runtime-Deadline-Ms`(val value: Long)
 
 private[runtime] object `Lambda-Runtime-Deadline-Ms` {
 

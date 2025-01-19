@@ -3,10 +3,9 @@ package dev.faustin0.runtime.headers
 import org.http4s._
 import org.typelevel.ci._
 
-/**
- * The ARN requested. This can be different in each invoke that executes the same version.
- */
-private[runtime] final class `Lambda-Runtime-Invoked-Function-Arn`(val value: String)
+/** The ARN requested. This can be different in each invoke that executes the same version.
+  */
+final private[runtime] class `Lambda-Runtime-Invoked-Function-Arn`(val value: String)
 
 private[runtime] object `Lambda-Runtime-Invoked-Function-Arn` {
 
@@ -19,4 +18,5 @@ private[runtime] object `Lambda-Runtime-Invoked-Function-Arn` {
 
   implicit val headerInstance: Header[`Lambda-Runtime-Invoked-Function-Arn`, Header.Single] =
     Header.createRendered(name, _.value, parse)
+
 }
