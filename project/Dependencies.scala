@@ -48,7 +48,7 @@ object Dependencies {
 //    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
 //    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime,
     "org.slf4j"               % "jcl-over-slf4j"  % "2.0.13" % Runtime, // same version of slf4j used by log4cats
-    "ch.qos.logback"          % "logback-classic" % "1.5.16" % Runtime
+    "ch.qos.logback"          % "logback-classic" % "1.5.17" % Runtime
   )
 
   lazy val http4sClient: Seq[ModuleID] = Seq(
