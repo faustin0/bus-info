@@ -27,6 +27,9 @@ jobs:
           native-image-job-reports: true
           native-image-musl: true
 
+      - name: Install sbt
+        uses: sbt/setup-sbt@v1
+
       - name: Run tests
         run: sbt test
 
