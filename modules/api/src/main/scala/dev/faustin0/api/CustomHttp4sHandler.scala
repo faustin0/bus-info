@@ -105,12 +105,11 @@ object Entrypoint extends IOApp.Simple {
         10.seconds,
         IO(Response[IO](Status.GatewayTimeout).withEntity("TPER server timed out")) // todo chagne timeout location
       )
-    } andThen {
+    } andThen
       Logger.httpRoutes[IO](
         logHeaders = true,
         logBody = false,
         logAction = Some(logger.withModifiedString(s => s"[server] $s").info(_))
       )
-    }
 
 }
