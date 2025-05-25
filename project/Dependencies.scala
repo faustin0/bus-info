@@ -17,7 +17,7 @@ object Dependencies {
 
   val log4catsVersion = "2.7.0"
 
-  val tapirVersion = "1.11.29"
+  val tapirVersion = "1.11.32"
 
   val awsSdkVersion = "2.26.20"
 
