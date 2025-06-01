@@ -13,7 +13,7 @@ object Dependencies {
 
   val circeVersion = "0.14.13"
 
-  val scalaXmlVersion = "2.2.0"
+  val scalaXmlVersion = "2.4.0"
 
   val log4catsVersion = "2.7.0"
 
