@@ -15,7 +15,6 @@ final case class ErrorRequest( // todo, response?
 
 private[runtime] object ErrorRequest {
 
-
   def fromThrowable(ex: Throwable): ErrorRequest =
     ErrorRequest(
       ex.getMessage,
