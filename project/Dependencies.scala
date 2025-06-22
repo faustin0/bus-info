@@ -57,12 +57,12 @@ object Dependencies {
     "org.http4s" %% "http4s-dsl"          % http4sVersion
   )
 
-  lazy val http4sXML = "org.http4s" %% "http4s-scala-xml" % "0.23.15"
+  lazy val http4sXML = "org.http4s" %% "http4s-scala-xml" % "0.24.0"
 
   lazy val httpServerDeps = Seq(
     "org.http4s"                  %% "http4s-dsl"              % http4sVersion,
     "org.http4s"                  %% "http4s-ember-server"     % http4sVersion,
-    "org.http4s"                  %% "http4s-scala-xml"        % "0.23.15",
+    "org.http4s"                  %% "http4s-scala-xml"        % "0.24.0",
     "org.http4s"                  %% "http4s-circe"            % http4sVersion,
     "org.typelevel"               %% "feral-lambda-http4s"     % "0.3.0-RC2",
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % tapirVersion,
