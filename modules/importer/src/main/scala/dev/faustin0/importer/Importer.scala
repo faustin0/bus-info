@@ -40,7 +40,7 @@ class Importer[F[_]: Async: Logger](busStopRepo: BusStopRepository[F], datasetLo
     }
   }
 
-  private def extractBusStopsFromDataSet(data: BusStopsDataset): Stream[F, BusStop] =
+  private def extractBusStopsFromDataSet(data: Dataset): Stream[F, BusStop] =
     Stream
       .fromIterator[F]((data.content \\ "NewDataSet" \\ "Table").iterator, 10) // todo chunk size ???
       .evalMapChunk(t => t.decodeTo[BusStop].liftTo[F])
