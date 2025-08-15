@@ -3,10 +3,9 @@ package dev.faustin0.runtime.headers
 import org.http4s._
 import org.typelevel.ci._
 
-/**
- * X-Ray tracing header.
- */
-private[runtime] final class `Lambda-Runtime-Trace-Id`(val value: String)
+/** X-Ray tracing header.
+  */
+final private[runtime] class `Lambda-Runtime-Trace-Id`(val value: String)
 
 private[runtime] object `Lambda-Runtime-Trace-Id` {
 
@@ -19,4 +18,5 @@ private[runtime] object `Lambda-Runtime-Trace-Id` {
 
   implicit val headerInstance: Header[`Lambda-Runtime-Trace-Id`, Header.Single] =
     Header.createRendered(name, _.value, parse)
+
 }

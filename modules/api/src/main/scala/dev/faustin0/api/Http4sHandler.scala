@@ -66,8 +66,7 @@ class Http4sHandler extends IOLambda[ApiGatewayProxyEventV2, ApiGatewayProxyStru
         10.seconds,
         IO(Response[IO](Status.GatewayTimeout).withEntity("TPER server timed out")) // todo chagne timeout location
       )
-    } andThen {
+    } andThen
       Logger.httpRoutes[IO](logHeaders = true, logBody = false)
-    }
 
 }
