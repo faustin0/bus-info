@@ -7,7 +7,7 @@ object Dependencies {
 
   val testcontainersScalaV = "0.41.5"
 
-  val kindProjectorV = "0.13.3"
+  val kindProjectorV = "0.13.4"
 
   val betterMonadicForV = "0.3.1"
 
